@@ -1,5 +1,19 @@
 # 更新日志 / Changelog
 
+## [Unreleased]
+
+### 中文
+
+- 节点轮廓新增与面板按钮一致的上沿高光、下沿阴影和精密压边层次，完整支持亮色与暗色主题。
+- 新增共享 Painter2D 语义图标注册表与 24px 金属底座控件；27 个领域节点复用 19 种简洁图标，并保留按角色回退。
+- 运行中、成功、失败改为整个节点填充与辉光；选中状态仅叠加独立描边，不再覆盖节点填充。
+
+### English
+
+- Added premium top highlights, bottom shadows, and pressed-edge depth to every node silhouette in both themes.
+- Added a shared Painter2D semantic icon registry and 24px metal-base control; 27 domain nodes reuse 19 concise icons with role fallbacks.
+- Runtime states now illuminate the whole node, while selection adds only an independent outline.
+
 ## [0.0.3] - 2026-07-16
 
 ### 中文

@@ -99,7 +99,7 @@
 
 | 场景 | 用法 |
 |---|---|
-| 节点视觉 | 框架 `node-base` 全家。四类节点必须使用真实且互异的整节点轮廓：Provider=椭圆侧边胶囊，Condition=六边形/菱形侧边，Action=右箭头卡片，Control=八边形流程卡；后三种多边形的所有顶点统一走框架 rounded-polygon helper，以约 7px 且受相邻边长限制的圆滑转角替代硬尖角，不能退回统一圆角矩形或只写 USS `border-radius`。标题左侧 ring+dot / diamond / arrow / branch glyph 只作辅助，画面不得显示角色文字 badge。原生 `Node/#node-border` 矩形背景和边框保持透明；selected、running/success/failure、validation error/warn 都只改变同一 Painter2D 轮廓的 USS custom property，不能露出矩形选择框。颜色必须来自 `var(--ne-*)`，命中区域使用同一组圆角曲线采样。领域**不得**自定义节点皮肤、不得给标题上底色 |
+| 节点视觉 | 框架 `node-base` 全家。四类节点必须使用真实且互异的整节点轮廓：Provider=椭圆侧边胶囊，Condition=六边形/菱形侧边，Action=右箭头卡片，Control=八边形流程卡；后三种多边形的所有顶点统一走框架 rounded-polygon helper，以约 7px 且受相邻边长限制的圆滑转角替代硬尖角，不能退回统一圆角矩形或只写 USS `border-radius`。轮廓表面由同一路径叠绘上沿高光、下沿阴影、主填充与细描边，形成与共享命令按钮一致的精密压边层次；亮暗主题分别提供 token。标题左侧统一使用 `NodeIconControl` 的 24px 金属小底座和 Painter2D 语义线图标；领域节点只用 `[NodeIcon]` 注册 `NodeIconKind`，不得带位图/SVG 或自建皮肤，未注册时才按 Role 回退。原生 `Node/#node-border` 矩形背景和边框保持透明。running/success/failure 必须改变整个轮廓的填充、描边与克制辉光；selected 只叠加独立陶土色轮廓环，不得替换运行态填充；validation error/warn 仍走普通轮廓语义，不能露出矩形选择框。颜色必须来自 `var(--ne-*)`，命中区域使用同一组圆角曲线采样。领域**不得**自定义节点皮肤、不得给标题上底色 |
 | 节点 cue（卡片下两行摘要） | 继承 `NodeCueControl`，只提供文案（两行截断由框架管）。`#extra-content` 必须保留角色轮廓的安全内边距：Provider 22/22、Condition 19/19、Action 12/22、Control 14/14（左/右）；这组值由真实 Condition/Action/Jump 与两行 cue 的四角命中验收锁定，领域不得覆写、不得用 `overflow: clip` 掩盖越界。动态高度时 cue 的完整 border-box 仍须落在 `NodeView.ContainsPoint` 的同一圆角轮廓内 |
 | 端口 | `PortView.Create` 自动挂 `ne-port-single/multi`；连接点颜色是 portColor 豁免点 |
 | 图级横幅 | `EditorUi.BannerClass(+--issue)` |

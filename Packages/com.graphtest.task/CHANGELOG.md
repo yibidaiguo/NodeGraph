@@ -1,5 +1,15 @@
 # 更新日志 / Changelog
 
+## [Unreleased]
+
+### 中文
+
+- 为任务节点注册简洁的共享语义图标，并自动继承框架的金属底座、双主题节点层次和整节点运行态照明。
+
+### English
+
+- Registered concise shared semantic icons for Task nodes, inheriting the framework metal base, dual-theme depth, and whole-node runtime illumination.
+
 ## [0.0.3] - 2026-07-16
 
 ### 中文
