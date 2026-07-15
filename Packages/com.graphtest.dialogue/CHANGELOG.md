@@ -1,5 +1,19 @@
 # 更新日志 / Changelog
 
+## [0.0.3] - 2026-07-16
+
+### 中文
+
+- 修复任务编辑器的添加节点菜单会显示并创建对话/状态机节点的问题。
+- 各模块图现在仅允许本模块节点和通用节点。
+- 保留任务依赖图与流程图各自的节点种类限制。
+
+### English
+
+- Fixed the Task editor add-node menu exposing Dialogue and State Machine nodes.
+- Each module graph now permits only its own nodes plus universal nodes.
+- Preserved the Task dependency-DAG and control-flow node-kind restrictions.
+
 ## [0.0.2] - 2026-07-15
 
 ### 中文

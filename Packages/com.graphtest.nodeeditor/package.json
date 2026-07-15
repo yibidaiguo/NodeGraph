@@ -1,12 +1,12 @@
 {
   "name": "com.graphtest.nodeeditor",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "displayName": "NodeGraph Node Editor",
   "description": "Unity 6 可复用节点图运行时、编辑器框架与模块管理器。 / Reusable graph runtime, editor framework, and module manager for Unity 6.",
   "unity": "6000.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/yibidaiguo/NodeGraph.git",
-    "revision": "v0.0.2"
+    "revision": "v0.0.3"
   }
 }

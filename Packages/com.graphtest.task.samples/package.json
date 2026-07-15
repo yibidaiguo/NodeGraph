@@ -1,11 +1,11 @@
 {
   "name": "com.graphtest.task.samples",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "displayName": "NodeGraph Task Samples",
   "description": "NodeGraph Task 可选示例内容。 / Optional sample content for NodeGraph Task.",
   "unity": "6000.0",
   "dependencies": {
-    "com.graphtest.task": "0.0.2",
+    "com.graphtest.task": "0.0.3",
     "com.unity.modules.imgui": "1.0.0"
   },
   "samples": [
@@ -18,6 +18,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yibidaiguo/NodeGraph.git",
-    "revision": "v0.0.2"
+    "revision": "v0.0.3"
   }
 }
