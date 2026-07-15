@@ -57,14 +57,12 @@ namespace NodeEditor.EditorUI
                     Stroke(painter, bounds, V(10, 10), V(15, 5));
                     break;
                 case NodeIconKind.Entry:
-                    Stroke(painter, bounds, V(4, 3), V(4, 17));
-                    Stroke(painter, bounds, V(6, 10), V(16, 10), V(12, 6));
-                    Stroke(painter, bounds, V(16, 10), V(12, 14));
+                    Stroke(painter, bounds, V(16, 3), V(16, 17));
+                    Stroke(painter, bounds, V(3, 10), V(14, 10), V(10, 6));
+                    Stroke(painter, bounds, V(14, 10), V(10, 14));
                     break;
                 case NodeIconKind.Terminal:
                     RoundedRect(painter, bounds, 4, 4, 12, 12, 2);
-                    Stroke(painter, bounds, V(7, 7), V(13, 13));
-                    Stroke(painter, bounds, V(13, 7), V(7, 13));
                     break;
                 case NodeIconKind.Dialogue:
                     RoundedRect(painter, bounds, 3, 4, 14, 10, 2);
@@ -93,9 +91,8 @@ namespace NodeEditor.EditorUI
                     Stroke(painter, bounds, V(6, 11), V(9, 14), V(15, 7));
                     break;
                 case NodeIconKind.Jump:
-                    Stroke(painter, bounds, V(4, 4), V(4, 16));
-                    Stroke(painter, bounds, V(6, 10), V(16, 10), V(12, 6));
-                    Stroke(painter, bounds, V(16, 10), V(12, 14));
+                    Stroke(painter, bounds, V(3, 16), V(7, 16), V(7, 7), V(16, 7), V(12, 3));
+                    Stroke(painter, bounds, V(16, 7), V(12, 11));
                     break;
                 case NodeIconKind.Label:
                     Closed(painter, bounds, V(6, 3), V(14, 3), V(14, 17), V(10, 14), V(6, 17));

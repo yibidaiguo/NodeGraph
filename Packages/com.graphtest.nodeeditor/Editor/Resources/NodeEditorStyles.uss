@@ -331,6 +331,7 @@
     --ne-node-shape-outline: var(--ne-border-soft);
     --ne-node-shape-outline-width: 1;
     --ne-node-shape-glow: var(--ne-transparent);
+    --ne-node-validation-outline: var(--ne-transparent);
 }
 .node-base > #node-border {
     background-color: var(--ne-transparent);
@@ -347,7 +348,7 @@
     font-size: var(--ne-font-md);
     -unity-font-style: bold;
     -unity-text-align: middle-left;
-    padding: 5px 12px;
+    padding: 2px 12px;
     min-height: 26px;
     color: var(--ne-text-strong);
     background-color: var(--ne-transparent);
@@ -418,11 +419,14 @@
 .status-running  { --ne-node-shape-fill: var(--ne-status-running-fill); --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-glow: var(--ne-status-running-glow); --ne-node-shape-outline-width: 2; }
 .status-success  { --ne-node-shape-fill: var(--ne-status-success-fill); --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-glow: var(--ne-status-success-glow); --ne-node-shape-outline-width: 2; }
 .status-failure  { --ne-node-shape-fill: var(--ne-status-failure-fill); --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-glow: var(--ne-status-failure-glow); --ne-node-shape-outline-width: 2; }
+.node-base.status-running:hover { --ne-node-shape-fill: var(--ne-status-running-fill); --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-glow: var(--ne-status-running-glow); }
+.node-base.status-success:hover { --ne-node-shape-fill: var(--ne-status-success-fill); --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-glow: var(--ne-status-success-glow); }
+.node-base.status-failure:hover { --ne-node-shape-fill: var(--ne-status-failure-fill); --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-glow: var(--ne-status-failure-glow); }
 .status-inactive { opacity: 0.45; }
 
 /* ---- 校验标记：error / warn 仍沿角色轮廓。---- */
-.validation-error { --ne-node-shape-outline: var(--ne-validation-error); --ne-node-shape-outline-width: 2; }
-.validation-warn { --ne-node-shape-outline: var(--ne-validation-warn); --ne-node-shape-outline-width: 2; }
+.validation-error { --ne-node-validation-outline: var(--ne-validation-error); }
+.validation-warn { --ne-node-validation-outline: var(--ne-validation-warn); }
 
 /* ---- 端口（垂直方向：上下端口）---- */
 .port {

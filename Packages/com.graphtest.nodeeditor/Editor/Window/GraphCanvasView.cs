@@ -436,6 +436,8 @@ namespace NodeEditor.EditorUI
             new("--ne-node-shape-glow");
         static readonly CustomStyleProperty<Color> s_SelectionOutline =
             new("--ne-node-selection-outline");
+        static readonly CustomStyleProperty<Color> s_ValidationOutline =
+            new("--ne-node-validation-outline");
         [System.ThreadStatic] static List<Vector2> s_RolePolygonScratch;
         [System.ThreadStatic] static List<Vector2> s_RoundedSampleScratch;
 
@@ -453,6 +455,7 @@ namespace NodeEditor.EditorUI
         Color m_ShapeShadow;
         Color m_ShapeGlow;
         Color m_SelectionOutline;
+        Color m_ValidationOutline;
         float m_ShapeOutlineWidth = 1f;
 
         public NodeView(NodeInstance inst, NodeDefinition def)
@@ -527,6 +530,7 @@ namespace NodeEditor.EditorUI
             evt.customStyle.TryGetValue(s_ShapeShadow, out m_ShapeShadow);
             evt.customStyle.TryGetValue(s_ShapeGlow, out m_ShapeGlow);
             evt.customStyle.TryGetValue(s_SelectionOutline, out m_SelectionOutline);
+            evt.customStyle.TryGetValue(s_ValidationOutline, out m_ValidationOutline);
             MarkDirtyRepaint();
         }
 

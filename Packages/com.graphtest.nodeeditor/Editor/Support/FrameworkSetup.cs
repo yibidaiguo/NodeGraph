@@ -180,6 +180,7 @@ namespace NodeEditor.EditorUI
             EnsureUI(table, "ui.minimapTip", "显示/隐藏缩略图");
             EnsureUI(table, "ui.darkTheme", "深色");
             EnsureUI(table, "ui.darkThemeTip", "切换深色主题");
+            EnsureUI(table, "ui.nodeIconConflict", "节点“{0}”的图标已注册为 {1}；已忽略冲突的 {2}。");
             EnsureUI(table, "ui.nodeEditor", "节点编辑器");
             EnsureUI(table, "ui.language", "语言");
             // 新建变量弹窗 / 节点搜索。

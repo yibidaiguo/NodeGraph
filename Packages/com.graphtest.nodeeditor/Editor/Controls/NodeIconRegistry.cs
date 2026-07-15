@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NodeEditor;
@@ -23,14 +24,20 @@ namespace NodeEditor.EditorUI
         {
             if (s_Map != null) return;
             s_Map = new Dictionary<Type, NodeIconKind>();
-            foreach (var carrier in TypeCache.GetTypesWithAttribute<NodeIconAttribute>())
+            foreach (var carrier in TypeCache.GetTypesWithAttribute<NodeIconAttribute>()
+                         .OrderBy(type => type.AssemblyQualifiedName, StringComparer.Ordinal))
             {
                 foreach (NodeIconAttribute attr in carrier.GetCustomAttributes(typeof(NodeIconAttribute), false))
                 {
                     if (attr.NodeType == null) continue;
                     if (s_Map.TryGetValue(attr.NodeType, out var existing) && existing != attr.Kind)
-                        Debug.LogWarning($"Node icon for '{attr.NodeType.FullName}' changed from {existing} to {attr.Kind}.");
-                    s_Map[attr.NodeType] = attr.Kind;
+                    {
+                        Debug.LogWarning(string.Format(Localizer.UI("ui.nodeIconConflict",
+                            "Node icon for '{0}' is already {1}; ignored conflicting {2}."),
+                            attr.NodeType.FullName, existing, attr.Kind));
+                        continue;
+                    }
+                    s_Map.TryAdd(attr.NodeType, attr.Kind);
                 }
             }
         }

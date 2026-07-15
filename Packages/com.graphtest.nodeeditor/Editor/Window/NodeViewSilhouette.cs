@@ -45,6 +45,14 @@ namespace NodeEditor.EditorUI
             painter.Fill();
             painter.Stroke();
 
+            if (m_ValidationOutline.a > 0f)
+            {
+                painter.strokeColor = m_ValidationOutline;
+                painter.lineWidth = 2f;
+                BeginRoleSilhouettePath(painter, Definition.Role, ValidationSilhouetteBounds(bounds));
+                painter.Stroke();
+            }
+
             if (selected && m_SelectionOutline.a > 0f)
             {
                 painter.strokeColor = m_SelectionOutline;
@@ -66,6 +74,10 @@ namespace NodeEditor.EditorUI
         static Rect RoleSilhouetteBounds(Rect contentBounds)
             => Rect.MinMaxRect(contentBounds.xMin + 1f, contentBounds.yMin + 1f,
                 contentBounds.xMax - 1f, contentBounds.yMax - 1f);
+
+        static Rect ValidationSilhouetteBounds(Rect shapeBounds)
+            => Rect.MinMaxRect(shapeBounds.xMin + 3f, shapeBounds.yMin + 3f,
+                shapeBounds.xMax - 3f, shapeBounds.yMax - 3f);
 
         static void BeginRoleSilhouettePath(Painter2D painter, NodeRole role, Rect bounds)
         {
