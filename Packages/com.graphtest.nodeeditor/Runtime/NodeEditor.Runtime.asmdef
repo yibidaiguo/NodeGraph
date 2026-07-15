@@ -1,0 +1,8 @@
+{
+  "name": "NodeEditor.Runtime",
+  "rootNamespace": "NodeEditor",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

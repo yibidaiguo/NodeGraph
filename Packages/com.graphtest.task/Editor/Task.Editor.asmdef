@@ -1,0 +1,14 @@
+{
+  "name": "Task.Editor",
+  "rootNamespace": "TaskEditor.EditorUI",
+  "references": [
+    "NodeEditor.Runtime",
+    "NodeEditor.Editor",
+    "Task.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

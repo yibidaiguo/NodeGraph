@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17bab04c5febce04eabd85c22a371bd8, type: 3}
+  m_Name: Blackboard_statemachine_SamplePlayer3D
+  m_EditorClassIdentifier: NodeEditor.Runtime::NodeEditor.BlackboardAsset
+  module: statemachine
+  group: SamplePlayer3D
+  variables:
+  - key: moveX
+    type:
+      rid: 2619798910923703000
+    defaultJson: 0
+  - key: moveZ
+    type:
+      rid: 2619798910923703001
+    defaultJson: 0
+  - key: jumpPressed
+    type:
+      rid: 2619798910923703002
+    defaultJson: false
+  - key: isGrounded
+    type:
+      rid: 2619798910923703003
+    defaultJson: true
+  - key: moveSpeed
+    type:
+      rid: 2619798910923703004
+    defaultJson: 0
+  - key: canMove
+    type:
+      rid: 2619798910923703005
+    defaultJson: true
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2619798910923703000
+      type: {class: TypeRef, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        kind: 0
+        primitive: 2
+        enumOrObjectName: 
+        element:
+          rid: -2
+    - rid: 2619798910923703001
+      type: {class: TypeRef, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        kind: 0
+        primitive: 2
+        enumOrObjectName: 
+        element:
+          rid: -2
+    - rid: 2619798910923703002
+      type: {class: TypeRef, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        kind: 0
+        primitive: 0
+        enumOrObjectName: 
+        element:
+          rid: -2
+    - rid: 2619798910923703003
+      type: {class: TypeRef, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        kind: 0
+        primitive: 0
+        enumOrObjectName: 
+        element:
+          rid: -2
+    - rid: 2619798910923703004
+      type: {class: TypeRef, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        kind: 0
+        primitive: 2
+        enumOrObjectName: 
+        element:
+          rid: -2
+    - rid: 2619798910923703005
+      type: {class: TypeRef, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        kind: 0
+        primitive: 0
+        enumOrObjectName: 
+        element:
+          rid: -2

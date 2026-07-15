@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ae3b4aa457beee44804627476073116, type: 3}
+  m_Name: SampleTaskLineSteps
+  m_EditorClassIdentifier: NodeEditor.Runtime::NodeEditor.NodeGraphAsset
+  module: task
+  group: SampleTaskLine
+  graphType: 0
+  instances:
+  - instanceId: task-sample-step-start
+    definitionId: task.Start
+    position: {x: -1, y: -3}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: task-sample-step-objective
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: task-sample-step-objective
+    definitionId: task.Objective
+    position: {x: 1, y: 149}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: task-sample-step-complete
+      toPort: in
+    parameterOverrides:
+    - paramName: objectiveId
+      valueJson: sample.collect
+    - paramName: requiredCount
+      valueJson: 1
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: task-sample-step-complete
+    definitionId: task.Complete
+    position: {x: 0, y: 300}
+    displayName: 
+    note: 
+    pinned: 0
+    connections: []
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  entryInstanceIds:
+  - task-sample-step-start
+  references:
+    version: 2
+    RefIds: []

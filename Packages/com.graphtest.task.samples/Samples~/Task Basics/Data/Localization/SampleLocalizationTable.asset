@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb5dbac25d3b4114485a8a45771769ec, type: 3}
+  m_Name: SampleLocalizationTable
+  m_EditorClassIdentifier: NodeEditor.Runtime::NodeEditor.LocalizationTable
+  entries:
+  - key: task.sample.intro.title
+    language: 1
+    text: "\u6536\u96C6\u6837\u672C"
+  - key: task.sample.intro.summary
+    language: 1
+    text: "\u5B8C\u6210\u4E00\u4E2A\u7531\u4EFB\u52A1\u6B65\u9AA4\u56FE\u9A71\u52A8\u7684\u793A\u4F8B\u76EE\u6807\u3002"
+  - key: task.sample.report.title
+    language: 1
+    text: "\u63D0\u4EA4\u62A5\u544A"
+  - key: task.sample.report.summary
+    language: 1
+    text: "\u5728\u524D\u7F6E\u4EFB\u52A1\u5B8C\u6210\u540E\u89E3\u9501\u7684\u793A\u4F8B\u540E\u7EED\u4EFB\u52A1\u3002"
+  - key: task.sample.scout.title
+    language: 1
+    text: "\u4FA6\u5BDF\u8DEF\u7EBF"
+  - key: task.sample.scout.summary
+    language: 1
+    text: "\u4E0D\u9700\u8981\u6B65\u9AA4\u56FE\u7684\u5373\u65F6\u524D\u7F6E\u4EFB\u52A1\uFF0C\u7528\u6765\u6F14\u793A\u5E76\u884C\u524D\u7F6E\u5206\u652F\u3002"

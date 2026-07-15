@@ -1,0 +1,12 @@
+{
+  "name": "NodeEditor.Editor",
+  "rootNamespace": "NodeEditor.EditorUI",
+  "references": [
+    "NodeEditor.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

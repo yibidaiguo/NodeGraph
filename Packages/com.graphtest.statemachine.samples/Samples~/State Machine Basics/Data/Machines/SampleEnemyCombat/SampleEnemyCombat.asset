@@ -1,0 +1,178 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ae3b4aa457beee44804627476073116, type: 3}
+  m_Name: SampleEnemyCombat
+  m_EditorClassIdentifier: NodeEditor.Runtime::NodeEditor.NodeGraphAsset
+  module: statemachine
+  group: SampleEnemy2D
+  graphType: 0
+  instances:
+  - instanceId: e287f348-bf5a-465a-a8dc-9d5a56f7e841
+    definitionId: statemachine.Entry
+    position: {x: 0, y: 0}
+    displayName: 
+    note: 
+    pinned: 1
+    connections:
+    - fromPort: out
+      toInstanceId: 3fb14d0c-7c5e-491a-b31f-2aef18411360
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: 3fb14d0c-7c5e-491a-b31f-2aef18411360
+    definitionId: statemachine.State
+    position: {x: 0, y: 180}
+    displayName: "\u8FFD\u51FB"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: transitions
+      toInstanceId: 9abc959c-3034-4c6b-b9a3-e6592d88e752
+      toPort: in
+    - fromPort: transitions
+      toInstanceId: b64e8675-b189-4e2e-a451-1a5455e714c8
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: onEnter
+      value:
+        rid: 2619798910993433431
+  - instanceId: 4e962527-9c4b-4b3a-931e-b452e2db8134
+    definitionId: statemachine.State
+    position: {x: -340, y: 460}
+    displayName: "\u653B\u51FB"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: transitions
+      toInstanceId: 519f7b32-c70e-485c-8ff2-3d3f13f1e342
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: onEnter
+      value:
+        rid: 2619798910993433432
+  - instanceId: a61846a8-1ff9-4e2a-b4a9-6442233594b7
+    definitionId: statemachine.Exit
+    position: {x: 340, y: 620}
+    displayName: 
+    note: 
+    pinned: 0
+    connections: []
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: 9abc959c-3034-4c6b-b9a3-e6592d88e752
+    definitionId: statemachine.Transition
+    position: {x: -340, y: 320}
+    displayName: "\u8D34\u8EAB"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: 4e962527-9c4b-4b3a-931e-b452e2db8134
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433433
+  - instanceId: 519f7b32-c70e-485c-8ff2-3d3f13f1e342
+    definitionId: statemachine.Transition
+    position: {x: -150, y: 320}
+    displayName: "\u62C9\u5F00"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: 3fb14d0c-7c5e-491a-b31f-2aef18411360
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433434
+  - instanceId: b64e8675-b189-4e2e-a451-1a5455e714c8
+    definitionId: statemachine.Transition
+    position: {x: 340, y: 350}
+    displayName: "\u8131\u6218 \u2192 \u51FA\u53E3"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: a61846a8-1ff9-4e2a-b4a9-6442233594b7
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433435
+  entryInstanceIds:
+  - e287f348-bf5a-465a-a8dc-9d5a56f7e841
+  references:
+    version: 2
+    RefIds:
+    - rid: 2619798910993433431
+      type: {class: SequenceAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        items:
+        - rid: 2619798910993433436
+        - rid: 2619798910993433437
+    - rid: 2619798910993433432
+      type: {class: SequenceAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        items:
+        - rid: 2619798910993433438
+        - rid: 2619798910993433439
+    - rid: 2619798910993433433
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: playerDistance
+        op: 3
+        value: 1.5
+    - rid: 2619798910993433434
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: playerDistance
+        op: 2
+        value: 1.5
+    - rid: 2619798910993433435
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: playerDistance
+        op: 2
+        value: 12
+    - rid: 2619798910993433436
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveSpeed
+        value: 3.5
+    - rid: 2619798910993433437
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: chasePlayer
+        value: true
+    - rid: 2619798910993433438
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveSpeed
+        value: 0
+    - rid: 2619798910993433439
+      type: {class: FireMachineEventAction, ns: StateMachine, asm: StateMachine.Runtime}
+      data:
+        eventName: enemy.attack

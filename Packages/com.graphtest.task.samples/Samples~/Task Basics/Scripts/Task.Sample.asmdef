@@ -1,0 +1,11 @@
+{
+    "name": "Task.Sample",
+    "rootNamespace": "Task.Sample",
+    "references": [
+        "Task.Runtime",
+        "NodeEditor.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "autoReferenced": true
+}

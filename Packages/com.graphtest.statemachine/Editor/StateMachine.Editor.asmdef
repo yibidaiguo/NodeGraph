@@ -1,0 +1,14 @@
+{
+  "name": "StateMachine.Editor",
+  "rootNamespace": "StateMachine.EditorUI",
+  "references": [
+    "NodeEditor.Runtime",
+    "NodeEditor.Editor",
+    "StateMachine.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

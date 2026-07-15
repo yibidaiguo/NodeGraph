@@ -1,0 +1,11 @@
+{
+    "name": "Dialogue.Sample",
+    "rootNamespace": "Dialogue.Sample",
+    "references": [
+        "Dialogue.Runtime",
+        "NodeEditor.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "autoReferenced": true
+}

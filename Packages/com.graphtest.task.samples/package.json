@@ -1,0 +1,23 @@
+{
+  "name": "com.graphtest.task.samples",
+  "version": "0.0.1",
+  "displayName": "NodeGraph Task Samples",
+  "description": "Optional sample content for NodeGraph Task.",
+  "unity": "6000.0",
+  "dependencies": {
+    "com.graphtest.task": "0.0.1",
+    "com.unity.modules.imgui": "1.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Task Basics",
+      "description": "A playable task graph and UI example.",
+      "path": "Samples~/Task Basics"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yibidaiguo/NodeGraph.git",
+    "revision": "v0.0.1"
+  }
+}

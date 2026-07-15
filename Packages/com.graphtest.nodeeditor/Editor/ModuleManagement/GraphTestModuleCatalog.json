@@ -1,0 +1,49 @@
+{
+  "packages": [
+    {
+      "id": "com.graphtest.nodeeditor",
+      "path": "Packages/com.graphtest.nodeeditor",
+      "moduleType": "framework",
+      "requiredPackageIds": []
+    },
+    {
+      "id": "com.graphtest.dialogue",
+      "path": "Packages/com.graphtest.dialogue",
+      "moduleType": "domain",
+      "requiredPackageIds": ["com.graphtest.nodeeditor"]
+    },
+    {
+      "id": "com.graphtest.task",
+      "path": "Packages/com.graphtest.task",
+      "moduleType": "domain",
+      "requiredPackageIds": ["com.graphtest.nodeeditor"]
+    },
+    {
+      "id": "com.graphtest.statemachine",
+      "path": "Packages/com.graphtest.statemachine",
+      "moduleType": "domain",
+      "requiredPackageIds": ["com.graphtest.nodeeditor"]
+    },
+    {
+      "id": "com.graphtest.dialogue.samples",
+      "path": "Packages/com.graphtest.dialogue.samples",
+      "moduleType": "sample",
+      "requiredPackageIds": ["com.graphtest.dialogue"],
+      "sampleFor": "com.graphtest.dialogue"
+    },
+    {
+      "id": "com.graphtest.task.samples",
+      "path": "Packages/com.graphtest.task.samples",
+      "moduleType": "sample",
+      "requiredPackageIds": ["com.graphtest.task"],
+      "sampleFor": "com.graphtest.task"
+    },
+    {
+      "id": "com.graphtest.statemachine.samples",
+      "path": "Packages/com.graphtest.statemachine.samples",
+      "moduleType": "sample",
+      "requiredPackageIds": ["com.graphtest.statemachine"],
+      "sampleFor": "com.graphtest.statemachine"
+    }
+  ]
+}

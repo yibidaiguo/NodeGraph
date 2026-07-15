@@ -1,0 +1,11 @@
+{
+    "name": "StateMachine.Sample",
+    "rootNamespace": "StateMachine.Sample",
+    "references": [
+        "StateMachine.Runtime",
+        "NodeEditor.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "autoReferenced": true
+}

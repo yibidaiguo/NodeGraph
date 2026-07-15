@@ -1,0 +1,10 @@
+{
+  "name": "Task.Runtime",
+  "rootNamespace": "TaskEditor",
+  "references": [
+    "NodeEditor.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

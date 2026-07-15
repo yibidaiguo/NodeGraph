@@ -1,0 +1,222 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ae3b4aa457beee44804627476073116, type: 3}
+  m_Name: SampleEnemy2D
+  m_EditorClassIdentifier: NodeEditor.Runtime::NodeEditor.NodeGraphAsset
+  module: statemachine
+  group: SampleEnemy2D
+  graphType: 0
+  instances:
+  - instanceId: 5b9d4beb-1d5b-4d81-8dce-f40e73ca1207
+    definitionId: statemachine.Entry
+    position: {x: 0, y: 0}
+    displayName: 
+    note: 
+    pinned: 1
+    connections:
+    - fromPort: out
+      toInstanceId: ff58e8bd-6890-4a48-ad4b-b901f55cdda2
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: ff58e8bd-6890-4a48-ad4b-b901f55cdda2
+    definitionId: statemachine.State
+    position: {x: 0, y: 153}
+    displayName: "\u5DE1\u903B"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: transitions
+      toInstanceId: 03182c9b-fbbe-4f19-858a-f798196d45ad
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: onEnter
+      value:
+        rid: 2619798910993433417
+  - instanceId: cdd35b49-8e5d-47a3-912b-fdb725aea055
+    definitionId: statemachine.SubMachine
+    position: {x: 0, y: 514}
+    displayName: "\u6218\u6597"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: transitions
+      toInstanceId: 864913d8-a890-49da-b9c5-af8a54eea66f
+      toPort: in
+    parameterOverrides: []
+    objectOverrides:
+    - paramName: graph
+      value: {fileID: 11400000, guid: cc70c67ebd4bf984684a861be501619f, type: 2}
+    unitOverrides:
+    - paramName: onEnter
+      value:
+        rid: 2619798910993433418
+  - instanceId: 12e94f35-1ca7-4569-b1d9-6a21446d31b0
+    definitionId: statemachine.AnyState
+    position: {x: 460, y: 60}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: transitions
+      toInstanceId: 5cf69101-b730-421d-bd9e-e84217e50366
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: 5af6a8f0-f5cf-4aab-9617-abddbe950004
+    definitionId: statemachine.State
+    position: {x: 460, y: 380}
+    displayName: "\u7729\u6655"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: transitions
+      toInstanceId: 6613fcd4-270b-4e41-9ac2-1bf7c6189950
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: onEnter
+      value:
+        rid: 2619798910993433419
+  - instanceId: 03182c9b-fbbe-4f19-858a-f798196d45ad
+    definitionId: statemachine.Transition
+    position: {x: 13, y: 354}
+    displayName: "\u9047\u654C"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: cdd35b49-8e5d-47a3-912b-fdb725aea055
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433420
+  - instanceId: 864913d8-a890-49da-b9c5-af8a54eea66f
+    definitionId: statemachine.Transition
+    position: {x: -286, y: 354}
+    displayName: "\u8131\u6218"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: ff58e8bd-6890-4a48-ad4b-b901f55cdda2
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433421
+  - instanceId: 5cf69101-b730-421d-bd9e-e84217e50366
+    definitionId: statemachine.Transition
+    position: {x: 460, y: 220}
+    displayName: "\u88AB\u7729\u6655"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: 5af6a8f0-f5cf-4aab-9617-abddbe950004
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433422
+  - instanceId: 6613fcd4-270b-4e41-9ac2-1bf7c6189950
+    definitionId: statemachine.Transition
+    position: {x: 300, y: 560}
+    displayName: "\u7729\u6655\u6062\u590D"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: ff58e8bd-6890-4a48-ad4b-b901f55cdda2
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433423
+  entryInstanceIds:
+  - 5b9d4beb-1d5b-4d81-8dce-f40e73ca1207
+  references:
+    version: 2
+    RefIds:
+    - rid: 2619798910993433417
+      type: {class: SequenceAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        items:
+        - rid: 2619798910993433424
+        - rid: 2619798910993433425
+    - rid: 2619798910993433418
+      type: {class: FireMachineEventAction, ns: StateMachine, asm: StateMachine.Runtime}
+      data:
+        eventName: enemy.combat
+    - rid: 2619798910993433419
+      type: {class: SequenceAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        items:
+        - rid: 2619798910993433426
+        - rid: 2619798910993433427
+    - rid: 2619798910993433420
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: playerDistance
+        op: 3
+        value: 8
+    - rid: 2619798910993433421
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: playerDistance
+        op: 2
+        value: 12
+    - rid: 2619798910993433422
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: stunned
+        op: 0
+        value: true
+    - rid: 2619798910993433423
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: stunned
+        op: 0
+        value: false
+    - rid: 2619798910993433424
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveSpeed
+        value: 1.5
+    - rid: 2619798910993433425
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: chasePlayer
+        value: false
+    - rid: 2619798910993433426
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveSpeed
+        value: 0
+    - rid: 2619798910993433427
+      type: {class: FireMachineEventAction, ns: StateMachine, asm: StateMachine.Runtime}
+      data:
+        eventName: enemy.stunned

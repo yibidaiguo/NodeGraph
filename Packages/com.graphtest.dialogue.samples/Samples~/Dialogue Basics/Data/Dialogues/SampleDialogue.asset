@@ -1,0 +1,231 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ae3b4aa457beee44804627476073116, type: 3}
+  m_Name: SampleDialogue
+  m_EditorClassIdentifier: NodeEditor.Runtime::NodeEditor.NodeGraphAsset
+  module: dialogue
+  group: SampleDialogue
+  graphType: 0
+  instances:
+  - instanceId: 023bc008-7e82-4428-b5c1-411fd0635551
+    definitionId: dialogue.Start
+    position: {x: 0, y: 0}
+    displayName: 
+    note: 
+    pinned: 1
+    connections:
+    - fromPort: next
+      toInstanceId: 111158f8-eda2-4c0a-aa8e-c5238c74c588
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: 111158f8-eda2-4c0a-aa8e-c5238c74c588
+    definitionId: dialogue.Line
+    position: {x: 0, y: 119}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: 3181c5c4-dba3-4550-ad54-5e5c442ada42
+      toPort: in
+    parameterOverrides:
+    - paramName: lineKey
+      valueJson: sample.greeting
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: 3181c5c4-dba3-4550-ad54-5e5c442ada42
+    definitionId: dialogue.Choice
+    position: {x: 0, y: 271}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: options
+      toInstanceId: f09ac5ff-2014-40ad-bbb8-4f7b8aa8fead
+      toPort: in
+    - fromPort: options
+      toInstanceId: f26e615a-1c70-4d9d-8599-6a71ad5504fa
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: f09ac5ff-2014-40ad-bbb8-4f7b8aa8fead
+    definitionId: dialogue.Option
+    position: {x: -217, y: 366}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: 1695af2f-e4ec-4de0-98fe-92986ea0ae95
+      toPort: in
+    parameterOverrides:
+    - paramName: optionKey
+      valueJson: sample.option.friendly
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: f26e615a-1c70-4d9d-8599-6a71ad5504fa
+    definitionId: dialogue.Option
+    position: {x: 220, y: 343}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: fe2c7abb-c0df-463d-a3fb-3d130d557570
+      toPort: in
+    parameterOverrides:
+    - paramName: optionKey
+      valueJson: sample.option.gruff
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: 1695af2f-e4ec-4de0-98fe-92986ea0ae95
+    definitionId: dialogue.Action
+    position: {x: -212, y: 503}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: 1af0260c-ed7c-44f0-a404-70df32fc3082
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: actions
+      value:
+        rid: 2224449008993304623
+  - instanceId: 1af0260c-ed7c-44f0-a404-70df32fc3082
+    definitionId: dialogue.Label
+    position: {x: -217, y: 649}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: be86cc28-befe-4aee-bb3b-25c684704cb3
+      toPort: in
+    parameterOverrides:
+    - paramName: labelName
+      valueJson: reunite
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: fe2c7abb-c0df-463d-a3fb-3d130d557570
+    definitionId: dialogue.Jump
+    position: {x: 220, y: 520}
+    displayName: 
+    note: 
+    pinned: 0
+    connections: []
+    parameterOverrides:
+    - paramName: targetLabel
+      valueJson: reunite
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: be86cc28-befe-4aee-bb3b-25c684704cb3
+    definitionId: dialogue.Condition
+    position: {x: 0, y: 687}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: true
+      toInstanceId: 3c865f44-a98d-4aec-aa27-99824c15a7cf
+      toPort: in
+    - fromPort: false
+      toInstanceId: 2bf466d4-af4a-47af-ad4e-45b98e40a032
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: predicate
+      value:
+        rid: 2224449008993304624
+  - instanceId: 3c865f44-a98d-4aec-aa27-99824c15a7cf
+    definitionId: dialogue.Line
+    position: {x: -119, y: 864}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: 7d3518ec-a11a-4d7e-a2ee-eea98ddaa982
+      toPort: in
+    parameterOverrides:
+    - paramName: lineKey
+      valueJson: sample.ending.trusted
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: 2bf466d4-af4a-47af-ad4e-45b98e40a032
+    definitionId: dialogue.Line
+    position: {x: 150, y: 864}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: 7d3518ec-a11a-4d7e-a2ee-eea98ddaa982
+      toPort: in
+    parameterOverrides:
+    - paramName: lineKey
+      valueJson: sample.ending.wary
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: e1268fc7-7908-4f80-8147-32d43b293ed4
+    definitionId: dialogue.End
+    position: {x: 25, y: 1173}
+    displayName: 
+    note: 
+    pinned: 1
+    connections: []
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: 7d3518ec-a11a-4d7e-a2ee-eea98ddaa982
+    definitionId: dialogue.Action
+    position: {x: 25, y: 1039}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: next
+      toInstanceId: e1268fc7-7908-4f80-8147-32d43b293ed4
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: actions
+      value:
+        rid: 688454357826666580
+  entryInstanceIds:
+  - 023bc008-7e82-4428-b5c1-411fd0635551
+  references:
+    version: 2
+    RefIds:
+    - rid: 688454357826666580
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: trustedHero
+        value: false
+    - rid: 2224449008993304623
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: trustedHero
+        value: true
+    - rid: 2224449008993304624
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: trustedHero
+        op: 0
+        value: true

@@ -1,0 +1,335 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ae3b4aa457beee44804627476073116, type: 3}
+  m_Name: SamplePlayer3D
+  m_EditorClassIdentifier: NodeEditor.Runtime::NodeEditor.NodeGraphAsset
+  module: statemachine
+  group: SamplePlayer3D
+  graphType: 0
+  instances:
+  - instanceId: b0604076-72a0-4719-a279-7431a6731dbb
+    definitionId: statemachine.Entry
+    position: {x: 0, y: 0}
+    displayName: 
+    note: 
+    pinned: 1
+    connections:
+    - fromPort: out
+      toInstanceId: 5ea85db1-f402-4350-a583-5ae2cc32617a
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: 5ea85db1-f402-4350-a583-5ae2cc32617a
+    definitionId: statemachine.State
+    position: {x: 0, y: 186}
+    displayName: "\u5F85\u673A"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: transitions
+      toInstanceId: 9cc73afe-58a6-4cba-a45c-961b8ceca9d7
+      toPort: in
+    - fromPort: transitions
+      toInstanceId: 2051cea5-92c2-43d8-b7fc-8ad1f9b27b81
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: onEnter
+      value:
+        rid: 2619798910993433375
+  - instanceId: 31ec6920-2ed7-447c-9d9e-f9238bcca3e0
+    definitionId: statemachine.State
+    position: {x: -380, y: 460}
+    displayName: "\u79FB\u52A8"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: transitions
+      toInstanceId: b233d520-3f74-48ab-8bd5-910cbcf52fde
+      toPort: in
+    - fromPort: transitions
+      toInstanceId: 2051cea5-92c2-43d8-b7fc-8ad1f9b27b81
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: onEnter
+      value:
+        rid: 2619798910993433376
+  - instanceId: 18e680c0-9b06-4943-97ea-db6bceae6484
+    definitionId: statemachine.State
+    position: {x: 380, y: 454}
+    displayName: "\u8DF3\u8DC3"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: transitions
+      toInstanceId: 195c9ef3-8e87-4c92-bbe9-1e086a2e2e0f
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: onEnter
+      value:
+        rid: 2619798910993433377
+  - instanceId: 9cc73afe-58a6-4cba-a45c-961b8ceca9d7
+    definitionId: statemachine.Transition
+    position: {x: -397, y: 320}
+    displayName: "\u5F85\u673A \u2192 \u79FB\u52A8"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: 31ec6920-2ed7-447c-9d9e-f9238bcca3e0
+      toPort: in
+    parameterOverrides:
+    - paramName: priority
+      valueJson: 1
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433378
+  - instanceId: b233d520-3f74-48ab-8bd5-910cbcf52fde
+    definitionId: statemachine.Transition
+    position: {x: -112, y: 320}
+    displayName: "\u79FB\u52A8 \u2192 \u5F85\u673A"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: 5ea85db1-f402-4350-a583-5ae2cc32617a
+      toPort: in
+    parameterOverrides:
+    - paramName: priority
+      valueJson: 1
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433379
+  - instanceId: 2051cea5-92c2-43d8-b7fc-8ad1f9b27b81
+    definitionId: statemachine.Transition
+    position: {x: 305, y: 299}
+    displayName: "\u2192 \u8DF3\u8DC3"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: 18e680c0-9b06-4943-97ea-db6bceae6484
+      toPort: in
+    parameterOverrides:
+    - paramName: priority
+      valueJson: 0
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433380
+  - instanceId: 195c9ef3-8e87-4c92-bbe9-1e086a2e2e0f
+    definitionId: statemachine.Transition
+    position: {x: 179, y: 618}
+    displayName: "\u8DF3\u8DC3 \u2192 \u5F85\u673A"
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: to
+      toInstanceId: 5ea85db1-f402-4350-a583-5ae2cc32617a
+      toPort: in
+    parameterOverrides: []
+    objectOverrides: []
+    unitOverrides:
+    - paramName: condition
+      value:
+        rid: 2619798910993433381
+  entryInstanceIds:
+  - b0604076-72a0-4719-a279-7431a6731dbb
+  references:
+    version: 2
+    RefIds:
+    - rid: 2619798910993433375
+      type: {class: SequenceAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        items:
+        - rid: 2619798910993433382
+        - rid: 2619798910993433383
+    - rid: 2619798910993433376
+      type: {class: SequenceAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        items:
+        - rid: 2619798910993433384
+        - rid: 2619798910993433385
+    - rid: 2619798910993433377
+      type: {class: SequenceAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        items:
+        - rid: 2619798910993433386
+        - rid: 2619798910993433387
+    - rid: 2619798910993433378
+      type: {class: CompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        left:
+          rid: 2619798910993433388
+        op: 2
+        right:
+          rid: 2619798910993433389
+    - rid: 2619798910993433379
+      type: {class: CompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        left:
+          rid: 2619798910993433390
+        op: 5
+        right:
+          rid: 2619798910993433391
+    - rid: 2619798910993433380
+      type: {class: AndCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        items:
+        - rid: 2619798910993433392
+        - rid: 2619798910993433393
+    - rid: 2619798910993433381
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: isGrounded
+        op: 0
+        value: true
+    - rid: 2619798910993433382
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveSpeed
+        value: 0
+    - rid: 2619798910993433383
+      type: {class: FireMachineEventAction, ns: StateMachine, asm: StateMachine.Runtime}
+      data:
+        eventName: camera.near
+    - rid: 2619798910993433384
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveSpeed
+        value: 4
+    - rid: 2619798910993433385
+      type: {class: FireMachineEventAction, ns: StateMachine, asm: StateMachine.Runtime}
+      data:
+        eventName: camera.far
+    - rid: 2619798910993433386
+      type: {class: SetVariableLiteralAction, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveSpeed
+        value: 3
+    - rid: 2619798910993433387
+      type: {class: FireMachineEventAction, ns: StateMachine, asm: StateMachine.Runtime}
+      data:
+        eventName: player.jump
+    - rid: 2619798910993433388
+      type: {class: ArithmeticProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        a:
+          rid: 2619798910993433394
+        op: 0
+        b:
+          rid: 2619798910993433395
+    - rid: 2619798910993433389
+      type: {class: ConstProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        type: 2
+        value: 0.0001
+    - rid: 2619798910993433390
+      type: {class: ArithmeticProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        a:
+          rid: 2619798910993433396
+        op: 0
+        b:
+          rid: 2619798910993433397
+    - rid: 2619798910993433391
+      type: {class: ConstProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        type: 2
+        value: 0.0001
+    - rid: 2619798910993433392
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: jumpPressed
+        op: 0
+        value: true
+    - rid: 2619798910993433393
+      type: {class: BlackboardCompareCondition, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: isGrounded
+        op: 0
+        value: true
+    - rid: 2619798910993433394
+      type: {class: ArithmeticProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        a:
+          rid: 2619798910993433398
+        op: 2
+        b:
+          rid: 2619798910993433399
+    - rid: 2619798910993433395
+      type: {class: ArithmeticProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        a:
+          rid: 2619798910993433400
+        op: 2
+        b:
+          rid: 2619798910993433401
+    - rid: 2619798910993433396
+      type: {class: ArithmeticProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        a:
+          rid: 2619798910993433402
+        op: 2
+        b:
+          rid: 2619798910993433403
+    - rid: 2619798910993433397
+      type: {class: ArithmeticProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        a:
+          rid: 2619798910993433404
+        op: 2
+        b:
+          rid: 2619798910993433405
+    - rid: 2619798910993433398
+      type: {class: BlackboardProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveX
+    - rid: 2619798910993433399
+      type: {class: BlackboardProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveX
+    - rid: 2619798910993433400
+      type: {class: BlackboardProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveZ
+    - rid: 2619798910993433401
+      type: {class: BlackboardProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveZ
+    - rid: 2619798910993433402
+      type: {class: BlackboardProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveX
+    - rid: 2619798910993433403
+      type: {class: BlackboardProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveX
+    - rid: 2619798910993433404
+      type: {class: BlackboardProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveZ
+    - rid: 2619798910993433405
+      type: {class: BlackboardProvider, ns: NodeEditor, asm: NodeEditor.Runtime}
+      data:
+        key: moveZ

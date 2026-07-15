@@ -1,0 +1,14 @@
+{
+  "name": "Dialogue.Editor",
+  "rootNamespace": "Dialogue.EditorUI",
+  "references": [
+    "NodeEditor.Runtime",
+    "NodeEditor.Editor",
+    "Dialogue.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

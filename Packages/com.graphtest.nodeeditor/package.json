@@ -1,0 +1,12 @@
+{
+  "name": "com.graphtest.nodeeditor",
+  "version": "0.0.1",
+  "displayName": "NodeGraph Node Editor",
+  "description": "Reusable graph runtime, editor framework, and NodeGraph Module Manager.",
+  "unity": "6000.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yibidaiguo/NodeGraph.git",
+    "revision": "v0.0.1"
+  }
+}

@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ae3b4aa457beee44804627476073116, type: 3}
+  m_Name: SampleTaskLine
+  m_EditorClassIdentifier: NodeEditor.Runtime::NodeEditor.NodeGraphAsset
+  module: task
+  group: SampleTaskLine
+  graphType: 3
+  instances:
+  - instanceId: task-sample-intro
+    definitionId: task.Task
+    position: {x: 7, y: -2}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: unlocks
+      toInstanceId: task-sample-gate
+      toPort: prerequisite
+    parameterOverrides:
+    - paramName: taskId
+      valueJson: sample.intro
+    - paramName: titleKey
+      valueJson: task.sample.intro.title
+    - paramName: summaryKey
+      valueJson: task.sample.intro.summary
+    - paramName: category
+      valueJson: main
+    - paramName: repeatable
+      valueJson: false
+    objectOverrides:
+    - paramName: stepGraph
+      value: {fileID: 11400000, guid: 5f4b4a39660f2064a879b927b982572c, type: 2}
+    unitOverrides: []
+  - instanceId: task-sample-gate
+    definitionId: task.Gate
+    position: {x: 280, y: -2}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: unlocks
+      toInstanceId: task-sample-report
+      toPort: prerequisite
+    parameterOverrides:
+    - paramName: mode
+      valueJson: All
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: task-sample-report
+    definitionId: task.Task
+    position: {x: 547, y: -2}
+    displayName: 
+    note: 
+    pinned: 0
+    connections: []
+    parameterOverrides:
+    - paramName: taskId
+      valueJson: sample.report
+    - paramName: titleKey
+      valueJson: task.sample.report.title
+    - paramName: summaryKey
+      valueJson: task.sample.report.summary
+    - paramName: category
+      valueJson: main
+    - paramName: repeatable
+      valueJson: false
+    objectOverrides: []
+    unitOverrides: []
+  - instanceId: task-sample-scout
+    definitionId: task.Task
+    position: {x: 7, y: 173}
+    displayName: 
+    note: 
+    pinned: 0
+    connections:
+    - fromPort: unlocks
+      toInstanceId: task-sample-gate
+      toPort: prerequisite
+    parameterOverrides:
+    - paramName: taskId
+      valueJson: sample.scout
+    - paramName: titleKey
+      valueJson: task.sample.scout.title
+    - paramName: summaryKey
+      valueJson: task.sample.scout.summary
+    - paramName: category
+      valueJson: main
+    - paramName: repeatable
+      valueJson: false
+    objectOverrides: []
+    unitOverrides: []
+  entryInstanceIds: []
+  references:
+    version: 2
+    RefIds: []

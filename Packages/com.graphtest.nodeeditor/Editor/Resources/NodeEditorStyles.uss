@@ -1,0 +1,1734 @@
+/* NodeEditorStyles.uss — Layer 5 (wire-graph editor), template level.
+   Design tokens (unity-native base + IDE 质感融合) + node/role/purity/status/validation
+   + port/group/breadcrumb/hover-bar + inspector/variable + toolbar + canvas skin.
+   Place in an Editor/Resources/ folder so Resources.Load<StyleSheet>("NodeEditorStyles") finds it.
+   All colors are var(--ne-*) tokens; no hard-coded rgb in rules (only token definitions). */
+
+/* ============================================================
+   Design tokens — :root = Unity 6 DARK defaults.
+   Light theme overrides in .unity-theme-light. Rules reference var() only.
+   ============================================================ */
+:root {
+    /* ---- Warm Greige Studio surface ladder: mocha-greige canvas, cream panels, ink text. ---- */
+    --ne-bg-canvas:        rgb(221, 216, 205);
+    --ne-bg-window:        rgb(233, 229, 221);
+    --ne-bg-panel:         rgb(245, 243, 238);
+    --ne-bg-panel-alt:     rgb(239, 236, 229);
+    --ne-bg-header:        rgb(230, 226, 218);
+    --ne-bg-toolbar:       rgb(236, 233, 226);
+    --ne-bg-node:          rgb(250, 248, 244);
+    --ne-bg-node-title:    rgb(234, 230, 220);
+    --ne-bg-node-body:     rgb(251, 249, 244);
+    --ne-bg-node-hover:    rgb(253, 251, 247);
+    --ne-bg-node-selected: rgb(250, 246, 241);
+    --ne-bg-node-port-row: rgba(63, 55, 43, 0.05);
+    --ne-bg-node-port:     rgb(245, 242, 236);
+    --ne-bg-control:       rgb(251, 249, 244);
+    --ne-bg-control-hover: rgb(254, 252, 248);
+    --ne-bg-control-focus: rgb(252, 248, 243);
+    --ne-bg-minimap:       rgba(245, 243, 238, 0.96);
+    --ne-bg-shell:         rgb(233, 229, 221);
+    --ne-bg-panel-raised:  rgb(241, 238, 231);
+    --ne-bg-row:           rgb(248, 246, 241);
+    --ne-bg-row-hover:     rgb(252, 250, 245);
+    --ne-bg-row-striped:   rgb(241, 238, 231);
+    --ne-bg-row-selected:  var(--ne-accent-soft);
+
+    /* ---- 描边 / 分隔 ---- */
+    --ne-border:           rgb(207, 201, 189);
+    --ne-border-strong:    rgb(160, 152, 138);
+    --ne-border-soft:      rgba(63, 55, 43, 0.15);
+    --ne-border-muted:     rgba(63, 55, 43, 0.09);
+    --ne-border-node:      rgba(63, 55, 43, 0.32);
+    --ne-node-highlight:   rgba(255, 255, 255, 0.85);
+    --ne-control-highlight: rgba(255, 255, 255, 0.90);
+    --ne-control-shadow:   rgba(105, 92, 72, 0.14);
+    --ne-divider:          rgb(222, 217, 207);
+    --ne-hover-border:     rgba(176, 104, 72, 0.42);
+    --ne-surface-glow:     rgba(176, 104, 72, 0.12);
+    --ne-metal-highlight:  rgba(255, 255, 255, 0.85);
+    --ne-metal-shadow:     rgba(105, 92, 72, 0.18);
+    --ne-button-bg:        rgb(247, 244, 238);
+    --ne-button-bg-hover:  rgb(253, 251, 246);
+    --ne-button-bg-active: rgb(236, 232, 224);
+    --ne-button-border:    rgba(94, 82, 64, 0.22);
+    --ne-button-border-hover: rgba(176, 104, 72, 0.55);
+    --ne-button-highlight: rgba(255, 255, 255, 0.92);
+    --ne-button-shadow:    rgba(105, 92, 72, 0.22);
+    --ne-scroll-thumb:     rgb(196, 189, 176);
+    --ne-scroll-thumb-hover: rgb(178, 170, 156);
+
+    /* ---- 文本 ---- */
+    --ne-text:             rgb(69, 64, 56);
+    --ne-text-strong:      rgb(31, 28, 23);
+    --ne-text-dim:         rgb(128, 121, 109);
+    --ne-text-on-accent:   rgb(251, 249, 244);
+    --ne-text-primary:     var(--ne-text-strong);
+    --ne-text-secondary:   var(--ne-text);
+    --ne-text-muted:       var(--ne-text-dim);
+    --ne-text-disabled:    rgba(69, 64, 56, 0.38);
+    --ne-text-warning:     var(--ne-status-running);
+    --ne-text-error:       var(--ne-status-failure);
+    --ne-text-success:     var(--ne-status-success);
+
+    /* ---- Accents / selection: muted clay terracotta plus dusty teal and quiet gold. ---- */
+    --ne-accent:           rgb(176, 104, 72);
+    --ne-accent-strong:    rgb(150, 84, 55);
+    --ne-accent-soft:      rgba(176, 104, 72, 0.13);
+    --ne-accent-cyan:      rgb(95, 141, 135);
+    --ne-accent-gold:      rgb(163, 126, 71);
+    --ne-accent-coral:     rgb(175, 48, 41);
+    --ne-focus:            rgb(162, 92, 61);
+    --ne-focus-soft:       rgba(162, 92, 61, 0.20);
+    --ne-gold-soft:        rgba(163, 126, 71, 0.14);
+    --ne-gold-border:      rgba(163, 126, 71, 0.40);
+
+    /* ---- Role colors: muted material accents for silhouettes, title lines, and glyphs. ---- */
+    --ne-role-provider:    rgb(110, 136, 163);
+    --ne-role-condition:   rgb(163, 126, 71);
+    --ne-role-action:      rgb(126, 150, 120);
+    --ne-role-control:     rgb(139, 120, 154);
+    /* 角色整轮廓强调色（缩略/minimap 仍可辨）。*/
+    --ne-role-provider-ln: rgb(110, 136, 163);
+    --ne-role-condition-ln:rgb(163, 126, 71);
+    --ne-role-action-ln:   rgb(126, 150, 120);
+    --ne-role-control-ln:  rgb(139, 120, 154);
+
+    /* ---- purity 二级提示（节点底部细带）---- */
+    --ne-purity-domain:    var(--ne-accent-gold);
+
+    /* ---- 状态 / 校验 ---- */
+    --ne-status-running:   var(--ne-accent-gold);
+    --ne-status-success:   rgb(98, 146, 112);
+    --ne-status-failure:   var(--ne-accent-coral);
+    --ne-validation-error: var(--ne-accent-coral);
+    --ne-validation-warn:  var(--ne-accent-gold);
+
+    /* ---- 网格线 ---- */
+    --ne-grid-line:        rgba(63, 55, 43, 0.08);
+    --ne-grid-thick:       rgba(63, 55, 43, 0.145);
+    --ne-transparent:      rgba(0, 0, 0, 0);
+
+    /* ---- 几何 / 节奏 ---- */
+    --ne-radius:           4px;
+    --ne-radius-node:      6px;
+    --ne-radius-control:   3px;
+    --ne-row-h:            24px;
+    --ne-toolbar-h:        28px;
+    --ne-chip-radius:      999px;
+    --ne-gap-xs:           2px;
+    --ne-gap-sm:           4px;
+    --ne-gap-md:           8px;
+    --ne-gap-lg:           12px;
+    --ne-pad-panel:        8px;
+    --ne-label-w:          110px;
+    --ne-font-sm:          11px;
+    --ne-font-md:          12px;
+}
+
+/* ---- 浅色主题覆写 ---- */
+.unity-theme-light {
+    --ne-bg-canvas:        rgb(221, 216, 205);
+    --ne-bg-window:        rgb(233, 229, 221);
+    --ne-bg-panel:         rgb(245, 243, 238);
+    --ne-bg-panel-alt:     rgb(239, 236, 229);
+    --ne-bg-header:        rgb(230, 226, 218);
+    --ne-bg-toolbar:       rgb(236, 233, 226);
+    --ne-bg-node:          rgb(250, 248, 244);
+    --ne-bg-node-title:    rgb(234, 230, 220);
+    --ne-bg-node-body:     rgb(251, 249, 244);
+    --ne-bg-node-hover:    rgb(253, 251, 247);
+    --ne-bg-node-selected: rgb(250, 246, 241);
+    --ne-bg-node-port-row: rgba(63, 55, 43, 0.05);
+    --ne-bg-node-port:     rgb(245, 242, 236);
+    --ne-bg-control:       rgb(251, 249, 244);
+    --ne-bg-control-hover: rgb(254, 252, 248);
+    --ne-bg-control-focus: rgb(252, 248, 243);
+    --ne-bg-minimap:       rgba(245, 243, 238, 0.96);
+    --ne-bg-shell:         rgb(233, 229, 221);
+    --ne-bg-panel-raised:  rgb(241, 238, 231);
+    --ne-bg-row:           rgb(248, 246, 241);
+    --ne-bg-row-hover:     rgb(252, 250, 245);
+    --ne-bg-row-striped:   rgb(241, 238, 231);
+    --ne-bg-row-selected:  var(--ne-accent-soft);
+
+    --ne-border:           rgb(207, 201, 189);
+    --ne-border-strong:    rgb(160, 152, 138);
+    --ne-border-soft:      rgba(63, 55, 43, 0.15);
+    --ne-border-muted:     rgba(63, 55, 43, 0.09);
+    --ne-border-node:      rgba(63, 55, 43, 0.32);
+    --ne-node-highlight:   rgba(255, 255, 255, 0.85);
+    --ne-control-highlight: rgba(255, 255, 255, 0.90);
+    --ne-control-shadow:   rgba(105, 92, 72, 0.14);
+    --ne-divider:          rgb(222, 217, 207);
+    --ne-hover-border:     rgba(176, 104, 72, 0.42);
+    --ne-surface-glow:     rgba(176, 104, 72, 0.12);
+    --ne-metal-highlight:  rgba(255, 255, 255, 0.85);
+    --ne-metal-shadow:     rgba(105, 92, 72, 0.18);
+    --ne-button-bg:        rgb(247, 244, 238);
+    --ne-button-bg-hover:  rgb(253, 251, 246);
+    --ne-button-bg-active: rgb(236, 232, 224);
+    --ne-button-border:    rgba(94, 82, 64, 0.22);
+    --ne-button-border-hover: rgba(176, 104, 72, 0.55);
+    --ne-button-highlight: rgba(255, 255, 255, 0.92);
+    --ne-button-shadow:    rgba(105, 92, 72, 0.22);
+    --ne-scroll-thumb:     rgb(196, 189, 176);
+    --ne-scroll-thumb-hover: rgb(178, 170, 156);
+
+    --ne-text:             rgb(69, 64, 56);
+    --ne-text-strong:      rgb(31, 28, 23);
+    --ne-text-dim:         rgb(128, 121, 109);
+    --ne-text-on-accent:   rgb(251, 249, 244);
+
+    --ne-accent:           rgb(176, 104, 72);
+    --ne-accent-strong:    rgb(150, 84, 55);
+    --ne-accent-soft:      rgba(176, 104, 72, 0.13);
+    --ne-accent-cyan:      rgb(95, 141, 135);
+    --ne-accent-gold:      rgb(163, 126, 71);
+    --ne-accent-coral:     rgb(175, 48, 41);
+    --ne-focus:            rgb(162, 92, 61);
+    --ne-focus-soft:       rgba(162, 92, 61, 0.20);
+    --ne-gold-soft:        rgba(163, 126, 71, 0.14);
+    --ne-gold-border:      rgba(163, 126, 71, 0.40);
+
+    --ne-role-provider:    rgb(110, 136, 163);
+    --ne-role-condition:   rgb(163, 126, 71);
+    --ne-role-action:      rgb(126, 150, 120);
+    --ne-role-control:     rgb(139, 120, 154);
+    --ne-role-provider-ln: rgb(110, 136, 163);
+    --ne-role-condition-ln:rgb(163, 126, 71);
+    --ne-role-action-ln:   rgb(126, 150, 120);
+    --ne-role-control-ln:  rgb(139, 120, 154);
+
+    --ne-purity-domain:    var(--ne-accent-gold);
+    --ne-status-running:   var(--ne-accent-gold);
+    --ne-status-success:   rgb(98, 146, 112);
+    --ne-status-failure:   var(--ne-accent-coral);
+    --ne-validation-error: var(--ne-accent-coral);
+    --ne-validation-warn:  var(--ne-accent-gold);
+
+    --ne-grid-line:        rgba(63, 55, 43, 0.08);
+    --ne-grid-thick:       rgba(63, 55, 43, 0.145);
+    --ne-transparent:      rgba(0, 0, 0, 0);
+}
+
+/* ---- 深色主题：暖炭铜金（浓缩咖啡底 + 铜/琥珀点缀）。用户经工具栏开关切换，
+   EditorUi.BindTheme 把 ne-theme-dark 类挂到每个样式表挂载元素上（与 :root 同元素、
+   规则在文件里更靠后 → 同优先级层叠胜出）。 ---- */
+.ne-theme-dark {
+    --ne-bg-canvas:        rgb(23, 21, 19);
+    --ne-bg-window:        rgb(32, 29, 26);
+    --ne-bg-panel:         rgb(38, 35, 32);
+    --ne-bg-panel-alt:     rgb(34, 31, 28);
+    --ne-bg-header:        rgb(45, 41, 37);
+    --ne-bg-toolbar:       rgb(41, 38, 34);
+    --ne-bg-node:          rgb(40, 36, 32);
+    --ne-bg-node-title:    rgb(30, 27, 23);
+    --ne-bg-node-body:     rgb(43, 39, 35);
+    --ne-bg-node-hover:    rgb(48, 43, 38);
+    --ne-bg-node-selected: rgb(48, 42, 36);
+    --ne-bg-node-port-row: rgba(0, 0, 0, 0.18);
+    --ne-bg-node-port:     rgb(35, 32, 28);
+    --ne-bg-control:       rgb(28, 25, 22);
+    --ne-bg-control-hover: rgb(35, 31, 27);
+    --ne-bg-control-focus: rgb(33, 29, 25);
+    --ne-bg-minimap:       rgba(38, 35, 32, 0.96);
+    --ne-bg-shell:         rgb(32, 29, 26);
+    --ne-bg-panel-raised:  rgb(45, 41, 37);
+    --ne-bg-row:           rgb(43, 39, 35);
+    --ne-bg-row-hover:     rgb(50, 45, 40);
+    --ne-bg-row-striped:   rgb(36, 33, 29);
+    --ne-bg-row-selected:  var(--ne-accent-soft);
+
+    --ne-border:           rgb(18, 16, 14);
+    --ne-border-strong:    rgb(12, 11, 10);
+    --ne-border-soft:      rgba(255, 240, 220, 0.07);
+    --ne-border-muted:     rgba(255, 240, 220, 0.045);
+    --ne-border-node:      rgba(0, 0, 0, 0.66);
+    --ne-node-highlight:   rgba(255, 240, 220, 0.06);
+    --ne-control-highlight: rgba(255, 240, 220, 0.05);
+    --ne-control-shadow:   rgba(0, 0, 0, 0.45);
+    --ne-divider:          rgb(22, 20, 18);
+    --ne-hover-border:     rgba(200, 127, 74, 0.45);
+    --ne-surface-glow:     rgba(200, 127, 74, 0.13);
+    --ne-metal-highlight:  rgba(255, 240, 220, 0.09);
+    --ne-metal-shadow:     rgba(0, 0, 0, 0.55);
+    --ne-button-bg:        rgb(51, 47, 42);
+    --ne-button-bg-hover:  rgb(60, 55, 49);
+    --ne-button-bg-active: rgb(41, 37, 33);
+    --ne-button-border:    rgba(0, 0, 0, 0.55);
+    --ne-button-border-hover: rgba(216, 154, 98, 0.60);
+    --ne-button-highlight: rgba(255, 240, 220, 0.12);
+    --ne-button-shadow:    rgba(0, 0, 0, 0.60);
+    --ne-scroll-thumb:     rgb(66, 60, 53);
+    --ne-scroll-thumb-hover: rgb(80, 73, 64);
+
+    --ne-text:             rgb(216, 210, 198);
+    --ne-text-strong:      rgb(240, 234, 217);
+    --ne-text-dim:         rgb(150, 142, 130);
+    --ne-text-on-accent:   rgb(244, 238, 224);
+    --ne-text-disabled:    rgba(216, 210, 198, 0.38);
+
+    --ne-accent:           rgb(200, 127, 74);
+    --ne-accent-strong:    rgb(216, 154, 98);
+    --ne-accent-soft:      rgba(200, 127, 74, 0.16);
+    --ne-accent-cyan:      rgb(108, 158, 150);
+    --ne-accent-gold:      rgb(206, 164, 94);
+    --ne-accent-coral:     rgb(206, 84, 66);
+    --ne-focus:            rgb(216, 154, 98);
+    --ne-focus-soft:       rgba(216, 154, 98, 0.22);
+    --ne-gold-soft:        rgba(206, 164, 94, 0.15);
+    --ne-gold-border:      rgba(206, 164, 94, 0.42);
+
+    --ne-role-provider:    rgb(124, 156, 184);
+    --ne-role-condition:   rgb(196, 152, 88);
+    --ne-role-action:      rgb(140, 168, 120);
+    --ne-role-control:     rgb(164, 142, 186);
+    --ne-role-provider-ln: rgb(124, 156, 184);
+    --ne-role-condition-ln:rgb(196, 152, 88);
+    --ne-role-action-ln:   rgb(140, 168, 120);
+    --ne-role-control-ln:  rgb(164, 142, 186);
+
+    --ne-purity-domain:    var(--ne-accent-gold);
+    --ne-status-running:   var(--ne-accent-gold);
+    --ne-status-success:   rgb(126, 176, 138);
+    --ne-status-failure:   var(--ne-accent-coral);
+    --ne-validation-error: var(--ne-accent-coral);
+    --ne-validation-warn:  var(--ne-accent-gold);
+
+    --ne-grid-line:        rgba(255, 240, 220, 0.04);
+    --ne-grid-thick:       rgba(255, 240, 220, 0.075);
+    --ne-transparent:      rgba(0, 0, 0, 0);
+}
+
+/* ============================================================
+   NODE — .node-base > #node-border > #title/#contents
+   ============================================================ */
+
+/* ---- 本体：Painter2D 绘制整节点轮廓；GraphView 原生矩形 chrome 必须透明。---- */
+.node-base {
+    min-width: 150px;
+    border-width: 0px;
+    --ne-node-shape-fill: var(--ne-bg-node);
+    --ne-node-shape-outline: var(--ne-border-soft);
+    --ne-node-shape-outline-width: 1;
+}
+.node-base > #node-border {
+    background-color: var(--ne-transparent);
+    border-width: 0px;
+}
+.node-base #selection-border {
+    background-color: var(--ne-transparent);
+    border-color: var(--ne-transparent);
+    border-width: 0px;
+}
+
+/* ---- 标题条：统一石墨底，角色只走窄脊线，避免大面积彩色块 ---- */
+.node-base > #node-border > #title {
+    font-size: var(--ne-font-md);
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+    padding: 5px 12px;
+    min-height: 26px;
+    color: var(--ne-text-strong);
+    background-color: var(--ne-transparent);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-divider);
+}
+.node-base > #node-border > #contents {
+    background-color: var(--ne-transparent);
+    padding: 7px 9px;
+}
+#extra-content {
+    background-color: var(--ne-transparent);
+    padding: 3px 9px 7px 9px;
+}
+.node-role-provider #extra-content { padding-left: 22px; padding-right: 22px; }
+.node-role-condition #extra-content { padding-left: 19px; padding-right: 19px; }
+.node-role-action #extra-content { padding-left: 12px; padding-right: 22px; }
+.node-role-control #extra-content { padding-left: 14px; padding-right: 14px; }
+
+/* ---- 四种角色拥有真实且互不相同的整节点轮廓；颜色只提供冗余提示。---- */
+.node-role-provider { --ne-node-shape-outline: var(--ne-role-provider-ln); }
+.node-role-condition { --ne-node-shape-outline: var(--ne-role-condition-ln); }
+.node-role-action { --ne-node-shape-outline: var(--ne-role-action-ln); }
+.node-role-control { --ne-node-shape-outline: var(--ne-role-control-ln); }
+
+/* ---- hover / selected：仅改 Painter2D 的同一条轮廓，不恢复矩形边框。---- */
+.node-base:hover {
+    --ne-node-shape-fill: var(--ne-bg-node-hover);
+    --ne-node-shape-outline: var(--ne-hover-border);
+}
+.node-base:checked {
+    --ne-node-shape-fill: var(--ne-bg-node-selected);
+    --ne-node-shape-outline: var(--ne-accent-strong);
+    --ne-node-shape-outline-width: 2;
+}
+
+/* ---- 角色：整节点轮廓为主，标题左侧几何 glyph + 标题强调边为辅助。---- */
+.node-role-glyph {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+.node-role-glyph-a,
+.node-role-glyph-b,
+.node-role-glyph-c {
+    position: absolute;
+}
+
+/* Provider：圆环 + 中心点。 */
+.node-role-provider .node-role-glyph-a {
+    left: 2px;
+    top: 2px;
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+    border-radius: 50%;
+    border-color: var(--ne-role-provider);
+}
+.node-role-provider .node-role-glyph-b {
+    left: 7px;
+    top: 7px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--ne-role-provider);
+}
+
+/* Condition：菱形。 */
+.node-role-condition .node-role-glyph-a {
+    left: 4px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-width: 2px;
+    border-color: var(--ne-role-condition);
+    rotate: 45deg;
+}
+
+/* Action：向右箭头（横杆 + 两条斜线）。 */
+.node-role-action .node-role-glyph-a {
+    left: 2px;
+    top: 8px;
+    width: 13px;
+    height: 2px;
+    background-color: var(--ne-role-action);
+}
+.node-role-action .node-role-glyph-b {
+    left: 10px;
+    top: 5px;
+    width: 7px;
+    height: 2px;
+    background-color: var(--ne-role-action);
+    rotate: 45deg;
+}
+.node-role-action .node-role-glyph-c {
+    left: 10px;
+    top: 11px;
+    width: 7px;
+    height: 2px;
+    background-color: var(--ne-role-action);
+    rotate: -45deg;
+}
+
+/* Control：Y 形分叉。 */
+.node-role-control .node-role-glyph-a {
+    left: 8px;
+    top: 8px;
+    width: 2px;
+    height: 9px;
+    background-color: var(--ne-role-control);
+}
+.node-role-control .node-role-glyph-b {
+    left: 3px;
+    top: 5px;
+    width: 8px;
+    height: 2px;
+    background-color: var(--ne-role-control);
+    rotate: 45deg;
+}
+.node-role-control .node-role-glyph-c {
+    left: 8px;
+    top: 5px;
+    width: 8px;
+    height: 2px;
+    background-color: var(--ne-role-control);
+    rotate: -45deg;
+}
+.node-role-provider > #node-border > #title  { margin-left: 22px; margin-right: 22px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-provider); }
+.node-role-condition > #node-border > #title { margin-left: 19px; margin-right: 19px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-condition); }
+.node-role-action > #node-border > #title    { margin-left: 12px; margin-right: 22px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-action); }
+.node-role-control > #node-border > #title   { margin-left: 14px; margin-right: 14px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-control); }
+
+/* ---- purity 二级提示：节点底部细带。---- */
+.node-purity-domain > #node-border > #contents {
+    border-bottom-width: 2px;
+    border-bottom-color: var(--ne-purity-domain);
+}
+
+/* ---- 运行态（play mode）：复用角色轮廓，不换底色。---- */
+.status-running  { --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-outline-width: 2; }
+.status-success  { --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-outline-width: 2; }
+.status-failure  { --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-outline-width: 2; }
+.status-inactive { opacity: 0.45; }
+
+/* ---- 校验标记：error / warn 仍沿角色轮廓。---- */
+.validation-error { --ne-node-shape-outline: var(--ne-validation-error); --ne-node-shape-outline-width: 2; }
+.validation-warn { --ne-node-shape-outline: var(--ne-validation-warn); --ne-node-shape-outline-width: 2; }
+
+/* ---- 端口（垂直方向：上下端口）---- */
+.port {
+    height: 20px;
+    font-size: var(--ne-font-sm);
+    margin: 2px 3px;
+    padding: 0 6px;
+    border-radius: var(--ne-radius-control);
+    background-color: var(--ne-bg-node-port);
+    border-width: 1px;
+    border-color: var(--ne-border-muted);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+}
+.port #type { color: var(--ne-text); }
+.port:hover {
+    background-color: var(--ne-bg-row-hover);
+    border-color: var(--ne-hover-border);
+}
+.port:hover > #connector { border-color: var(--ne-accent); }
+
+/* ---- 端口容量区分：单连线(只能一条) vs 多连线(可多条) ----
+   容量由 PortView.Create 依 arity 推导并挂类（ne-port-single / ne-port-multi）。
+   形状在此用 USS 控制：多连线 = 方形连接点（border-radius 1 + 粗描边），单连线 = 圆形连接点。
+   颜色不能用 USS——Unity 的 Port 在 C# 里用 portColor 直接写连接点 border-color，会盖过 USS，
+   故颜色在 PortView.Create 里设 portColor（多=强调蓝、单=中性灰）。
+   选择器叠上 .port 提高优先级（2 类 + 1 id），压过 GraphView 内置 .port #connector（1 类 + 1 id）的形状默认。 */
+.port.ne-port-multi > #connector {
+    border-radius: 8px;
+    border-width: 2px;
+}
+.port.ne-port-multi > #connector > #cap {
+    border-radius: 8px;
+}
+.port.ne-port-single > #connector {
+    border-radius: 8px;
+}
+.port.ne-port-single > #connector > #cap {
+    border-radius: 8px;
+}
+
+/* ---- 连线（Edge 读这几个自定义属性）---- */
+.edge {
+    --edge-width: 2;
+    --edge-color: rgb(151, 143, 129);
+    --selected-edge-color: var(--ne-accent);
+    --ghost-edge-color: var(--ne-accent-soft);
+}
+.edge:hover { --edge-color: var(--ne-accent-strong); }
+
+/* ---- group / hover-bar / breadcrumb（现有类名）---- */
+.node-group {
+    background-color: var(--ne-bg-panel-alt);
+    border-radius: var(--ne-radius);
+    border-width: 1px;
+    border-color: var(--ne-border-muted);
+}
+.hover-bar {
+    flex-direction: row;
+    background-color: var(--ne-bg-panel-raised);
+    border-radius: var(--ne-radius);
+    border-width: 1px;
+    border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-metal-highlight);
+    border-bottom-color: var(--ne-metal-shadow);
+    padding: 2px;
+}
+.hover-bar Button {
+    min-width: 24px;
+    min-height: 22px;
+    margin: 0 1px;
+    padding: 0 6px;
+    background-color: var(--ne-button-bg);
+    border-width: 1px;
+    border-color: var(--ne-button-border);
+    border-top-color: var(--ne-button-highlight);
+    border-bottom-color: var(--ne-button-shadow);
+    border-radius: 5px;
+    color: var(--ne-text-secondary);
+}
+.hover-bar Button:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); color: var(--ne-text-strong); }
+.hover-bar Button:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+/* 面包屑 = 扁平路径条（导航 chrome，非按钮）：crumb 平贴条上，「›」分隔，
+   当前（末位）crumb 提成浅底 chip。按钮质感只留给真正的命令按钮。 */
+.breadcrumb {
+    flex-direction: row;
+    align-items: center;
+    height: 26px;
+    padding: 0 6px;
+    background-color: var(--ne-bg-toolbar);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-border);
+}
+.breadcrumb-crumb {
+    min-height: 20px;
+    margin: 0;
+    padding: 1px 8px;
+    font-size: var(--ne-font-sm);
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: var(--ne-radius-control);
+    color: var(--ne-text-dim);
+    -unity-text-align: middle-center;
+}
+.breadcrumb-crumb:hover { color: var(--ne-text-strong); background-color: var(--ne-bg-row-hover); }
+.breadcrumb-crumb:active { background-color: var(--ne-bg-panel-alt); }
+.breadcrumb-sep {
+    margin: 0 1px;
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-dim);
+    -unity-text-align: middle-center;
+}
+.breadcrumb-crumb--current {
+    background-color: var(--ne-bg-panel);
+    border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-control-highlight);
+    color: var(--ne-text-strong);
+    -unity-font-style: bold;
+}
+
+/* ============================================================
+   CANVAS — GridBackground / GraphView / MiniMap
+   ============================================================ */
+GridBackground {
+    --grid-background-color: var(--ne-bg-canvas);
+    --line-color: var(--ne-grid-line);
+    --thick-line-color: var(--ne-grid-thick);
+    --spacing: 18;
+}
+GraphView { background-color: var(--ne-bg-canvas); }
+MiniMap {
+    background-color: var(--ne-bg-minimap);
+    border-color: var(--ne-border-soft);
+    border-width: 1px;
+    border-top-color: var(--ne-metal-highlight);
+    border-bottom-color: var(--ne-metal-shadow);
+    border-radius: var(--ne-radius);
+}
+MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
+
+/* ============================================================
+   INSPECTOR / VARIABLE PANES
+   ============================================================ */
+.inspector-root  {
+    min-width: 280px;
+    background-color: var(--ne-bg-panel);
+    border-right-width: 1px;
+    border-right-color: var(--ne-border);
+    flex-grow: 1;
+}
+.variable-root   {
+    min-width: 200px;
+    background-color: var(--ne-bg-panel);
+    border-left-width: 1px;
+    border-left-color: var(--ne-border);
+    flex-grow: 1;
+}
+.inspector-header {
+    font-size: var(--ne-font-md); -unity-font-style: bold; color: var(--ne-text-strong);
+    background-color: var(--ne-bg-header); padding: 6px 10px;
+    border-top-width: 1px; border-top-color: var(--ne-metal-highlight);
+    border-bottom-width: 1px; border-bottom-color: var(--ne-metal-shadow);
+}
+.inspector-body, .variable-list { padding: var(--ne-pad-panel); }
+.inspector-body { flex-grow: 1; min-height: 0; }
+.inspector-section {
+    background-color: var(--ne-bg-panel-raised); border-radius: var(--ne-radius);
+    border-width: 1px; border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-metal-highlight);
+    border-bottom-color: var(--ne-metal-shadow);
+    padding: 7px 9px; margin-bottom: var(--ne-gap-md); flex-shrink: 0;
+}
+/* 节标题 = 小号淡色分节抬头（商业编辑器惯例），不再靠彩色竖条抢眼。 */
+.inspector-section-title {
+    font-size: var(--ne-font-sm); -unity-font-style: bold; color: var(--ne-text-dim);
+    margin: var(--ne-gap-xs) 0 var(--ne-gap-sm) 0;
+    min-height: 18px;
+    -unity-text-align: middle-left;
+}
+.inspector-body .unity-base-field        { margin: 1px 0; min-height: var(--ne-row-h); }
+.inspector-body .unity-base-field__label {
+    min-width: var(--ne-label-w); width: var(--ne-label-w);
+    -unity-text-align: middle-left; color: var(--ne-text); font-size: var(--ne-font-sm);
+}
+.inspector-body .unity-base-field__input {
+    background-color: var(--ne-bg-control); border-radius: var(--ne-radius-control);
+    border-width: 1px; border-color: var(--ne-border);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+}
+.inspector-body .unity-base-field__input:hover { background-color: var(--ne-bg-control-hover); border-color: var(--ne-hover-border); }
+.inspector-body .unity-base-field__input:focus { background-color: var(--ne-bg-control-focus); border-color: var(--ne-focus); }
+.field-row    { flex-direction: row; align-items: center; min-height: var(--ne-row-h); margin: 1px 0; }
+.field-row .unity-slider     { flex-grow: 1; }
+.field-num    { width: 64px; margin-left: var(--ne-gap-sm); }
+.field-label  { width: var(--ne-label-w); -unity-text-align: middle-left; color: var(--ne-text); font-size: var(--ne-font-sm); }
+/* 可搜索下拉字段：外观对齐原生 PopupField——当前值左对齐撑满 + ▾ 钉在右缘。点击弹出 SearchWindow。 */
+.choice-input {
+    flex-grow: 1; flex-direction: row; align-items: center; justify-content: space-between;
+    background-color: var(--ne-bg-control); border-radius: var(--ne-radius-control);
+    border-width: 1px; border-color: var(--ne-border);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+    color: var(--ne-text); font-size: var(--ne-font-sm);
+    min-height: var(--ne-row-h); padding: 0 var(--ne-gap-sm); margin: 0;
+}
+.choice-input:hover { background-color: var(--ne-bg-control-hover); border-color: var(--ne-hover-border); }
+.choice-input:focus { background-color: var(--ne-bg-control-focus); border-color: var(--ne-focus); }
+/* 按钮内两槽：值文本撑满（超长省略号）+ ▾ 不压缩、钉右缘 */
+.choice-value {
+    flex-grow: 1; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    -unity-text-align: middle-left; color: var(--ne-text); font-size: var(--ne-font-sm);
+}
+/* 箭头观感对齐原生 PopupField 的小箭头（▾ 字形 + 正文色），全编辑器下拉一个长相 */
+.choice-caret {
+    flex-shrink: 0; margin-left: var(--ne-gap-sm);
+    -unity-text-align: middle-right; color: var(--ne-text); font-size: 12px;
+}
+/* 枚举下拉（原生 PopupField，规范 §1 EnumDropdownField）：输入区主题与可搜索下拉一致，全编辑器观感统一。
+   原生 PopupField 自带原生下拉箭头，故此处不需要 .choice-caret。 */
+.enum-dropdown .unity-base-field__input {
+    background-color: var(--ne-bg-control); border-radius: var(--ne-radius-control);
+    border-width: 1px; border-color: var(--ne-border); min-height: 24px;
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+}
+.enum-dropdown .unity-base-field__input:hover { background-color: var(--ne-bg-control-hover); border-color: var(--ne-hover-border); }
+.enum-dropdown .unity-base-field__input:focus { background-color: var(--ne-bg-control-focus); border-color: var(--ne-focus); }
+/* allowCustom 组合框：可编辑文本框（撑满、隐藏自带空标签）+ 右侧 ▾ 选择按钮 */
+.choice-text { flex-grow: 1; margin: 0; }
+.choice-text .unity-base-field__label { display: none; min-width: 0; width: 0; }
+.choice-text .unity-base-field__input {
+    background-color: var(--ne-bg-control);
+    border-width: 1px;
+    border-color: var(--ne-border);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+}
+.choice-text .unity-base-field__input:hover {
+    background-color: var(--ne-bg-control-hover);
+    border-color: var(--ne-hover-border);
+}
+.choice-text .unity-base-field__input:focus {
+    background-color: var(--ne-bg-control-focus);
+    border-color: var(--ne-focus);
+}
+.choice-arrow {
+    width: 26px; min-height: var(--ne-row-h); margin: 0 0 0 var(--ne-gap-sm);
+    background-color: var(--ne-button-bg); border-radius: 5px;
+    border-width: 1px; border-color: var(--ne-button-border);
+    border-top-color: var(--ne-button-highlight);
+    border-bottom-color: var(--ne-button-shadow);
+    color: var(--ne-text-secondary);
+    font-size: 12px;
+}
+.choice-arrow:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); color: var(--ne-text-strong); }
+.choice-arrow:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+.field-note   { font-size: var(--ne-font-sm); color: var(--ne-text-dim); -unity-font-style: italic; }
+.variable-row {
+    min-height: 24px; margin: 2px 0; border-radius: var(--ne-radius-control);
+    background-color: var(--ne-bg-row); border-width: 1px; border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+}
+.variable-row:hover { background-color: var(--ne-bg-row-hover); border-color: var(--ne-hover-border); }
+/* 变量行三列：键名（可省略号）| 值编辑器（撑满）| 作用域标签（不压缩）*/
+.variable-key {
+    -unity-text-align: middle-left; color: var(--ne-text); font-size: var(--ne-font-sm);
+    flex-grow: 0; flex-shrink: 0; flex-basis: 84px; min-width: 84px;
+    overflow: hidden; text-overflow: ellipsis;
+    padding-left: 6px;
+}
+.variable-value { flex-grow: 1; flex-shrink: 1; flex-basis: 0; min-width: 96px; margin: 0 var(--ne-gap-sm); }
+.variable-value .unity-base-field__label { display: none; }
+.variable-value .unity-base-field__input {
+    background-color: var(--ne-bg-control); border-radius: var(--ne-radius-control);
+    border-width: 1px; border-color: var(--ne-border);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+}
+.variable-value .unity-base-field__input:hover { background-color: var(--ne-bg-control-hover); border-color: var(--ne-hover-border); }
+.variable-value .unity-base-field__input:focus { background-color: var(--ne-bg-control-focus); border-color: var(--ne-focus); }
+/* Bool 只显示勾选框：撤销上面强加给"输入框"的底色/边框/悬停态,免得勾选框旁多出一个空 box */
+.variable-value .unity-toggle__input,
+.variable-value .unity-toggle__input:hover,
+.variable-value .unity-toggle__input:focus {
+    background-color: rgba(0, 0, 0, 0); border-width: 0;
+}
+.scope-tag    {
+    color: var(--ne-text-strong); font-size: var(--ne-font-sm); flex-shrink: 0;
+    background-color: var(--ne-gold-soft); border-radius: 8px; padding: 0 7px; -unity-text-align: middle-center;
+    border-width: 1px; border-color: var(--ne-gold-border);
+}
+.add-button   {
+    min-height: 24px; margin: var(--ne-pad-panel); align-self: flex-start; font-size: var(--ne-font-md);
+    background-color: var(--ne-button-bg); border-radius: 5px;
+    border-width: 1px; border-color: var(--ne-button-border);
+    border-top-color: var(--ne-button-highlight);
+    border-bottom-color: var(--ne-button-shadow);
+    color: var(--ne-text-secondary); padding: 2px 11px;
+    -unity-text-align: middle-center;
+}
+.add-button:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); color: var(--ne-text-strong); }
+.add-button:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+.add-button.is-selected {
+    background-color: var(--ne-button-bg-active);
+    border-color: var(--ne-accent);
+    border-top-color: var(--ne-button-shadow);
+    border-bottom-color: var(--ne-button-highlight);
+    color: var(--ne-text-strong);
+}
+
+/* 变量面板：列表区可滚动，min-height 给竖向分隔条留出拖拽下限 */
+.variable-root   { min-height: 80px; }
+.variable-scroll { flex-grow: 1; }
+/* 嵌入宿主（分层面板 / 数据窗口详情列）的单档变量面板：无自带标题/边框，只撑满宿主。 */
+.variable-pane   { flex-grow: 1; min-height: 60px; }
+/* 变量面板内的操作按钮（+ 变量 / + 新建黑板）整宽居中，像正式的底部主操作。 */
+.variable-root .add-button,
+.variable-pane .add-button {
+    align-self: stretch;
+    margin: 6px 8px;
+    -unity-text-align: middle-center;
+}
+
+/* ---- 分段选择器（segmented control）：变量作用域档位（全局/模块/组）等互斥切换用。
+   槽底一体、段为透明片、选中段浮起 —— 取代一排散落的独立按钮。常驻 1px 透明描边，选中只换色不换尺寸。 ---- */
+.ne-seg-bar {
+    flex-direction: row;
+    margin: 6px 8px;
+    padding: 2px;
+    background-color: var(--ne-bg-panel-alt);
+    border-width: 1px;
+    border-color: var(--ne-border-soft);
+    border-radius: var(--ne-radius);
+}
+.ne-seg-btn {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-height: 22px;
+    margin: 0;
+    padding: 1px 6px;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: var(--ne-radius-control);
+    color: var(--ne-text-dim);
+    font-size: var(--ne-font-sm);
+    -unity-text-align: middle-center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ne-seg-btn:hover { color: var(--ne-text-strong); background-color: var(--ne-bg-row-hover); }
+.ne-seg-btn.is-selected {
+    background-color: var(--ne-bg-node);
+    border-color: var(--ne-border);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+    color: var(--ne-text-strong);
+}
+
+/* ============================================================
+   GRAPH LIST PANE — 左侧"图/对话组"可滚动列表
+   ============================================================ */
+.graphlist-root {
+    min-width: 180px; min-height: 80px; flex-grow: 1;
+    background-color: var(--ne-bg-panel);
+    border-right-width: 1px;
+    border-right-color: var(--ne-border);
+}
+.graphlist-search {
+    margin: 6px 8px;
+    width: auto;
+    min-width: 0;
+    align-self: stretch;
+}
+.graphlist-search .unity-search-field-base__text-field {
+    min-width: 0;
+    flex-shrink: 1;
+}
+.graphlist-search .unity-base-field__input {
+    min-width: 0;
+    flex-shrink: 1;
+}
+/* 全部分组竖排其中，整体可滚动 */
+.graphlist-scroll { flex-grow: 1; background-color: var(--ne-bg-panel); }
+/* 模块分组：复用折叠卡片，去掉卡片自带的留白 / 底色，让分组贴合面板 */
+.graphlist-group { background-color: rgba(0, 0, 0, 0); margin: 0; padding: 0; }
+/* 分组头压成树形抬头条：浅一档底 + 细分隔线，箭头/标题同行等高。 */
+.graphlist-group .collapsible-header {
+    min-height: 24px;
+    padding: 0 4px 0 6px;
+    background-color: var(--ne-bg-panel-alt);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-border-muted);
+}
+.graphlist-group-title {
+    font-size: var(--ne-font-sm); color: var(--ne-text); -unity-font-style: bold;
+    -unity-text-align: middle-left; flex-grow: 1;
+}
+/* 一行 = 一张图。组内行整体左缩进，区分于组标题。
+   选中脊线用「常驻透明左边框」占位，选中只换色 → 行文本不因选中而位移。 */
+.graphlist-row {
+    flex-direction: row; align-items: center; height: 24px; padding-left: 20px;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 3px;
+    border-left-color: rgba(0, 0, 0, 0);
+}
+.graphlist-row:hover { background-color: var(--ne-bg-row-hover); }
+.graphlist-row.is-selected {
+    background-color: var(--ne-bg-row-selected);
+    border-left-color: var(--ne-accent);
+}
+.graphlist-row.is-selected .graphlist-row-label { color: var(--ne-text-strong); }
+.graphlist-row-label {
+    font-size: var(--ne-font-sm); color: var(--ne-text); -unity-text-align: middle-left;
+    overflow: hidden; text-overflow: ellipsis; flex-grow: 1;
+}
+.graphlist-empty {
+    font-size: var(--ne-font-sm); color: var(--ne-text-dim); -unity-font-style: italic;
+    padding: var(--ne-pad-panel); white-space: normal;
+}
+/* 底部操作栏：钉在面板底部的整宽条（浅底 + 上分隔线），按钮均分整行。 */
+.graphlist-actions {
+    flex-direction: row;
+    padding: 4px 6px;
+    background-color: var(--ne-bg-panel-alt);
+    border-top-width: 1px;
+    border-top-color: var(--ne-border);
+}
+.graphlist-actions .add-button {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin: 0 2px;
+    align-self: stretch;
+}
+
+/* ---- Data window: one card per content entry (reuses inspector-section tokens) ---- */
+.entry-card {
+    background-color: var(--ne-bg-panel-alt); border-radius: var(--ne-radius);
+    border-width: 1px; border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-metal-highlight);
+    border-bottom-color: var(--ne-border);
+    padding: 6px 8px; margin-bottom: var(--ne-gap-md);
+}
+
+/* ---- CollapsibleCard: 折叠原语（数据卡片 / 内部列表 / 分组标题共用）。
+   头部三槽 [▾箭头][标题槽][操作槽]，专用箭头切换开合，标题/字段保持可交互。 ---- */
+.collapsible-header       { flex-direction: row; align-items: center; }
+/* 折叠箭头 = 扁平树形 chevron（导航 chrome，非按钮）：透明底小箭头，hover 才显软底。 */
+.collapsible-arrow {
+    width: 18px; height: 18px; min-height: 18px; padding: 0; margin: 0 4px 0 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-radius: var(--ne-radius-control);
+    color: var(--ne-text-dim);
+    font-size: 11px;
+    -unity-text-align: middle-center;
+}
+.collapsible-arrow:hover  { color: var(--ne-text-strong); background-color: var(--ne-bg-row-hover); }
+.collapsible-arrow:active { background-color: var(--ne-bg-panel-alt); }
+.collapsible-header-mid   { flex-grow: 1; flex-direction: row; align-items: center; }
+.collapsible-header-right { flex-direction: row; align-items: center; }
+.collapsible-header-mid .unity-base-field {
+    min-height: 28px;
+    margin: 0;
+}
+.collapsible-header-mid .unity-base-field__label {
+    font-size: var(--ne-font-md);
+}
+.collapsible-header-mid .unity-base-field__input {
+    min-height: 26px;
+    font-size: var(--ne-font-md);
+}
+/* 检视面板里的折叠卡内容（如「引用数据」）：左缩进 + 细引导线，读作嵌套层级。 */
+.inspector-body .collapsible-content {
+    margin-left: 9px;
+    padding-left: 7px;
+    border-left-width: 1px;
+    border-left-color: var(--ne-divider);
+}
+
+/* ============================================================
+   TOOLBAR
+   ============================================================ */
+.ne-toolbar {
+    height: 28px; background-color: var(--ne-bg-toolbar);
+    border-top-width: 1px; border-top-color: var(--ne-metal-highlight);
+    border-bottom-width: 1px; border-bottom-color: var(--ne-metal-shadow); align-items: center;
+}
+.toolbar-iconbtn {
+    width: 28px; height: 24px; -unity-text-align: middle-center; padding: 0; margin: 0 2px;
+    background-color: var(--ne-button-bg); border-width: 1px; border-color: var(--ne-button-border);
+    border-top-color: var(--ne-button-highlight);
+    border-bottom-color: var(--ne-button-shadow);
+    border-radius: 5px;
+}
+.toolbar-iconbtn:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); }
+.toolbar-iconbtn:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+.toolbar-icon {
+    width: 16px; height: 16px; align-self: center;
+    --unity-image-tint-color: var(--ne-text-dim);
+}
+.toolbar-iconbtn:hover .toolbar-icon { --unity-image-tint-color: var(--ne-text-strong); }
+.toolbar-graphfield { min-width: 220px; margin: 0 6px; }
+.toolbar-sep        { width: 1px; height: 18px; margin: 0 7px; background-color: var(--ne-border-soft); }
+
+/* ============================================================
+   DATA EDITOR WINDOW — 通用数据编辑窗口（左列按作用域分组的源列表 ｜ 右列编辑面板）
+   ============================================================ */
+/* 窗口根底色：分栏/内容未覆盖到的区域显示窗口色而非编辑器暗底 */
+.ne-window-root {
+    background-color: var(--ne-bg-window);
+}
+/* 分栏滚动容器：面板底色/分隔线画在这里（占满整栏高度），内容元素只有内容高 */
+.data-pane-scroll {
+    background-color: var(--ne-bg-panel);
+}
+.data-pane-scroll--left {
+    border-right-width: 1px;
+    border-right-color: var(--ne-border);
+}
+.data-left  {
+    min-width: 160px;
+    background-color: var(--ne-bg-panel);
+    border-right-width: 0;
+}
+.data-right {
+    min-width: 320px;
+    background-color: var(--ne-bg-panel);
+    border-left-width: 1px;
+    border-left-color: var(--ne-border);
+    flex-grow: 1;
+    padding: 0 4px;
+}
+/* 左列 = 扁平侧边导航（sidebar nav，非按钮堆）：作用域小节抬头 + 透明行，
+   hover 软底、选中强调色软底 + 左脊线。脊线常驻透明占位，选中不位移。 */
+.data-scope-group { margin: 2px 0 8px 0; }
+.data-scope-title {
+    padding: 7px 10px 3px 10px;
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-dim);
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+}
+.data-scope-group .field-note { padding: 2px 10px; white-space: normal; }
+.data-source-row {
+    min-height: 24px;
+    margin: 1px 6px; padding: 3px 9px; font-size: var(--ne-font-sm);
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 1px; border-color: rgba(0, 0, 0, 0);
+    border-left-width: 3px; border-left-color: rgba(0, 0, 0, 0);
+    border-radius: var(--ne-radius-control);
+    color: var(--ne-text-secondary);
+    -unity-text-align: middle-left;
+}
+.data-source-row:hover { background-color: var(--ne-bg-row-hover); color: var(--ne-text-strong); }
+.data-source-row--selected {
+    background-color: var(--ne-accent-soft);
+    border-left-color: var(--ne-accent);
+    color: var(--ne-text-strong);
+}
+/* 本地化编辑面板 */
+.loc-root   { flex-grow: 1; }
+.loc-search { margin: var(--ne-gap-sm); }
+.loc-detail-row {
+    flex-direction: column;
+    align-items: stretch;
+    flex-shrink: 0;
+    min-height: 132px;
+    padding: 6px 0 2px 0;
+}
+.loc-language-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 28px;
+    margin-bottom: 6px;
+}
+.loc-language-dropdown {
+    min-width: 150px;
+    max-width: 220px;
+    margin: 0;
+}
+.loc-detail-text {
+    min-height: 104px;
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+.loc-detail-text .unity-base-field__label { display: none; }
+.loc-detail-text .unity-base-field__input {
+    min-height: 96px;
+    white-space: normal;
+}
+
+/* ============================================================
+   SHARED DATA UI
+   ============================================================ */
+/* 详情列标题：加下分隔线，把「标题 / 内容」的层级立起来。 */
+.ne-ui-header {
+    -unity-font-style: bold;
+    font-size: var(--ne-font-md);
+    padding: 2px 0 6px 0;
+    margin-bottom: var(--ne-gap-md);
+    color: var(--ne-text-strong);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-divider);
+}
+
+.ne-ui-empty {
+    white-space: normal;
+    color: var(--ne-text-dim);
+    padding: var(--ne-pad-panel);
+}
+
+.ne-ui-detail-row {
+    flex-direction: row;
+    min-height: 28px;
+    margin-bottom: 6px;
+}
+
+.ne-ui-detail-label {
+    width: 116px;
+    min-width: 116px;
+    color: var(--ne-text);
+    -unity-text-align: middle-left;
+}
+
+.ne-ui-detail-field {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    min-width: 0;
+}
+
+.ne-ui-detail-field .unity-base-field__input {
+    min-width: 0;
+}
+
+.ne-master-list {
+    flex-grow: 1;
+    min-width: 220px;
+    background-color: var(--ne-bg-panel);
+    border-right-width: 1px;
+    border-right-color: var(--ne-border);
+}
+
+.ne-master-list-search {
+    margin: 6px;
+}
+
+.ne-master-list-scroll {
+    flex-grow: 1;
+}
+
+/* 分组抬头 = 扁平小节标题（同左列导航语言），不再做浮起金属条。 */
+.ne-master-list-group {
+    min-height: 22px;
+    margin: 4px 6px 2px 6px;
+    padding: 6px 4px 2px 4px;
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-dim);
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+    background-color: rgba(0, 0, 0, 0);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-divider);
+}
+
+/* 行是 Button（继承居中对齐）——标题/预览必须显式左对齐，像列表不像按钮。 */
+.ne-master-list-row {
+    min-height: 34px;
+    padding: 5px 10px;
+    margin: 2px 6px;
+    border-radius: var(--ne-radius-control);
+    background-color: var(--ne-bg-row);
+    border-width: 1px;
+    border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+    flex-direction: column;
+    align-items: stretch;
+    -unity-text-align: middle-left;
+}
+
+.ne-master-list-row:hover {
+    background-color: var(--ne-bg-control-hover);
+    border-color: var(--ne-hover-border);
+}
+
+.ne-master-list-row.is-selected {
+    background-color: var(--ne-bg-row-selected);
+    border-color: var(--ne-accent);
+}
+
+.ne-master-list-title {
+    color: var(--ne-text-strong);
+    min-height: 18px;
+    -unity-text-align: middle-left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ne-master-list-preview {
+    color: var(--ne-text-dim);
+    font-size: var(--ne-font-sm);
+    min-height: 16px;
+    -unity-text-align: middle-left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================================
+   SHARED UI STANDARD CONTRACT
+   ============================================================ */
+.node-cue {
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-secondary);
+    -unity-font-style: normal;
+    white-space: normal;
+    background-color: var(--ne-bg-row);
+    border-left-width: 3px;
+    border-left-color: var(--ne-accent);
+    border-top-width: 1px;
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-control-shadow);
+    border-radius: var(--ne-radius-control);
+    padding: 3px 7px;
+    margin-top: 4px;
+}
+
+.ne-form-help {
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-muted);
+    -unity-font-style: italic;
+    white-space: normal;
+}
+
+.ne-form-warning {
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-warning);
+    white-space: normal;
+}
+
+.ne-form-error {
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-error);
+    white-space: normal;
+}
+
+.ne-badge {
+    min-height: 18px;
+    padding: 1px 7px;
+    border-radius: var(--ne-chip-radius);
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-primary);
+    background-color: var(--ne-bg-panel-alt);
+    border-width: 1px;
+    border-color: var(--ne-border-soft);
+    -unity-text-align: middle-center;
+}
+
+.ne-chip {
+    min-height: 18px;
+    padding: 1px 7px;
+    border-radius: var(--ne-chip-radius);
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-primary);
+    background-color: var(--ne-gold-soft);
+    border-width: 1px;
+    border-color: var(--ne-gold-border);
+    -unity-text-align: middle-center;
+}
+
+.ne-form-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 28px;
+    margin-bottom: 6px;
+}
+
+.ne-form-label {
+    width: var(--ne-label-w);
+    min-width: var(--ne-label-w);
+    color: var(--ne-text-secondary);
+    -unity-text-align: middle-left;
+}
+
+.ne-form-field {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    min-width: 0;
+}
+
+.toolbar-command {
+    min-height: 24px;
+    margin: 0 3px;
+    background-color: var(--ne-button-bg);
+    border-width: 1px;
+    border-color: var(--ne-button-border);
+    border-top-color: var(--ne-button-highlight);
+    border-bottom-color: var(--ne-button-shadow);
+    border-radius: 5px;
+    color: var(--ne-text-secondary);
+    padding-left: 8px;
+    padding-right: 8px;
+    -unity-text-align: middle-center;
+}
+
+.toolbar-command:hover {
+    background-color: var(--ne-button-bg-hover);
+    border-color: var(--ne-button-border-hover);
+    color: var(--ne-text-primary);
+}
+
+.toolbar-command:active {
+    background-color: var(--ne-button-bg-active);
+    border-top-color: var(--ne-button-shadow);
+    border-bottom-color: var(--ne-button-highlight);
+}
+
+.toolbar-command:disabled {
+    opacity: 0.48;
+    background-color: var(--ne-bg-panel-alt);
+    border-color: var(--ne-border);
+    border-top-color: var(--ne-border-soft);
+    border-bottom-color: var(--ne-border);
+    color: var(--ne-text-disabled);
+}
+
+.toolbar-textbtn {
+    min-width: 64px;
+    min-height: 24px;
+    padding-left: 11px;
+    padding-right: 11px;
+    -unity-text-align: middle-center;
+}
+
+.ne-toolbar-toggle {
+    min-height: 24px;
+    margin-left: var(--ne-gap-sm);
+    margin-right: var(--ne-gap-sm);
+    padding-left: 8px;
+    padding-right: 8px;
+    background-color: var(--ne-button-bg);
+    border-width: 1px;
+    border-color: var(--ne-button-border);
+    border-top-color: var(--ne-button-highlight);
+    border-bottom-color: var(--ne-button-shadow);
+    border-radius: 5px;
+    color: var(--ne-text-secondary);
+}
+
+.ne-toolbar-toggle:hover {
+    background-color: var(--ne-button-bg-hover);
+    border-color: var(--ne-button-border-hover);
+    color: var(--ne-text-primary);
+}
+
+.ne-toolbar-toggle:checked {
+    background-color: var(--ne-button-bg-active);
+    border-color: var(--ne-accent);
+    color: var(--ne-text-primary);
+}
+
+.toolbar-iconbtn {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* 自绘 tooltip（EditorUi.InstallTooltip）：压掉原生深色提示后的主题化浮层 */
+.ne-tooltip {
+    max-width: 340px;
+    white-space: normal;
+    background-color: var(--ne-bg-panel-raised);
+    color: var(--ne-text);
+    font-size: var(--ne-font-sm);
+    border-width: 1px;
+    border-color: var(--ne-border);
+    border-top-color: var(--ne-metal-highlight);
+    border-bottom-color: var(--ne-metal-shadow);
+    border-left-width: 3px;
+    border-left-color: var(--ne-accent-gold);
+    border-radius: var(--ne-radius-control);
+    padding: 4px 8px;
+}
+
+.node-hover-tip {
+    width: 320px;
+    flex-shrink: 0;
+    background-color: var(--ne-bg-panel-raised);
+    border-radius: var(--ne-radius);
+    border-width: 1px;
+    border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-metal-highlight);
+    border-bottom-color: var(--ne-metal-shadow);
+    border-left-width: 4px;
+    border-left-color: var(--ne-accent-gold);
+    padding: 8px 10px;
+}
+
+.node-hover-title {
+    -unity-font-style: bold;
+    color: var(--ne-text-primary);
+    white-space: normal;
+}
+
+.node-hover-desc {
+    color: var(--ne-text-secondary);
+    white-space: normal;
+    margin-bottom: 3px;
+}
+
+.node-hover-param {
+    color: var(--ne-text-muted);
+    white-space: normal;
+}
+
+/* ============================================================
+   UNIFIED VISUAL STANDARD OVERRIDES
+   ============================================================ */
+.field-row {
+    flex-direction: row;
+    align-items: center;
+    min-height: 28px;
+    margin: 3px 0;
+}
+
+/* 标签宽度与原生字段标签（.unity-base-field__label = --ne-label-w）对齐，使可搜索下拉行与
+   普通文本/开关/数字行的输入框起始 x 一致（避免可搜索下拉比别的行宽出一截）。 */
+.field-label,
+.ne-ui-detail-label {
+    width: var(--ne-label-w);
+    min-width: var(--ne-label-w);
+    color: var(--ne-text);
+    -unity-text-align: middle-left;
+}
+
+.choice-input,
+.choice-text,
+.choice-arrow {
+    min-height: 24px;
+}
+
+.choice-input,
+.choice-text,
+.ne-ui-detail-field {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    min-width: 0;
+}
+
+.data-middle {
+    min-width: 240px;
+    background-color: var(--ne-bg-panel);
+    border-left-width: 1px;
+    border-left-color: var(--ne-border);
+    border-right-width: 1px;
+    border-right-color: var(--ne-border);
+}
+
+.data-detail {
+    min-width: 320px;
+    background-color: var(--ne-bg-panel);
+    border-left-width: 1px;
+    border-left-color: var(--ne-border-soft);
+    padding: var(--ne-pad-panel);
+}
+
+.node-base {
+    border-radius: var(--ne-radius-node);
+}
+
+.node-base:checked {
+    border-color: var(--ne-accent-strong);
+}
+
+.ne-node-title {
+    min-height: 24px;
+}
+
+.ne-node-ports {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background-color: var(--ne-bg-node-port-row);
+    border-width: 1px;
+    border-color: var(--ne-border-muted);
+    border-radius: var(--ne-radius-control);
+}
+
+.string-search-popup {
+    background-color: var(--ne-bg-panel-raised);
+    border-width: 1px;
+    border-color: var(--ne-border);
+    border-top-color: var(--ne-metal-highlight);
+    border-bottom-color: var(--ne-metal-shadow);
+    padding: 6px;
+}
+
+.string-search-field {
+    margin-bottom: 5px;
+}
+
+.string-search-title {
+    min-height: 24px;
+    padding: 4px 8px;
+    margin-bottom: 5px;
+    color: var(--ne-text-strong);
+    background-color: var(--ne-bg-header);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-metal-shadow);
+    border-radius: var(--ne-radius-control);
+    -unity-font-style: bold;
+}
+
+.string-search-list {
+    flex-grow: 1;
+    margin-top: 4px;
+}
+
+.string-search-group {
+    min-height: 26px;
+    padding: 5px 8px;
+    color: var(--ne-text-dim);
+    background-color: var(--ne-bg-row-striped);
+    border-top-width: 1px;
+    border-top-color: var(--ne-control-highlight);
+    border-radius: var(--ne-radius-control);
+    -unity-font-style: bold;
+}
+
+.string-search-row {
+    min-height: 26px;
+    padding: 4px 10px;
+    margin: 1px 0;
+    color: var(--ne-text);
+    background-color: var(--ne-bg-row);
+    border-width: 1px;
+    border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+    border-radius: var(--ne-radius-control);
+    -unity-text-align: middle-left;
+}
+
+.string-search-row:hover {
+    background-color: var(--ne-bg-control-hover);
+    border-color: var(--ne-hover-border);
+}
+
+.string-search-empty {
+    padding: 8px;
+    color: var(--ne-text-dim);
+}
+
+.graph-banner {
+    min-height: 28px;
+    padding: 5px 10px;
+    background-color: var(--ne-validation-error);
+    color: var(--ne-text-on-accent);
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+    white-space: normal;
+    border-left-width: 4px;
+    border-left-color: var(--ne-accent-gold);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-border);
+}
+
+.graph-banner--issue {
+    background-color: var(--ne-validation-error);
+}
+
+/* ============================================================
+   UNIT INSPECTOR — 可组合单元槽（UnitInspector：Foldout 槽 + 字段区 + 单元列表）
+   ============================================================ */
+/* 结构原语：CollapsibleCard 根（视觉由调用方叠加 entry-card / graphlist-group 等），只管节奏。 */
+.collapsible-card { margin: 1px 0; }
+/* 单元槽 = 软卡片化的 Foldout：与 entry-card 同语言，嵌套时层级靠缩进而非更深的底色。 */
+.unit-slot {
+    margin: 3px 0;
+    padding: 2px 6px 5px 6px;
+    flex-shrink: 0;
+    background-color: var(--ne-bg-row);
+    border-radius: var(--ne-radius-control);
+    border-width: 1px;
+    border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+}
+.unit-slot > .unity-foldout__content { margin-left: 10px; }
+.unit-body { margin-top: 2px; }
+.unit-list { margin: 2px 0; }
+/* 列表行：嵌套子槽撑满 + 行尾小删除钮（命令按钮 → premium button tokens）。 */
+.unit-list-row { flex-direction: row; align-items: flex-start; margin: 1px 0; }
+.unit-list-row > .unit-slot { flex-grow: 1; }
+.unit-list-del {
+    width: 22px;
+    min-height: 22px;
+    margin: 4px 0 0 4px;
+    padding: 0;
+    background-color: var(--ne-button-bg);
+    border-width: 1px;
+    border-color: var(--ne-button-border);
+    border-top-color: var(--ne-button-highlight);
+    border-bottom-color: var(--ne-button-shadow);
+    border-radius: 5px;
+    color: var(--ne-text-secondary);
+    font-size: var(--ne-font-sm);
+    -unity-text-align: middle-center;
+}
+.unit-list-del:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); color: var(--ne-text-strong); }
+.unit-list-del:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+
+/* ============================================================
+   NATIVE CONTROL RE-SKIN — Unity 暗皮肤在浅色编辑器里的残留
+   （滚动条/勾选框/折叠箭头/下拉箭头/光标/搜索图标）统一成暖色，
+   消灭"有的黑有的白"的补丁感。仅作用于挂载本表的窗口。
+   ============================================================ */
+Label { color: var(--ne-text); }
+
+.unity-base-text-field__input {
+    color: var(--ne-text);
+    background-color: var(--ne-bg-control);
+    border-color: var(--ne-border);
+    --unity-cursor-color: var(--ne-text-strong);
+    --unity-selection-color: var(--ne-accent-soft);
+}
+
+.unity-scroller { background-color: rgba(0, 0, 0, 0); }
+.unity-scroller__low-button,
+.unity-scroller__high-button {
+    background-color: var(--ne-bg-panel-alt);
+    border-color: var(--ne-border-muted);
+    -unity-background-image-tint-color: var(--ne-text-dim);
+}
+.unity-scroller__low-button:hover,
+.unity-scroller__high-button:hover {
+    background-color: var(--ne-bg-row-hover);
+    -unity-background-image-tint-color: var(--ne-text);
+}
+.unity-scroller .unity-base-slider__tracker {
+    background-color: var(--ne-bg-panel-alt);
+    border-color: var(--ne-border-muted);
+}
+.unity-scroller .unity-base-slider__dragger {
+    background-color: var(--ne-scroll-thumb);
+    border-width: 1px;
+    border-color: var(--ne-button-border);
+    border-radius: 4px;
+}
+.unity-scroller .unity-base-slider__dragger:hover {
+    background-color: var(--ne-scroll-thumb-hover);
+}
+
+/* 勾选框：暗皮肤贴图在浅底上是黑块 → 去贴图,画成描边方块,勾选=陶土色填充。
+   只圈定放勾选框的容器,避免误伤 Foldout 箭头(其贴图规则优先级更高,自然保留)。 */
+.variable-value .unity-toggle__input > .unity-toggle__checkmark,
+.field-row .unity-toggle__input > .unity-toggle__checkmark,
+.ne-form-field .unity-toggle__input > .unity-toggle__checkmark,
+.ne-ui-detail-field .unity-toggle__input > .unity-toggle__checkmark,
+.collapsible-header-mid .unity-toggle__input > .unity-toggle__checkmark {
+    background-image: none;
+    background-color: var(--ne-bg-control);
+    border-width: 1px;
+    border-color: var(--ne-border-strong);
+    border-radius: 3px;
+}
+.variable-value .unity-toggle:checked .unity-toggle__checkmark,
+.field-row .unity-toggle:checked .unity-toggle__checkmark,
+.ne-form-field .unity-toggle:checked .unity-toggle__checkmark,
+.ne-ui-detail-field .unity-toggle:checked .unity-toggle__checkmark,
+.collapsible-header-mid .unity-toggle:checked .unity-toggle__checkmark {
+    background-color: var(--ne-accent);
+    border-color: var(--ne-accent-strong);
+}
+.unity-foldout__toggle .unity-toggle__checkmark {
+    -unity-background-image-tint-color: var(--ne-text-dim);
+}
+.unity-foldout__toggle:hover .unity-toggle__checkmark {
+    -unity-background-image-tint-color: var(--ne-text);
+}
+.unity-base-popup-field__arrow {
+    -unity-background-image-tint-color: var(--ne-text);
+}
+/* ObjectField 的拾取按钮：内建暗底 + 暗皮肤图标在浅底上是个突兀黑钮 → 透明底、图标随主题染色 */
+.unity-object-field__selector {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    -unity-background-image-tint-color: var(--ne-text-dim);
+}
+.unity-object-field__selector:hover {
+    background-color: var(--ne-bg-control-hover);
+    -unity-background-image-tint-color: var(--ne-text-strong);
+}
+.unity-object-field-display__label {
+    color: var(--ne-text);
+}
+/* ObjectField 输入区：内建暗底（检视面板里被容器规则覆盖过，裸用处如数据窗口顶栏会露黑）*/
+.unity-object-field__input {
+    background-color: var(--ne-bg-control);
+    border-color: var(--ne-border);
+    border-top-color: var(--ne-control-highlight);
+    border-bottom-color: var(--ne-control-shadow);
+}
+.unity-base-popup-field__text {
+    color: var(--ne-text);
+}
+.unity-search-field-base .unity-image {
+    --unity-image-tint-color: var(--ne-text-dim);
+}
+/* ToolbarSearchField 自带暗色皮肤挂在控件自身,类+类 提优先级覆写 */
+.unity-search-field-base.unity-toolbar-search-field {
+    background-color: var(--ne-bg-control);
+    border-color: var(--ne-border);
+    border-radius: var(--ne-radius-control);
+}
+
+/* GraphView 内建 Node.uss/Port.uss 直接挂在节点/端口元素上且用 ID 选择器,
+   浅色主题下端口区/标题文字会露出内建深色 → 以 类+ID 更高优先级压制。 */
+/* 内建选择器是 #contents > #top > #input（三层 ID），必须以 ≥3 ID + 类 的优先级压制 */
+.node-base #contents #top #input,
+.node-base #contents #top #output {
+    background-color: var(--ne-bg-node-port-row);
+}
+.node-base #contents #top #divider,
+.node-base #node-border #contents #divider {
+    background-color: rgba(0, 0, 0, 0);
+    border-color: rgba(0, 0, 0, 0);
+}
+.node-base #title-label {
+    color: var(--ne-text-strong);
+}
+.node-base .port #type {
+    color: var(--ne-text);
+}
+.node-base.node:checked #selection-border {
+    background-color: var(--ne-transparent);
+    border-color: var(--ne-transparent);
+    border-width: 0px;
+}
+
+/* ---- NodeGraph Manager 窗口（模块安装器）：标题与分节标题的排版（铁律#3：字号/字重只在 USS）。---- */
+.ne-manager-title {
+    font-size: 18px;
+    -unity-font-style: bold;
+}
+.ne-manager-heading {
+    -unity-font-style: bold;
+}
