@@ -99,13 +99,17 @@
 
 | 场景 | 用法 |
 |---|---|
-| 节点视觉 | 框架 `node-base` 全家。四类节点必须使用真实且互异的整节点轮廓：Provider=椭圆侧边胶囊，Condition=六边形/菱形侧边，Action=右箭头卡片，Control=八边形流程卡；后三种多边形的所有顶点统一走框架 rounded-polygon helper，以约 7px 且受相邻边长限制的圆滑转角替代硬尖角，不能退回统一圆角矩形或只写 USS `border-radius`。轮廓表面由同一路径叠绘上沿高光、下沿阴影、主填充与细描边，形成与共享命令按钮一致的精密压边层次；亮暗主题分别提供 token。标题左侧统一使用 `NodeIconControl` 的 24px 金属小底座和 Painter2D 语义线图标；领域节点只用 `[NodeIcon]` 注册 `NodeIconKind`，不得带位图/SVG 或自建皮肤，未注册时才按 Role 回退。原生 `Node/#node-border` 矩形背景和边框保持透明。running/success/failure 必须改变整个轮廓的填充、描边与克制辉光；selected 只叠加独立陶土色轮廓环，不得替换运行态填充；validation error/warn 仍走普通轮廓语义，不能露出矩形选择框。颜色必须来自 `var(--ne-*)`，命中区域使用同一组圆角曲线采样。领域**不得**自定义节点皮肤、不得给标题上底色 |
+| 节点视觉 | 框架 `node-base` 全家。四类节点必须使用真实且互异的整节点轮廓：Provider=椭圆侧边胶囊，Condition=六边形/菱形侧边，Action=右箭头卡片，Control=八边形流程卡；后三种多边形的所有顶点统一走框架 rounded-polygon helper，以约 7px 且受相邻边长限制的圆滑转角替代硬尖角，不能退回统一圆角矩形或只写 USS `border-radius`。轮廓表面由同一路径叠绘上沿高光、下沿阴影、主填充与细描边，形成与共享命令按钮一致的精密压边层次；亮暗主题分别提供 token。节点角色仅由轮廓形状表达，普通态使用中性描边，不得叠加角色彩色 chrome。标题行固定 34px 最小高度，左侧统一使用 `NodeIconControl` 的 24px、7px 圆角金属小底座和 Painter2D 1.6px 语义线图标；所有图标浅色主题统一陶土色，暗色主题统一暖铜色。领域节点只用 `[NodeIcon]` 注册 `NodeIconKind`，不得带位图/SVG 或自建皮肤，未注册时才按 Role 回退。原生 `Node/#node-border` 矩形背景和边框在 normal/hover/selected 全部保持透明。running/success/failure 必须改变整个轮廓的填充、上沿高光、下沿阴影、描边与克制辉光；selected 只叠加向外偏移 3px 的独立陶土色轮廓环，不得替换运行态填充；validation error/warn 走独立内轮廓，不能露出矩形选择框。颜色必须来自 `var(--ne-*)`，命中区域使用同一组圆角曲线采样。领域**不得**自定义节点皮肤、不得给标题上底色 |
 | 节点 cue（卡片下两行摘要） | 继承 `NodeCueControl`，只提供文案（两行截断由框架管）。`#extra-content` 必须保留角色轮廓的安全内边距：Provider 22/22、Condition 19/19、Action 12/22、Control 14/14（左/右）；这组值由真实 Condition/Action/Jump 与两行 cue 的四角命中验收锁定，领域不得覆写、不得用 `overflow: clip` 掩盖越界。动态高度时 cue 的完整 border-box 仍须落在 `NodeView.ContainsPoint` 的同一圆角轮廓内 |
 | 端口 | `PortView.Create` 自动挂 `ne-port-single/multi`；连接点颜色是 portColor 豁免点 |
 | 图级横幅 | `EditorUi.BannerClass(+--issue)` |
 | 节点悬浮卡 | `node-hover-tip/-title/-desc/-param` |
 | 可组合单元槽 | `UnitInspector`（`unit-slot/-body/-list/-list-row/-list-del`），扩展单元时不要自己画槽 |
 | 自绘 tooltip | 自动生效（窗口根 InstallTooltip + `ne-tooltip`），元素只管设 `.tooltip` 文本 |
+
+节点视觉轮廓的 Provider/Condition/Action/Control 是**视觉分类**，不等于底层执行 `NodeRole`。`NodeView` 必须通过已注册的 `NodeIconKind` 选择具体语义的轮廓：Dialogue/Label/Objective/State 使用胶囊，Choice/Option/Condition/Gate/Transition 使用六边形，Action/Jump/Task/Complete/Failure 使用右箭头，Entry/Terminal/SubGraph/WaitEvent/AnyState 使用八边形。未注册节点才回退到执行 Role 对应的轮廓。这条规则保证不同具体节点不会因共用执行角色而被画成同一形状。
+
+圆角与渐变修订（覆盖上表早期的“约 7px”表述）：Condition/Action/Control 轮廓统一使用 13px 目标切入半径，短边上自适应限制为相邻边长的 42%，不得露出硬尖角。节点主体必须由 `MeshGenerationContext` 绘制与轮廓同源的顶点色网格，从左上 highlight 经 55% fill 过渡到右下 shadow；半透明的普通态高光/暗边必须先与不透明 face 合成，避免节点发灰或露出画布。不得用纯色、矩形图片或可见分带代替批准设计稿的真实渐变。
 
 运行时着色表示“当前图的真实执行状态”，不是全局最后注册 runner 的历史：窗口按当前 `NodeGraphAsset` 匹配 runtime；晚开、关闭重开、play 中切图都必须在有限帧内追上。匹配 runtime 消失时立即清空状态类并继续查找。状态机的 State/SubMachine 仅活动路径用 `status-running`，退出即回 `status-inactive`；不得用 `status-success` 把所有访问过的状态永久点亮。
 

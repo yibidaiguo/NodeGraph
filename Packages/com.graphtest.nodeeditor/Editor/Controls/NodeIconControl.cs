@@ -36,7 +36,7 @@ namespace NodeEditor.EditorUI
 
             var painter = context.painter2D;
             painter.strokeColor = m_IconColor;
-            painter.lineWidth = 1.5f;
+            painter.lineWidth = 1.6f;
 
             switch (Kind)
             {

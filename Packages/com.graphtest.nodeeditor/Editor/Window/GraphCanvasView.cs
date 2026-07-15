@@ -456,6 +456,7 @@ namespace NodeEditor.EditorUI
         Color m_ShapeGlow;
         Color m_SelectionOutline;
         Color m_ValidationOutline;
+        readonly NodeRole m_VisualRole;
         float m_ShapeOutlineWidth = 1f;
 
         public NodeView(NodeInstance inst, NodeDefinition def)
@@ -466,13 +467,16 @@ namespace NodeEditor.EditorUI
 
             var roleName = def.Role.ToString();
             var roleKey = roleName.ToLowerInvariant();
+            var iconKind = NodeIconRegistry.Resolve(def.GetType(), def.Role);
+            m_VisualRole = ResolveVisualRole(iconKind, def.Role);
+            var visualRoleKey = m_VisualRole.ToString().ToLowerInvariant();
             AddToClassList("node-base");
-            AddToClassList($"node-role-{roleKey}");
+            AddToClassList($"node-role-{visualRoleKey}");
             generateVisualContent += DrawRoleSilhouette;
             RegisterCallback<CustomStyleResolvedEvent>(OnShapeStyleResolved);
             if (def.Purity == NodePurity.Domain) AddToClassList("node-purity-domain");
             titleContainer.AddToClassList("ne-node-title");
-            var icon = new NodeIconControl(NodeIconRegistry.Resolve(def.GetType(), def.Role))
+            var icon = new NodeIconControl(iconKind)
             {
                 tooltip = Localizer.UI($"ui.nodeRole.{roleKey}", roleName)
             };
@@ -535,7 +539,51 @@ namespace NodeEditor.EditorUI
         }
 
         public override bool ContainsPoint(Vector2 localPoint)
-            => ContainsRoleSilhouettePoint(Definition.Role, RoleSilhouetteBounds(contentRect), localPoint);
+            => ContainsRoleSilhouettePoint(m_VisualRole, RoleSilhouetteBounds(contentRect), localPoint);
+
+        static NodeRole ResolveVisualRole(NodeIconKind iconKind, NodeRole fallback)
+        {
+            switch (iconKind)
+            {
+                case NodeIconKind.Dialogue:
+                case NodeIconKind.Label:
+                case NodeIconKind.Objective:
+                case NodeIconKind.State:
+                    return NodeRole.Provider;
+
+                case NodeIconKind.Choice:
+                case NodeIconKind.Option:
+                case NodeIconKind.Condition:
+                case NodeIconKind.Gate:
+                case NodeIconKind.Transition:
+                    return NodeRole.Condition;
+
+                case NodeIconKind.Action:
+                case NodeIconKind.Jump:
+                case NodeIconKind.Task:
+                case NodeIconKind.Complete:
+                case NodeIconKind.Failure:
+                    return NodeRole.Action;
+
+                case NodeIconKind.Entry:
+                case NodeIconKind.Terminal:
+                case NodeIconKind.SubGraph:
+                case NodeIconKind.WaitEvent:
+                case NodeIconKind.AnyState:
+                    return NodeRole.Control;
+
+                case NodeIconKind.RoleProvider:
+                    return NodeRole.Provider;
+                case NodeIconKind.RoleCondition:
+                    return NodeRole.Condition;
+                case NodeIconKind.RoleAction:
+                    return NodeRole.Action;
+                case NodeIconKind.RoleControl:
+                    return NodeRole.Control;
+                default:
+                    return fallback;
+            }
+        }
 
         public override void OnSelected()
         {

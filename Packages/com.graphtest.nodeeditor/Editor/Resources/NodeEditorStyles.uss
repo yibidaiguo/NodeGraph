@@ -41,9 +41,13 @@
     --ne-border-muted:     rgba(63, 55, 43, 0.09);
     --ne-border-node:      rgba(63, 55, 43, 0.32);
     --ne-node-highlight:   rgba(255, 255, 255, 0.85);
-    --ne-node-shape-highlight: rgba(255, 255, 255, 0.70);
-    --ne-node-shape-shadow: rgba(92, 77, 58, 0.20);
-    --ne-node-selection-outline: rgb(150, 84, 55);
+    --ne-node-shape-highlight: rgba(255, 255, 255, 0.95);
+    --ne-node-shape-shadow: rgba(75, 52, 30, 0.20);
+    --ne-node-shape-outline-neutral: rgb(166, 154, 140);
+    --ne-node-selection-outline: rgb(182, 103, 63);
+    --ne-node-icon-bg: rgb(244, 239, 230);
+    --ne-node-icon-border: rgba(75, 55, 35, 0.20);
+    --ne-node-icon-color-theme: rgb(164, 100, 61);
     --ne-control-highlight: rgba(255, 255, 255, 0.90);
     --ne-control-shadow:   rgba(105, 92, 72, 0.14);
     --ne-divider:          rgb(222, 217, 207);
@@ -101,15 +105,21 @@
     --ne-purity-domain:    var(--ne-accent-gold);
 
     /* ---- 状态 / 校验 ---- */
-    --ne-status-running:   var(--ne-accent-gold);
-    --ne-status-success:   rgb(98, 146, 112);
-    --ne-status-failure:   var(--ne-accent-coral);
-    --ne-status-running-fill: rgb(244, 229, 194);
-    --ne-status-running-glow: rgba(163, 126, 71, 0.38);
-    --ne-status-success-fill: rgb(218, 235, 221);
-    --ne-status-success-glow: rgba(98, 146, 112, 0.32);
-    --ne-status-failure-fill: rgb(241, 218, 212);
-    --ne-status-failure-glow: rgba(175, 48, 41, 0.30);
+    --ne-status-running:   rgb(183, 128, 41);
+    --ne-status-success:   rgb(99, 144, 108);
+    --ne-status-failure:   rgb(159, 78, 72);
+    --ne-status-running-fill: rgb(239, 208, 131);
+    --ne-status-running-highlight: rgb(255, 248, 218);
+    --ne-status-running-shadow: rgb(210, 163, 74);
+    --ne-status-running-glow: rgba(215, 158, 61, 0.66);
+    --ne-status-success-fill: rgb(184, 216, 185);
+    --ne-status-success-highlight: rgb(234, 244, 233);
+    --ne-status-success-shadow: rgb(131, 178, 139);
+    --ne-status-success-glow: rgba(91, 151, 105, 0.58);
+    --ne-status-failure-fill: rgb(223, 162, 154);
+    --ne-status-failure-highlight: rgb(248, 231, 227);
+    --ne-status-failure-shadow: rgb(189, 107, 100);
+    --ne-status-failure-glow: rgba(185, 65, 57, 0.57);
     --ne-validation-error: var(--ne-accent-coral);
     --ne-validation-warn:  var(--ne-accent-gold);
 
@@ -256,8 +266,12 @@
     --ne-border-node:      rgba(0, 0, 0, 0.66);
     --ne-node-highlight:   rgba(255, 240, 220, 0.06);
     --ne-node-shape-highlight: rgba(255, 240, 220, 0.10);
-    --ne-node-shape-shadow: rgba(0, 0, 0, 0.52);
-    --ne-node-selection-outline: rgb(216, 154, 98);
+    --ne-node-shape-shadow: rgba(0, 0, 0, 0.68);
+    --ne-node-shape-outline-neutral: rgb(8, 7, 6);
+    --ne-node-selection-outline: rgb(182, 103, 63);
+    --ne-node-icon-bg: rgb(50, 44, 38);
+    --ne-node-icon-border: rgb(8, 7, 6);
+    --ne-node-icon-color-theme: rgb(213, 155, 104);
     --ne-control-highlight: rgba(255, 240, 220, 0.05);
     --ne-control-shadow:   rgba(0, 0, 0, 0.45);
     --ne-divider:          rgb(22, 20, 18);
@@ -302,15 +316,21 @@
     --ne-role-control-ln:  rgb(164, 142, 186);
 
     --ne-purity-domain:    var(--ne-accent-gold);
-    --ne-status-running:   var(--ne-accent-gold);
-    --ne-status-success:   rgb(126, 176, 138);
-    --ne-status-failure:   var(--ne-accent-coral);
-    --ne-status-running-fill: rgb(77, 64, 39);
-    --ne-status-running-glow: rgba(206, 164, 94, 0.42);
-    --ne-status-success-fill: rgb(40, 64, 47);
-    --ne-status-success-glow: rgba(126, 176, 138, 0.35);
-    --ne-status-failure-fill: rgb(72, 40, 36);
-    --ne-status-failure-glow: rgba(206, 84, 66, 0.36);
+    --ne-status-running:   rgb(226, 174, 86);
+    --ne-status-success:   rgb(129, 189, 140);
+    --ne-status-failure:   rgb(223, 119, 112);
+    --ne-status-running-fill: rgb(124, 88, 40);
+    --ne-status-running-highlight: rgb(91, 68, 37);
+    --ne-status-running-shadow: rgb(73, 49, 26);
+    --ne-status-running-glow: rgba(215, 158, 61, 0.66);
+    --ne-status-success-fill: rgb(52, 90, 62);
+    --ne-status-success-highlight: rgb(38, 62, 44);
+    --ne-status-success-shadow: rgb(32, 54, 38);
+    --ne-status-success-glow: rgba(91, 151, 105, 0.58);
+    --ne-status-failure-fill: rgb(108, 48, 45);
+    --ne-status-failure-highlight: rgb(75, 37, 34);
+    --ne-status-failure-shadow: rgb(58, 29, 27);
+    --ne-status-failure-glow: rgba(185, 65, 57, 0.57);
     --ne-validation-error: var(--ne-accent-coral);
     --ne-validation-warn:  var(--ne-accent-gold);
 
@@ -327,8 +347,9 @@
 .node-base {
     min-width: 150px;
     border-width: 0px;
+    overflow: visible;
     --ne-node-shape-fill: var(--ne-bg-node);
-    --ne-node-shape-outline: var(--ne-border-soft);
+    --ne-node-shape-outline: var(--ne-node-shape-outline-neutral);
     --ne-node-shape-outline-width: 1;
     --ne-node-shape-glow: var(--ne-transparent);
     --ne-node-validation-outline: var(--ne-transparent);
@@ -342,14 +363,24 @@
     border-color: var(--ne-transparent);
     border-width: 0px;
 }
+.node-base.node:hover > #node-border {
+    background-color: var(--ne-transparent);
+    border-color: var(--ne-transparent);
+    border-width: 0px;
+}
+.node-base.node:hover #selection-border {
+    background-color: var(--ne-transparent);
+    border-color: var(--ne-transparent);
+    border-width: 0px;
+}
 
-/* ---- 标题条：统一石墨底，角色只走窄脊线，避免大面积彩色块 ---- */
+/* ---- 标题条：保持透明，视觉类别只由整节点轮廓表达 ---- */
 .node-base > #node-border > #title {
     font-size: var(--ne-font-md);
     -unity-font-style: bold;
     -unity-text-align: middle-left;
-    padding: 2px 12px;
-    min-height: 26px;
+    padding: 5px 11px;
+    min-height: 34px;
     color: var(--ne-text-strong);
     background-color: var(--ne-transparent);
     border-bottom-width: 1px;
@@ -368,11 +399,7 @@
 .node-role-action #extra-content { padding-left: 12px; padding-right: 22px; }
 .node-role-control #extra-content { padding-left: 14px; padding-right: 14px; }
 
-/* ---- 四种角色拥有真实且互不相同的整节点轮廓；颜色只提供冗余提示。---- */
-.node-role-provider { --ne-node-shape-outline: var(--ne-role-provider-ln); }
-.node-role-condition { --ne-node-shape-outline: var(--ne-role-condition-ln); }
-.node-role-action { --ne-node-shape-outline: var(--ne-role-action-ln); }
-.node-role-control { --ne-node-shape-outline: var(--ne-role-control-ln); }
+/* ---- 角色由互不相同的整节点轮廓表达；颜色不再重复污染整节点 chrome。---- */
 
 /* ---- hover / selected：仅改 Painter2D 的同一条轮廓，不恢复矩形边框。---- */
 .node-base:hover {
@@ -392,22 +419,18 @@
     margin-right: 7px;
     flex-shrink: 0;
     border-width: 1px;
-    border-radius: 6px;
-    border-color: var(--ne-border-soft);
+    border-radius: 7px;
+    border-color: var(--ne-node-icon-border);
     border-top-color: var(--ne-node-highlight);
     border-bottom-width: 2px;
     border-bottom-color: var(--ne-control-shadow);
-    background-color: var(--ne-bg-panel-raised);
-    --ne-node-icon-color: var(--ne-role-provider-ln);
+    background-color: var(--ne-node-icon-bg);
+    --ne-node-icon-color: var(--ne-node-icon-color-theme);
 }
-.node-role-provider .node-icon  { --ne-node-icon-color: var(--ne-role-provider-ln); }
-.node-role-condition .node-icon { --ne-node-icon-color: var(--ne-role-condition-ln); }
-.node-role-action .node-icon    { --ne-node-icon-color: var(--ne-role-action-ln); }
-.node-role-control .node-icon   { --ne-node-icon-color: var(--ne-role-control-ln); }
-.node-role-provider > #node-border > #title  { margin-left: 22px; margin-right: 22px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-provider); }
-.node-role-condition > #node-border > #title { margin-left: 19px; margin-right: 19px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-condition); }
-.node-role-action > #node-border > #title    { margin-left: 12px; margin-right: 22px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-action); }
-.node-role-control > #node-border > #title   { margin-left: 14px; margin-right: 14px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-control); }
+.node-role-provider > #node-border > #title  { margin-left: 22px; margin-right: 22px; }
+.node-role-condition > #node-border > #title { margin-left: 19px; margin-right: 19px; }
+.node-role-action > #node-border > #title    { margin-left: 12px; margin-right: 22px; }
+.node-role-control > #node-border > #title   { margin-left: 14px; margin-right: 14px; }
 
 /* ---- purity 二级提示：节点底部细带。---- */
 .node-purity-domain > #node-border > #contents {
@@ -415,10 +438,10 @@
     border-bottom-color: var(--ne-purity-domain);
 }
 
-/* ---- 运行态（play mode）：复用角色轮廓，不换底色。---- */
-.status-running  { --ne-node-shape-fill: var(--ne-status-running-fill); --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-glow: var(--ne-status-running-glow); --ne-node-shape-outline-width: 2; }
-.status-success  { --ne-node-shape-fill: var(--ne-status-success-fill); --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-glow: var(--ne-status-success-glow); --ne-node-shape-outline-width: 2; }
-.status-failure  { --ne-node-shape-fill: var(--ne-status-failure-fill); --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-glow: var(--ne-status-failure-glow); --ne-node-shape-outline-width: 2; }
+/* ---- 运行态（play mode）：保持语义轮廓，换色整个节点材质。---- */
+.status-running  { --ne-node-shape-fill: var(--ne-status-running-fill); --ne-node-shape-highlight: var(--ne-status-running-highlight); --ne-node-shape-shadow: var(--ne-status-running-shadow); --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-glow: var(--ne-status-running-glow); --ne-node-shape-outline-width: 2; }
+.status-success  { --ne-node-shape-fill: var(--ne-status-success-fill); --ne-node-shape-highlight: var(--ne-status-success-highlight); --ne-node-shape-shadow: var(--ne-status-success-shadow); --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-glow: var(--ne-status-success-glow); --ne-node-shape-outline-width: 2; }
+.status-failure  { --ne-node-shape-fill: var(--ne-status-failure-fill); --ne-node-shape-highlight: var(--ne-status-failure-highlight); --ne-node-shape-shadow: var(--ne-status-failure-shadow); --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-glow: var(--ne-status-failure-glow); --ne-node-shape-outline-width: 2; }
 .node-base.status-running:hover { --ne-node-shape-fill: var(--ne-status-running-fill); --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-glow: var(--ne-status-running-glow); }
 .node-base.status-success:hover { --ne-node-shape-fill: var(--ne-status-success-fill); --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-glow: var(--ne-status-success-glow); }
 .node-base.status-failure:hover { --ne-node-shape-fill: var(--ne-status-failure-fill); --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-glow: var(--ne-status-failure-glow); }

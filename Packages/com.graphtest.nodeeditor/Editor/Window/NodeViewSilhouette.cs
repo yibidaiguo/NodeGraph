@@ -14,6 +14,7 @@ namespace NodeEditor.EditorUI
 {
     public partial class NodeView
     {
+        const float RoleCornerRadius = 13f;
 
         void DrawRoleSilhouette(MeshGenerationContext context)
         {
@@ -22,34 +23,34 @@ namespace NodeEditor.EditorUI
 
             var painter = context.painter2D;
 
-            // Two offset fills expose only a narrow top highlight and bottom shadow once
-            // the opaque face is drawn, matching the pressed-metal controls elsewhere.
+            // A small offset remains behind the face as elevation; the face itself is a
+            // true vertex-colour gradient matching the approved 145-degree material.
             DrawOffsetFill(painter, bounds, new Vector2(0f, 2f), m_ShapeShadow);
-            DrawOffsetFill(painter, bounds, new Vector2(0f, -1f), m_ShapeHighlight);
 
             if (m_ShapeGlow.a > 0f)
             {
                 painter.strokeColor = m_ShapeGlow;
                 painter.lineWidth = 7f;
-                BeginRoleSilhouettePath(painter, Definition.Role, bounds);
+                BeginRoleSilhouettePath(painter, m_VisualRole, bounds);
                 painter.Stroke();
                 painter.lineWidth = 4f;
-                BeginRoleSilhouettePath(painter, Definition.Role, bounds);
+                BeginRoleSilhouettePath(painter, m_VisualRole, bounds);
                 painter.Stroke();
             }
 
-            painter.fillColor = m_ShapeFill;
+            DrawGradientFace(context, m_VisualRole, bounds,
+                m_ShapeHighlight, m_ShapeFill, m_ShapeShadow);
+
             painter.strokeColor = m_ShapeOutline;
             painter.lineWidth = Mathf.Max(1f, m_ShapeOutlineWidth);
-            BeginRoleSilhouettePath(painter, Definition.Role, bounds);
-            painter.Fill();
+            BeginRoleSilhouettePath(painter, m_VisualRole, bounds);
             painter.Stroke();
 
             if (m_ValidationOutline.a > 0f)
             {
                 painter.strokeColor = m_ValidationOutline;
                 painter.lineWidth = 2f;
-                BeginRoleSilhouettePath(painter, Definition.Role, ValidationSilhouetteBounds(bounds));
+                BeginRoleSilhouettePath(painter, m_VisualRole, ValidationSilhouetteBounds(bounds));
                 painter.Stroke();
             }
 
@@ -57,7 +58,7 @@ namespace NodeEditor.EditorUI
             {
                 painter.strokeColor = m_SelectionOutline;
                 painter.lineWidth = 2.5f;
-                BeginRoleSilhouettePath(painter, Definition.Role, bounds);
+                BeginRoleSilhouettePath(painter, m_VisualRole, SelectionSilhouetteBounds(bounds));
                 painter.Stroke();
             }
         }
@@ -67,8 +68,58 @@ namespace NodeEditor.EditorUI
             if (color.a <= 0f) return;
             bounds.position += offset;
             painter.fillColor = color;
-            BeginRoleSilhouettePath(painter, Definition.Role, bounds);
+            BeginRoleSilhouettePath(painter, m_VisualRole, bounds);
             painter.Fill();
+        }
+
+        static void DrawGradientFace(MeshGenerationContext context, NodeRole role,
+            Rect bounds, Color top, Color middle, Color bottom)
+        {
+            var perimeter = s_RoundedSampleScratch ??= new List<Vector2>(64);
+            BuildRoleSilhouetteSamples(role, bounds, perimeter);
+            if (perimeter.Count < 3) return;
+
+            var mesh = context.Allocate(perimeter.Count + 1, perimeter.Count * 3);
+            mesh.SetNextVertex(GradientVertex(bounds.center, bounds, top, middle, bottom));
+            for (var i = 0; i < perimeter.Count; i++)
+                mesh.SetNextVertex(GradientVertex(perimeter[i], bounds, top, middle, bottom));
+
+            for (var i = 0; i < perimeter.Count; i++)
+            {
+                mesh.SetNextIndex(0);
+                mesh.SetNextIndex((ushort)(i + 1));
+                mesh.SetNextIndex((ushort)(((i + 1) % perimeter.Count) + 1));
+            }
+        }
+
+        static Vertex GradientVertex(Vector2 point, Rect bounds,
+            Color top, Color middle, Color bottom)
+        {
+            var normalizedX = Mathf.InverseLerp(bounds.xMin, bounds.xMax, point.x);
+            var normalizedY = Mathf.InverseLerp(bounds.yMin, bounds.yMax, point.y);
+            var t = 0.22f * normalizedX + 0.78f * normalizedY;
+            return new Vertex
+            {
+                position = new Vector3(point.x, point.y, Vertex.nearZ),
+                tint = GradientColorAt(top, middle, bottom, t),
+                uv = Vector2.zero
+            };
+        }
+
+        static Color GradientColorAt(Color top, Color middle, Color bottom, float t)
+        {
+            var topStop = CompositeGradientEdge(top, middle);
+            var bottomStop = CompositeGradientEdge(bottom, middle);
+            return t <= 0.55f
+                ? Color.Lerp(topStop, middle, Mathf.Clamp01(t / 0.55f))
+                : Color.Lerp(middle, bottomStop, Mathf.Clamp01((t - 0.55f) / 0.45f));
+        }
+
+        static Color CompositeGradientEdge(Color edge, Color face)
+        {
+            var color = Color.Lerp(face, edge, edge.a);
+            color.a = edge.a + face.a * (1f - edge.a);
+            return color;
         }
 
         static Rect RoleSilhouetteBounds(Rect contentBounds)
@@ -78,6 +129,10 @@ namespace NodeEditor.EditorUI
         static Rect ValidationSilhouetteBounds(Rect shapeBounds)
             => Rect.MinMaxRect(shapeBounds.xMin + 3f, shapeBounds.yMin + 3f,
                 shapeBounds.xMax - 3f, shapeBounds.yMax - 3f);
+
+        static Rect SelectionSilhouetteBounds(Rect shapeBounds)
+            => Rect.MinMaxRect(shapeBounds.xMin - 3f, shapeBounds.yMin - 3f,
+                shapeBounds.xMax + 3f, shapeBounds.yMax + 3f);
 
         static void BeginRoleSilhouettePath(Painter2D painter, NodeRole role, Rect bounds)
         {
@@ -108,7 +163,7 @@ namespace NodeEditor.EditorUI
             {
                 var vertices = s_RolePolygonScratch ??= new List<Vector2>(8);
                 BuildRolePolygon(role, bounds, vertices);
-                BeginRoundedPolygonPath(painter, vertices, 7f);
+                BeginRoundedPolygonPath(painter, vertices, RoleCornerRadius);
             }
             painter.ClosePath();
         }
@@ -156,7 +211,7 @@ namespace NodeEditor.EditorUI
         }
 
         static float RoundedCornerCut(float requested, float incomingLength, float outgoingLength)
-            => Mathf.Max(0f, Mathf.Min(requested, Mathf.Min(incomingLength, outgoingLength) * 0.25f));
+            => Mathf.Max(0f, Mathf.Min(requested, Mathf.Min(incomingLength, outgoingLength) * 0.42f));
 
         static void GetRoundedCorner(IReadOnlyList<Vector2> vertices, int index, float radius,
             out Vector2 entry, out Vector2 firstControl, out Vector2 secondControl, out Vector2 exit)
@@ -211,6 +266,64 @@ namespace NodeEditor.EditorUI
             }
         }
 
+        static void BuildRoleSilhouetteSamples(NodeRole role, Rect bounds, List<Vector2> samples)
+        {
+            if (role != NodeRole.Provider)
+            {
+                var vertices = s_RolePolygonScratch ??= new List<Vector2>(8);
+                BuildRolePolygon(role, bounds, vertices);
+                BuildRoundedPolygonSamples(vertices, RoleCornerRadius, samples);
+                return;
+            }
+
+            const int curveSteps = 8;
+            const float k = 0.55228475f;
+            var x0 = bounds.xMin;
+            var x1 = bounds.xMax;
+            var y0 = bounds.yMin;
+            var y1 = bounds.yMax;
+            var midY = bounds.center.y;
+            var radiusX = Mathf.Min(32f, bounds.width * 0.2f);
+            var radiusY = bounds.height * 0.5f;
+            var topLeft = new Vector2(x0 + radiusX, y0);
+            var topRight = new Vector2(x1 - radiusX, y0);
+            var rightMiddle = new Vector2(x1, midY);
+            var bottomRight = new Vector2(x1 - radiusX, y1);
+            var bottomLeft = new Vector2(x0 + radiusX, y1);
+            var leftMiddle = new Vector2(x0, midY);
+
+            samples.Clear();
+            samples.Add(topLeft);
+            samples.Add(topRight);
+            AppendCubicSamples(samples, topRight,
+                new Vector2(x1 - radiusX + k * radiusX, y0),
+                new Vector2(x1, midY - k * radiusY), rightMiddle, curveSteps);
+            AppendCubicSamples(samples, rightMiddle,
+                new Vector2(x1, midY + k * radiusY),
+                new Vector2(x1 - radiusX + k * radiusX, y1), bottomRight, curveSteps);
+            samples.Add(bottomLeft);
+            AppendCubicSamples(samples, bottomLeft,
+                new Vector2(x0 + radiusX - k * radiusX, y1),
+                new Vector2(x0, midY + k * radiusY), leftMiddle, curveSteps);
+            AppendCubicSamples(samples, leftMiddle,
+                new Vector2(x0, midY - k * radiusY),
+                new Vector2(x0 + radiusX - k * radiusX, y0), topLeft, curveSteps);
+        }
+
+        static void AppendCubicSamples(List<Vector2> samples, Vector2 start,
+            Vector2 firstControl, Vector2 secondControl, Vector2 end, int steps)
+        {
+            for (var step = 1; step <= steps; step++)
+            {
+                var t = step / (float)steps;
+                var oneMinusT = 1f - t;
+                samples.Add(oneMinusT * oneMinusT * oneMinusT * start
+                    + 3f * oneMinusT * oneMinusT * t * firstControl
+                    + 3f * oneMinusT * t * t * secondControl
+                    + t * t * t * end);
+            }
+        }
+
         static bool PointInPolygon(IReadOnlyList<Vector2> polygon, Vector2 point)
         {
             var inside = false;
@@ -253,7 +366,7 @@ namespace NodeEditor.EditorUI
             var vertices = s_RolePolygonScratch ??= new List<Vector2>(8);
             var samples = s_RoundedSampleScratch ??= new List<Vector2>(48);
             BuildRolePolygon(role, bounds, vertices);
-            BuildRoundedPolygonSamples(vertices, 7f, samples);
+            BuildRoundedPolygonSamples(vertices, RoleCornerRadius, samples);
             return PointInPolygon(samples, point);
         }
     }
