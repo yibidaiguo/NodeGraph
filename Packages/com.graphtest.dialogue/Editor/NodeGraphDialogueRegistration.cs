@@ -22,6 +22,15 @@ namespace Dialogue.EditorUI
 
             if (!NodeGraphModules.Registry.TryRegister(descriptor, out var error))
                 Debug.LogError(error);
+
+            NodeGraphInstallSetupCoordinator.Register(
+                ProjectAssetPaths.CreateInstallSetupDescriptor<DialogueAssetPaths>(
+                    "com.graphtest.dialogue",
+                    "Dialogue",
+                    100,
+                    "Dialogue",
+                    DialogueAssetPathsLocator.ApplyDefaults,
+                    DialogueSetup.Run));
         }
     }
 }

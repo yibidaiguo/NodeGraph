@@ -8,6 +8,10 @@
 
 独立可安装、编译、卸载的 State Machine Runtime/Editor 模块，只依赖 `com.graphtest.nodeeditor`，不依赖 Dialogue 或 Task。通过 `Tools/NodeGraph/Manager` 安装本模块，再按 §1 生成资产。生成的状态机图、黑板与 `StateMachineAssetPaths` 属于项目，默认写入 `Assets/StateMachineContent`。产品包不含场景、示例数据或示例脚本；需要演示时在 Manager 里单独安装 `com.graphtest.statemachine.samples` 并显式导入 **State Machine Basics**。
 
+其他用户首次安装 State Machine 时会自动看到路径设置窗口，可先修改节点定义、状态机组和黑板目录。只有点击 **保存并生成 / Save & Generate** 后，才会保存 `StateMachineAssetPaths` 并生成对应资产。选择 **稍后 / Later** 或关闭不会写入工程，下次重启 Unity 会再次提示。
+
+Package consumers automatically receive State Machine path setup on first install and can edit the node-definition, machine-group, and blackboard directories first. `StateMachineAssetPaths` and generated assets are written only after **Save & Generate**. **Later** or closing writes nothing and prompts again after Unity restarts.
+
 ## 1. 初始化（第一次用先跑这个）
 
 在 `Tools/NodeGraph/Manager` 里点 State Machine 卡片的 **Setup Assets** 按钮。它只生成状态机节点定义、共享注册表条目、模块黑板和本地化；重复跑是幂等的，不会重建样例或覆盖作者内容。生成目录全部来自项目级 `StateMachineAssetPaths`，可用 `Tools/NodeGraph/Manager` 的 State Machine **Open Asset Paths** 定位并自由修改。首次默认值（例如 `Assets/StateMachineContent/Machines`）只是示例。

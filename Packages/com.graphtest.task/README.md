@@ -1,5 +1,11 @@
 # 任务编辑器
 
+## 首次安装路径向导 / First-install Path Wizard
+
+其他用户首次安装 Task 时，Unity 会自动打开 Task 路径设置。任务节点定义、任务线、步骤图和黑板目录都可以先修改；点击 **保存并生成 / Save & Generate** 后才会保存 `TaskAssetPaths` 并生成对应资产。选择 **稍后 / Later** 或关闭不会写入工程，下次重启 Unity 会再次提示。
+
+Package consumers automatically receive Task path setup on first install. Node definitions, task graphs, step graphs, and blackboard directories can all be changed before **Save & Generate** persists `TaskAssetPaths` and generates assets. **Later** or closing writes nothing and prompts again after Unity restarts.
+
 从 `Tools/NodeGraph/Task` 打开任务编辑器。首次使用或需要刷新生成资产时运行
 `Tools/NodeGraph/Manager` 的 Task **Setup Assets**。
 

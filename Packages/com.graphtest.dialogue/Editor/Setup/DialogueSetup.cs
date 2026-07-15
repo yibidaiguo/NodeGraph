@@ -23,11 +23,15 @@ namespace Dialogue.EditorUI
             var nodePaths = NodeEditorAssetPathsLocator.FindOrCreate();
             if (dialoguePaths == null || nodePaths == null) return;
             if (!ProjectAssetPaths.ValidateWritablePaths("DialogueSetup",
-                    dialoguePaths.nodeDefinitionsDir, nodePaths.registryPath)) return;
+                    dialoguePaths.nodeDefinitionsDir, dialoguePaths.dialogueGroupsDir,
+                    dialoguePaths.blackboardLayersDir, nodePaths.registryPath)) return;
 
             // 框架核心资产 + 框架种子（幂等；失败关闭即中止，先于任何领域写入）。
             var table = FrameworkSetup.EnsureCoreAssets("DialogueSetup");
             if (table == null) return;
+            if (!ProjectAssetPaths.PrepareWritableDirectories("DialogueSetup",
+                    dialoguePaths.nodeDefinitionsDir, dialoguePaths.dialogueGroupsDir,
+                    dialoguePaths.blackboardLayersDir)) return;
 
             var (defs, defsCreated) = DomainSetupPipeline.SetupDefinitions<DialogueNodeDefinition>(
                 "Dialogue", dialoguePaths.nodeDefinitionsDir);

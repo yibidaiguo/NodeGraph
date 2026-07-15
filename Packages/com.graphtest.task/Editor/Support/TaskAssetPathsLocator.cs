@@ -9,10 +9,10 @@ namespace TaskEditor.EditorUI
         const string ModuleName = "Task";
 
         public static TaskAssetPaths FindOrCreate()
-            => ProjectAssetPaths.FindOrCreate<TaskAssetPaths>("Task", cfg => ApplyDefaultsForRoot(cfg, null));
+            => ProjectAssetPaths.FindOrCreate<TaskAssetPaths>("Task", ApplyDefaults);
 
         public static void OpenAssetPaths() =>
-            ProjectAssetPaths.Open<TaskAssetPaths>("Task", cfg => ApplyDefaultsForRoot(cfg, null));
+            ProjectAssetPaths.Open<TaskAssetPaths>("Task", ApplyDefaults);
 
         // Test seam proving installation paths do not affect project-owned configuration.
         static string DefaultBootstrapPathForScriptPath(string _)
@@ -20,7 +20,7 @@ namespace TaskEditor.EditorUI
             return ProjectAssetPaths.BootstrapPath<TaskAssetPaths>();
         }
 
-        static void ApplyDefaultsForRoot(TaskAssetPaths cfg, string _)
+        internal static void ApplyDefaults(TaskAssetPaths cfg)
         {
             var root = ProjectAssetPaths.ContentRoot(ModuleName);
             cfg.nodeDefinitionsDir = $"{root}/Nodes/Definitions";

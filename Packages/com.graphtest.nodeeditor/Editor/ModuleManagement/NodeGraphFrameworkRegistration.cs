@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using NodeEditor;
 
 namespace NodeEditor.EditorUI
 {
@@ -24,6 +25,15 @@ namespace NodeEditor.EditorUI
 
             if (!NodeGraphModules.Registry.TryRegister(descriptor, out var error))
                 Debug.LogError(error);
+
+            NodeGraphInstallSetupCoordinator.Register(
+                ProjectAssetPaths.CreateInstallSetupDescriptor<NodeEditorAssetPaths>(
+                    "com.graphtest.nodeeditor",
+                    "Node Editor Framework",
+                    0,
+                    "NodeEditor",
+                    NodeEditorAssetPathsLocator.ApplyDefaults,
+                    FrameworkSetup.Run));
         }
     }
 }

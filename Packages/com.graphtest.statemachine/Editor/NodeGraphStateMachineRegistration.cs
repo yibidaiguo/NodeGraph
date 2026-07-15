@@ -22,6 +22,15 @@ namespace StateMachine.EditorUI
 
             if (!NodeGraphModules.Registry.TryRegister(descriptor, out var error))
                 Debug.LogError(error);
+
+            NodeGraphInstallSetupCoordinator.Register(
+                ProjectAssetPaths.CreateInstallSetupDescriptor<StateMachineAssetPaths>(
+                    "com.graphtest.statemachine",
+                    "State Machine",
+                    300,
+                    "StateMachine",
+                    StateMachineAssetPathsLocator.ApplyDefaults,
+                    StateMachineSetup.Run));
         }
     }
 }

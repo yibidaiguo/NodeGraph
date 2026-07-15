@@ -12,10 +12,10 @@ namespace NodeEditor.EditorUI
         const string ModuleName = "NodeEditor";
 
         public static NodeEditorAssetPaths FindOrCreate()
-            => ProjectAssetPaths.FindOrCreate<NodeEditorAssetPaths>("NodeEditor", cfg => ApplyDefaultsForRoot(cfg, null));
+            => ProjectAssetPaths.FindOrCreate<NodeEditorAssetPaths>("NodeEditor", ApplyDefaults);
 
         public static void OpenAssetPaths() =>
-            ProjectAssetPaths.Open<NodeEditorAssetPaths>("NodeEditor", cfg => ApplyDefaultsForRoot(cfg, null));
+            ProjectAssetPaths.Open<NodeEditorAssetPaths>("NodeEditor", ApplyDefaults);
 
         internal static string DefaultLanguageOptionsPathForCurrentRoot()
         {
@@ -29,7 +29,7 @@ namespace NodeEditor.EditorUI
         }
 
         // Kept as a test seam: caller/package roots are intentionally ignored.
-        static void ApplyDefaultsForRoot(NodeEditorAssetPaths cfg, string _)
+        internal static void ApplyDefaults(NodeEditorAssetPaths cfg)
         {
             var root = ProjectAssetPaths.ContentRoot(ModuleName);
             cfg.nodeDefinitionsRootDir = $"{root}/Nodes/Definitions";

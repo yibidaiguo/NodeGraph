@@ -2,6 +2,16 @@
 
 NodeGraph 的可复用节点编辑器框架，也是模块化安装的唯一手动入口。框架包只包含 Runtime、Editor 和 Module Manager，不会自动安装模块，也不会导入示例场景、示例数据或示例脚本。
 
+## 首次安装路径向导 / First-install Path Wizard
+
+其他用户首次安装本包时，Unity 会自动弹出 **安装路径 / Install Paths** 窗口，显示 `NodeEditorAssetPaths` 的全部可配置路径。窗口里的配置只是内存草稿；点击 **保存并生成 / Save & Generate** 后才会创建 `Assets/NodeEditorSettings/NodeEditorAssetPaths.asset`，随后生成注册表、全局黑板和本地化等框架资产。所有字符串路径必须位于规范化的 `Assets/` 子目录中。
+
+For package consumers, the first installation automatically opens **Install Paths** with every `NodeEditorAssetPaths` field. The configuration is an in-memory draft: `Assets/NodeEditorSettings/NodeEditorAssetPaths.asset` and framework assets are created only after **Save & Generate**. Every string path must be a normalized location below `Assets/`.
+
+同时安装多个正式模块时，窗口会按框架、Dialogue、Task、State Machine 顺序逐个出现。选择 **稍后 / Later** 或直接关闭不会保存或生成，并在下次启动 Unity 时再次提示。已有路径配置的项目不会被自动修改；之后仍可在 `Tools/NodeGraph/Manager` 使用 **Open Asset Paths** 与 **Setup Assets**。
+
+When several production modules arrive together, their windows are queued in Framework, Dialogue, Task, then State Machine order. **Later** or closing the window writes nothing and defers the queue until the next Unity session. Existing configurations are never changed automatically; **Open Asset Paths** and **Setup Assets** remain available in `Tools/NodeGraph/Manager`.
+
 ## 安装与使用
 
 1. 在 Unity Package Manager 中添加一次框架 Git URL：

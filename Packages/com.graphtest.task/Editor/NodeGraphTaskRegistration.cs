@@ -22,6 +22,15 @@ namespace TaskEditor.EditorUI
 
             if (!NodeGraphModules.Registry.TryRegister(descriptor, out var error))
                 Debug.LogError(error);
+
+            NodeGraphInstallSetupCoordinator.Register(
+                ProjectAssetPaths.CreateInstallSetupDescriptor<TaskAssetPaths>(
+                    "com.graphtest.task",
+                    "Task",
+                    200,
+                    "Task",
+                    TaskAssetPathsLocator.ApplyDefaults,
+                    TaskSetup.Run));
         }
     }
 }

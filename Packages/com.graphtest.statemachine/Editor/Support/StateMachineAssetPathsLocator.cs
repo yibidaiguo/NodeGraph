@@ -12,10 +12,10 @@ namespace StateMachine.EditorUI
         const string ModuleName = "StateMachine";
 
         public static StateMachineAssetPaths FindOrCreate()
-            => ProjectAssetPaths.FindOrCreate<StateMachineAssetPaths>("StateMachine", cfg => ApplyDefaultsForRoot(cfg, null));
+            => ProjectAssetPaths.FindOrCreate<StateMachineAssetPaths>("StateMachine", ApplyDefaults);
 
         public static void OpenAssetPaths() =>
-            ProjectAssetPaths.Open<StateMachineAssetPaths>("StateMachine", cfg => ApplyDefaultsForRoot(cfg, null));
+            ProjectAssetPaths.Open<StateMachineAssetPaths>("StateMachine", ApplyDefaults);
 
         // Test seam proving installation paths do not affect project-owned configuration.
         static string DefaultBootstrapPathForScriptPath(string _)
@@ -23,7 +23,7 @@ namespace StateMachine.EditorUI
             return ProjectAssetPaths.BootstrapPath<StateMachineAssetPaths>();
         }
 
-        static void ApplyDefaultsForRoot(StateMachineAssetPaths cfg, string _)
+        internal static void ApplyDefaults(StateMachineAssetPaths cfg)
         {
             var root = ProjectAssetPaths.ContentRoot(ModuleName);
             cfg.nodeDefinitionsDir = $"{root}/Nodes/Definitions";

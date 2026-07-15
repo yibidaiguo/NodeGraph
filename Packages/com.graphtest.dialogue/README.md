@@ -8,6 +8,10 @@
 
 独立可安装、编译、卸载的 Dialogue Runtime/Editor 模块，只依赖 `com.graphtest.nodeeditor`，不依赖 Task 或 State Machine。通过 `Tools/NodeGraph/Manager` 安装本模块（Manager 复用框架包的仓库与 revision，无需再输 Git URL），再按 §2 生成资产。生成的对话图、黑板、数据库与 `DialogueAssetPaths` 属于项目，默认写入 `Assets/DialogueContent`。产品包不含场景、示例数据或示例脚本；需要演示时在 Manager 里单独安装 `com.graphtest.dialogue.samples` 并显式导入 **Dialogue Basics**。
 
+其他用户首次安装 Dialogue 时会自动看到 **Dialogue 路径设置 / Path Setup**。可先修改节点定义、对话组和黑板目录；只有点击 **保存并生成 / Save & Generate** 后，才会保存 `DialogueAssetPaths` 并创建这些目录、节点定义和注册表条目。选择 **稍后 / Later** 或关闭不会创建任何 Dialogue 资产，下次重启 Unity 会再次提示。
+
+Package consumers automatically receive **Dialogue Path Setup** on first install. They can edit the node-definition, dialogue-group, and blackboard directories before anything is written. `DialogueAssetPaths`, its configured directories, node definitions, and registry entries are created only after **Save & Generate**. **Later** or closing creates no Dialogue assets and prompts again after Unity restarts.
+
 ## 1. 打开编辑器
 
 菜单 `Tools/NodeGraph/Dialogue` 打开对话模块窗口；`Tools/NodeGraph/Manager` 的 **Open Node Editor** 打开不限定模块的通用窗口。在 Project 窗口双击任意 `NodeGraphAsset`（比如样例对话）也会自动用共享窗口打开。

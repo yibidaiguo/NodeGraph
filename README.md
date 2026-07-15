@@ -25,6 +25,8 @@ https://github.com/yibidaiguo/NodeGraph.git?path=/Packages/com.graphtest.nodeedi
 
 安装后打开 **Tools > NodeGraph > Manager**，即可从同一仓库和版本安装可选模块。
 
+首次安装框架或任一正式模块后，Unity 会自动弹出该模块的双语路径设置窗口。路径配置先保留在内存中；只有点击 **保存并生成 / Save & Generate** 后，才会把配置写入 `Assets/NodeEditorSettings/` 并生成对应资产。多个模块同时安装时会按框架、Dialogue、Task、State Machine 的顺序逐个设置。选择 **稍后 / Later** 或关闭窗口不会创建资产，下次重启 Unity 会再次提示。
+
 ### 包列表
 
 | 包 | 用途 |
@@ -57,6 +59,8 @@ https://github.com/yibidaiguo/NodeGraph.git?path=/Packages/com.graphtest.nodeedi
 ```
 
 After installation, open **Tools > NodeGraph > Manager** to install optional modules from the same repository and revision.
+
+The first time the framework or any production module is installed, Unity automatically opens that module's bilingual path setup window. The configuration remains in memory until **Save & Generate** is chosen; only then is it saved under `Assets/NodeEditorSettings/` and used to generate the module assets. Simultaneous installs are configured one at a time in Framework, Dialogue, Task, then State Machine order. Choosing **Later** or closing the window creates nothing and prompts again after Unity restarts.
 
 ### Packages
 
