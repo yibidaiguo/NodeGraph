@@ -4,6 +4,16 @@ using UnityEngine;
 
 namespace Dialogue.EditorUI
 {
+    [NodeIcon(typeof(StartNode), NodeIconKind.Entry)]
+    [NodeIcon(typeof(EndNode), NodeIconKind.Terminal)]
+    [NodeIcon(typeof(LineNode), NodeIconKind.Dialogue)]
+    [NodeIcon(typeof(ChoiceNode), NodeIconKind.Choice)]
+    [NodeIcon(typeof(OptionNode), NodeIconKind.Option)]
+    [NodeIcon(typeof(ConditionNode), NodeIconKind.Condition)]
+    [NodeIcon(typeof(ActionNode), NodeIconKind.Action)]
+    [NodeIcon(typeof(JumpNode), NodeIconKind.Jump)]
+    [NodeIcon(typeof(LabelNode), NodeIconKind.Label)]
+    [NodeIcon(typeof(SubDialogueNode), NodeIconKind.SubGraph)]
     [InitializeOnLoad]
     static class NodeGraphDialogueRegistration
     {

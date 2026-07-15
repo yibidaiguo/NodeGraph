@@ -4,6 +4,12 @@ using UnityEngine;
 
 namespace StateMachine.EditorUI
 {
+    [NodeIcon(typeof(EntryNode), NodeIconKind.Entry)]
+    [NodeIcon(typeof(ExitNode), NodeIconKind.Terminal)]
+    [NodeIcon(typeof(StateNode), NodeIconKind.State)]
+    [NodeIcon(typeof(TransitionNode), NodeIconKind.Transition)]
+    [NodeIcon(typeof(AnyStateNode), NodeIconKind.AnyState)]
+    [NodeIcon(typeof(SubMachineNode), NodeIconKind.SubGraph)]
     [InitializeOnLoad]
     static class NodeGraphStateMachineRegistration
     {

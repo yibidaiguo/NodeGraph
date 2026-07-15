@@ -4,6 +4,17 @@ using UnityEngine;
 
 namespace TaskEditor.EditorUI
 {
+    [NodeIcon(typeof(TaskStartNode), NodeIconKind.Entry)]
+    [NodeIcon(typeof(TaskNode), NodeIconKind.Task)]
+    [NodeIcon(typeof(TaskGateNode), NodeIconKind.Gate)]
+    [NodeIcon(typeof(TaskObjectiveNode), NodeIconKind.Objective)]
+    [NodeIcon(typeof(TaskConditionNode), NodeIconKind.Condition)]
+    [NodeIcon(typeof(TaskActionNode), NodeIconKind.Action)]
+    [NodeIcon(typeof(TaskWaitEventNode), NodeIconKind.WaitEvent)]
+    [NodeIcon(typeof(TaskJumpNode), NodeIconKind.Jump)]
+    [NodeIcon(typeof(TaskLabelNode), NodeIconKind.Label)]
+    [NodeIcon(typeof(TaskCompleteNode), NodeIconKind.Complete)]
+    [NodeIcon(typeof(TaskFailNode), NodeIconKind.Failure)]
     [InitializeOnLoad]
     static class NodeGraphTaskRegistration
     {
