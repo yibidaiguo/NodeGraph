@@ -1,5 +1,19 @@
 # 更新日志 / Changelog
 
+## [0.0.4] - 2026-07-16
+
+### 中文
+
+- 升级节点表面为平滑圆角与真实三段渐变，完整支持亮色与暗色主题。
+- 为 Dialogue、Task、StateMachine 的 27 个节点新增 19 种简洁语义图标，并按具体语义区分节点轮廓。
+- 运行中、成功、失败状态点亮整个节点；选择与校验轮廓可独立组合。
+
+### English
+
+- Upgraded node surfaces with smooth rounded silhouettes and true three-stop gradients in both light and dark themes.
+- Added 19 concise semantic icons for 27 Dialogue, Task, and StateMachine nodes, with silhouettes selected by concrete node meaning.
+- Running, success, and failure states illuminate the whole node while selection and validation outlines compose independently.
+
 ## [0.0.3] - 2026-07-16
 
 ### 中文
