@@ -1,11 +1,11 @@
 {
   "name": "com.graphtest.dialogue.samples",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "displayName": "NodeGraph Dialogue Samples",
   "description": "NodeGraph Dialogue 可选示例内容。 / Optional sample content for NodeGraph Dialogue.",
   "unity": "6000.0",
   "dependencies": {
-    "com.graphtest.dialogue": "0.0.1",
+    "com.graphtest.dialogue": "0.0.2",
     "com.unity.modules.imgui": "1.0.0"
   },
   "samples": [
@@ -18,6 +18,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yibidaiguo/NodeGraph.git",
-    "revision": "v0.0.1"
+    "revision": "v0.0.2"
   }
 }

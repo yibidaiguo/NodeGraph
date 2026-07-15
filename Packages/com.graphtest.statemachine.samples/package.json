@@ -1,11 +1,11 @@
 {
   "name": "com.graphtest.statemachine.samples",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "displayName": "NodeGraph State Machine Samples",
   "description": "NodeGraph State Machine 可选示例内容。 / Optional sample content for NodeGraph State Machine.",
   "unity": "6000.0",
   "dependencies": {
-    "com.graphtest.statemachine": "0.0.1",
+    "com.graphtest.statemachine": "0.0.2",
     "com.unity.modules.animation": "1.0.0",
     "com.unity.modules.imgui": "1.0.0",
     "com.unity.modules.physics": "1.0.0",
@@ -21,6 +21,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yibidaiguo/NodeGraph.git",
-    "revision": "v0.0.1"
+    "revision": "v0.0.2"
   }
 }
