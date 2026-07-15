@@ -365,100 +365,27 @@
     --ne-node-shape-outline-width: 2;
 }
 
-/* ---- 角色：整节点轮廓为主，标题左侧几何 glyph + 标题强调边为辅助。---- */
-.node-role-glyph {
+/* ---- 语义图标：统一金属小底座；领域只注册 kind，不拥有皮肤。---- */
+.node-icon {
     position: relative;
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
-    margin-right: 6px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    margin-right: 7px;
     flex-shrink: 0;
+    border-width: 1px;
+    border-radius: 6px;
+    border-color: var(--ne-border-soft);
+    border-top-color: var(--ne-node-highlight);
+    border-bottom-width: 2px;
+    border-bottom-color: var(--ne-control-shadow);
+    background-color: var(--ne-bg-panel-raised);
+    --ne-node-icon-color: var(--ne-role-provider-ln);
 }
-.node-role-glyph-a,
-.node-role-glyph-b,
-.node-role-glyph-c {
-    position: absolute;
-}
-
-/* Provider：圆环 + 中心点。 */
-.node-role-provider .node-role-glyph-a {
-    left: 2px;
-    top: 2px;
-    width: 14px;
-    height: 14px;
-    border-width: 2px;
-    border-radius: 50%;
-    border-color: var(--ne-role-provider);
-}
-.node-role-provider .node-role-glyph-b {
-    left: 7px;
-    top: 7px;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background-color: var(--ne-role-provider);
-}
-
-/* Condition：菱形。 */
-.node-role-condition .node-role-glyph-a {
-    left: 4px;
-    top: 4px;
-    width: 10px;
-    height: 10px;
-    border-width: 2px;
-    border-color: var(--ne-role-condition);
-    rotate: 45deg;
-}
-
-/* Action：向右箭头（横杆 + 两条斜线）。 */
-.node-role-action .node-role-glyph-a {
-    left: 2px;
-    top: 8px;
-    width: 13px;
-    height: 2px;
-    background-color: var(--ne-role-action);
-}
-.node-role-action .node-role-glyph-b {
-    left: 10px;
-    top: 5px;
-    width: 7px;
-    height: 2px;
-    background-color: var(--ne-role-action);
-    rotate: 45deg;
-}
-.node-role-action .node-role-glyph-c {
-    left: 10px;
-    top: 11px;
-    width: 7px;
-    height: 2px;
-    background-color: var(--ne-role-action);
-    rotate: -45deg;
-}
-
-/* Control：Y 形分叉。 */
-.node-role-control .node-role-glyph-a {
-    left: 8px;
-    top: 8px;
-    width: 2px;
-    height: 9px;
-    background-color: var(--ne-role-control);
-}
-.node-role-control .node-role-glyph-b {
-    left: 3px;
-    top: 5px;
-    width: 8px;
-    height: 2px;
-    background-color: var(--ne-role-control);
-    rotate: 45deg;
-}
-.node-role-control .node-role-glyph-c {
-    left: 8px;
-    top: 5px;
-    width: 8px;
-    height: 2px;
-    background-color: var(--ne-role-control);
-    rotate: -45deg;
-}
+.node-role-provider .node-icon  { --ne-node-icon-color: var(--ne-role-provider-ln); }
+.node-role-condition .node-icon { --ne-node-icon-color: var(--ne-role-condition-ln); }
+.node-role-action .node-icon    { --ne-node-icon-color: var(--ne-role-action-ln); }
+.node-role-control .node-icon   { --ne-node-icon-color: var(--ne-role-control-ln); }
 .node-role-provider > #node-border > #title  { margin-left: 22px; margin-right: 22px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-provider); }
 .node-role-condition > #node-border > #title { margin-left: 19px; margin-right: 19px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-condition); }
 .node-role-action > #node-border > #title    { margin-left: 12px; margin-right: 22px; border-bottom-width: 2px; border-bottom-color: var(--ne-role-action); }

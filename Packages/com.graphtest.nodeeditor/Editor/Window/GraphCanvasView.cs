@@ -457,18 +457,11 @@ namespace NodeEditor.EditorUI
             RegisterCallback<CustomStyleResolvedEvent>(OnShapeStyleResolved);
             if (def.Purity == NodePurity.Domain) AddToClassList("node-purity-domain");
             titleContainer.AddToClassList("ne-node-title");
-            var roleGlyph = new VisualElement
+            var icon = new NodeIconControl(NodeIconRegistry.Resolve(def.GetType(), def.Role))
             {
                 tooltip = Localizer.UI($"ui.nodeRole.{roleKey}", roleName)
             };
-            roleGlyph.AddToClassList("node-role-glyph");
-            foreach (var part in new[] { "a", "b", "c" })
-            {
-                var glyphPart = new VisualElement();
-                glyphPart.AddToClassList($"node-role-glyph-{part}");
-                roleGlyph.Add(glyphPart);
-            }
-            titleContainer.Insert(0, roleGlyph);
+            titleContainer.Insert(0, icon);
             inputContainer.AddToClassList("ne-node-ports");
             outputContainer.AddToClassList("ne-node-ports");
 
