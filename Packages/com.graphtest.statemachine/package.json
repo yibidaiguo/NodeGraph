@@ -2,7 +2,7 @@
   "name": "com.graphtest.statemachine",
   "version": "0.0.1",
   "displayName": "NodeGraph State Machine",
-  "description": "State machine graph runtime and editor module for NodeGraph.",
+  "description": "NodeGraph 状态机运行时与编辑器模块。 / State machine runtime and editor module for NodeGraph.",
   "unity": "6000.0",
   "dependencies": {
     "com.graphtest.nodeeditor": "0.0.1"

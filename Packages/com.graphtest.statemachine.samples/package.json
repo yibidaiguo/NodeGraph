@@ -2,7 +2,7 @@
   "name": "com.graphtest.statemachine.samples",
   "version": "0.0.1",
   "displayName": "NodeGraph State Machine Samples",
-  "description": "Optional sample content for NodeGraph StateMachine.",
+  "description": "NodeGraph State Machine 可选示例内容。 / Optional sample content for NodeGraph State Machine.",
   "unity": "6000.0",
   "dependencies": {
     "com.graphtest.statemachine": "0.0.1",

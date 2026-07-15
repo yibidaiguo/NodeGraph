@@ -2,7 +2,7 @@
   "name": "com.graphtest.task",
   "version": "0.0.1",
   "displayName": "NodeGraph Task",
-  "description": "Task graph runtime and editor module for NodeGraph.",
+  "description": "NodeGraph 任务图运行时与编辑器模块。 / Task graph runtime and editor module for NodeGraph.",
   "unity": "6000.0",
   "dependencies": {
     "com.graphtest.nodeeditor": "0.0.1"

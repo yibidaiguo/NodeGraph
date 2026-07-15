@@ -2,7 +2,7 @@
   "name": "com.graphtest.task.samples",
   "version": "0.0.1",
   "displayName": "NodeGraph Task Samples",
-  "description": "Optional sample content for NodeGraph Task.",
+  "description": "NodeGraph Task 可选示例内容。 / Optional sample content for NodeGraph Task.",
   "unity": "6000.0",
   "dependencies": {
     "com.graphtest.task": "0.0.1",

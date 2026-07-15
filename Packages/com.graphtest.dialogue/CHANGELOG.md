@@ -1,13 +1,17 @@
-# Changelog
+# 更新日志 / Changelog
 
 ## [0.0.1] - 2026-07-15
 
-首个正式版。基于 com.graphtest.nodeeditor 的对话编辑器领域模块（Runtime + Editor）。
+### 中文
 
-### 内容
-- 10 种对话节点（Start/Line/Choice/Option/Condition/Action/Jump/Label/SubDialogue/End，一类一文件）+ 对话单元（FireEvent）。
-- 运行时：`DialogueRunner`（行/分支/跳转/子对话调用栈）+ `DialoguePlayer`（MonoBehaviour host，OnLine/OnChoices/OnEvent/OnEnd 事件）+ 存/读档快照。
-- 对话数据库 `DialogueDatabase`（说话人/头像/语音/多语言文本，条目用途分类）+ 数据窗口领域源。
-- 领域校验（`DialogueValidation`）与连接矩阵（Choice↔Option 双向锁，经框架 `ConnectionRuleMatrix`）。
-- 模块入口 `Tools/NodeGraph/Dialogue` + Manager 卡片（Setup Assets / Open Asset Paths）。
-- 文档随包：README（设计师）/ EXTENDING（领域开发）/ INTEGRATION（集成）/ VISION。
+- 首个公开版本，提供基于 NodeGraph 的对话图运行时与编辑器。
+- 包含开始、台词、选项、条件、动作、跳转、标签、子对话和结束等节点。
+- 提供 `DialogueRunner`、`DialoguePlayer`、对话数据库、领域校验和连接规则。
+- 可通过 `Tools/NodeGraph/Dialogue` 或模块管理器完成初始化。
+
+### English
+
+- First public release of the NodeGraph-based dialogue runtime and editor.
+- Includes Start, Line, Choice, Option, Condition, Action, Jump, Label, Sub-Dialogue, and End nodes.
+- Provides `DialogueRunner`, `DialoguePlayer`, a dialogue database, domain validation, and connection rules.
+- Supports setup through `Tools/NodeGraph/Dialogue` or the module manager.

@@ -2,7 +2,7 @@
   "name": "com.graphtest.dialogue.samples",
   "version": "0.0.1",
   "displayName": "NodeGraph Dialogue Samples",
-  "description": "Optional sample content for NodeGraph Dialogue.",
+  "description": "NodeGraph Dialogue 可选示例内容。 / Optional sample content for NodeGraph Dialogue.",
   "unity": "6000.0",
   "dependencies": {
     "com.graphtest.dialogue": "0.0.1",

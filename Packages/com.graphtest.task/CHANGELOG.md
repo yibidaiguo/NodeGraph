@@ -1,12 +1,17 @@
-# Changelog
+# 更新日志 / Changelog
 
 ## [0.0.1] - 2026-07-15
 
-首个正式版。基于 com.graphtest.nodeeditor 的任务/目标依赖编辑器领域模块（Runtime + Editor）。
+### 中文
 
-### 内容
-- 外层任务线（DependencyDag：Task/Gate 依赖解锁）+ 内层步骤图（ControlFlow：Start/Objective/Condition/Action/WaitEvent/Jump/Label/Complete/Fail），双创建配方。
-- 运行时：`TaskRunner`（DAG 前置 + 目标进度 + 事件等待 + 步骤图遍历；兼 host——有意不设 TaskPlayer，见 VISION）+ `TaskJournal` + 快照。
-- 领域校验（`TaskValidation`）与连接矩阵（经框架 `ConnectionRuleMatrix`）。
-- 模块入口 `Tools/NodeGraph/Task` + Manager 卡片。
-- 文档随包：README / EXTENDING / INTEGRATION / VISION。
+- 首个公开版本，提供基于 NodeGraph 的任务图运行时与编辑器。
+- 支持任务依赖 DAG，以及目标、条件、动作、等待事件、跳转、完成和失败等步骤节点。
+- 提供 `TaskRunner`、任务日志、快照、领域校验和连接规则。
+- 可通过 `Tools/NodeGraph/Task` 或模块管理器完成初始化。
+
+### English
+
+- First public release of the NodeGraph-based task runtime and editor.
+- Supports task dependency DAGs and Objective, Condition, Action, Wait Event, Jump, Complete, and Fail step nodes.
+- Provides `TaskRunner`, task journals, snapshots, domain validation, and connection rules.
+- Supports setup through `Tools/NodeGraph/Task` or the module manager.

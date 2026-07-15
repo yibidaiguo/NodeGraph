@@ -1,12 +1,17 @@
-# Changelog
+# 更新日志 / Changelog
 
 ## [0.0.1] - 2026-07-15
 
-首个正式版。基于 com.graphtest.nodeeditor 的分层状态机（HSM）编辑器领域模块（Runtime + Editor）。
+### 中文
 
-### 内容
-- 六种节点（Entry/State/Transition/AnyState/SubMachine/Exit），State→Transition→State 三段式 + 生命周期三 Unit 槽 + AnyState 防抖 + 子机压栈。
-- 运行时：`StateMachineRunner`（逐帧 tick + HSM 层栈）+ `StateMachinePlayer`（Update/FixedUpdate 驱动模式）+ 快照存档（不重触发 OnEnter）。
-- 领域校验（`StateMachineValidation`：转移接线/子机环/死端）与连接矩阵（经框架 `ConnectionRuleMatrix`）。
-- 模块入口 `Tools/NodeGraph/State Machine` + Manager 卡片。
-- 文档随包：README / EXTENDING / INTEGRATION / VISION。
+- 首个公开版本，提供基于 NodeGraph 的分层状态机运行时与编辑器。
+- 包含入口、状态、转换、任意状态、子状态机和出口节点。
+- 提供逐帧运行、子状态机栈、事件、快照、领域校验和连接规则。
+- 可通过 `Tools/NodeGraph/State Machine` 或模块管理器完成初始化。
+
+### English
+
+- First public release of the NodeGraph-based hierarchical state machine runtime and editor.
+- Includes Entry, State, Transition, Any State, Sub-Machine, and Exit nodes.
+- Provides frame-based execution, nested state-machine stacks, events, snapshots, domain validation, and connection rules.
+- Supports setup through `Tools/NodeGraph/State Machine` or the module manager.
