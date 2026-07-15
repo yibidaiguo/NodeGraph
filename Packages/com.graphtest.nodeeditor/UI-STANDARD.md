@@ -110,6 +110,7 @@
 节点视觉轮廓的 Provider/Condition/Action/Control 是**视觉分类**，不等于底层执行 `NodeRole`。`NodeView` 必须通过已注册的 `NodeIconKind` 选择具体语义的轮廓：Dialogue/Label/Objective/State 使用胶囊，Choice/Option/Condition/Gate/Transition 使用六边形，Action/Jump/Task/Complete/Failure 使用右箭头，Entry/Terminal/SubGraph/WaitEvent/AnyState 使用八边形。未注册节点才回退到执行 Role 对应的轮廓。这条规则保证不同具体节点不会因共用执行角色而被画成同一形状。
 
 圆角与渐变修订（覆盖上表早期的“约 7px”表述）：Condition/Action/Control 轮廓统一使用 13px 目标切入半径，短边上自适应限制为相邻边长的 42%，不得露出硬尖角。节点主体必须由 `MeshGenerationContext` 绘制与轮廓同源的顶点色网格，从左上 highlight 经 55% fill 过渡到右下 shadow；半透明的普通态高光/暗边必须先与不透明 face 合成，避免节点发灰或露出画布。不得用纯色、矩形图片或可见分带代替批准设计稿的真实渐变。
+网格必须在 55% 中间色等值线上切分为两个凸区域后分别三角化，禁止使用跨越中间色的单中心三角扇，避免径向色差或辐条。
 
 运行时着色表示“当前图的真实执行状态”，不是全局最后注册 runner 的历史：窗口按当前 `NodeGraphAsset` 匹配 runtime；晚开、关闭重开、play 中切图都必须在有限帧内追上。匹配 runtime 消失时立即清空状态类并继续查找。状态机的 State/SubMachine 仅活动路径用 `status-running`，退出即回 `status-inactive`；不得用 `status-success` 把所有访问过的状态永久点亮。
 

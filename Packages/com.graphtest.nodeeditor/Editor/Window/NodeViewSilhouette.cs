@@ -79,25 +79,90 @@ namespace NodeEditor.EditorUI
             BuildRoleSilhouetteSamples(role, bounds, perimeter);
             if (perimeter.Count < 3) return;
 
-            var mesh = context.Allocate(perimeter.Count + 1, perimeter.Count * 3);
-            mesh.SetNextVertex(GradientVertex(bounds.center, bounds, top, middle, bottom));
-            for (var i = 0; i < perimeter.Count; i++)
-                mesh.SetNextVertex(GradientVertex(perimeter[i], bounds, top, middle, bottom));
+            var upper = s_GradientUpperScratch ??= new List<Vector2>(40);
+            var lower = s_GradientLowerScratch ??= new List<Vector2>(40);
+            ClipGradientRegion(perimeter, bounds, true, upper);
+            ClipGradientRegion(perimeter, bounds, false, lower);
+            DrawGradientRegion(context, upper, bounds, top, middle, bottom);
+            DrawGradientRegion(context, lower, bounds, top, middle, bottom);
+        }
 
-            for (var i = 0; i < perimeter.Count; i++)
+        static void DrawGradientRegion(MeshGenerationContext context,
+            IReadOnlyList<Vector2> region, Rect bounds, Color top, Color middle, Color bottom)
+        {
+            if (region.Count < 3) return;
+            var center = Vector2.zero;
+            for (var i = 0; i < region.Count; i++) center += region[i];
+            center /= region.Count;
+
+            var mesh = context.Allocate(region.Count + 1, region.Count * 3);
+            mesh.SetNextVertex(GradientVertex(center, bounds, top, middle, bottom));
+            for (var i = 0; i < region.Count; i++)
+                mesh.SetNextVertex(GradientVertex(region[i], bounds, top, middle, bottom));
+
+            for (var i = 0; i < region.Count; i++)
             {
                 mesh.SetNextIndex(0);
                 mesh.SetNextIndex((ushort)(i + 1));
-                mesh.SetNextIndex((ushort)(((i + 1) % perimeter.Count) + 1));
+                mesh.SetNextIndex((ushort)(((i + 1) % region.Count) + 1));
             }
+        }
+
+        static void ClipGradientRegion(IReadOnlyList<Vector2> perimeter, Rect bounds,
+            bool keepUpper, List<Vector2> output)
+        {
+            const float middleStop = 0.55f;
+            output.Clear();
+            if (perimeter.Count == 0) return;
+
+            var previous = perimeter[perimeter.Count - 1];
+            var previousT = GradientPosition(previous, bounds);
+            var previousInside = keepUpper ? previousT <= middleStop : previousT >= middleStop;
+            for (var i = 0; i < perimeter.Count; i++)
+            {
+                var current = perimeter[i];
+                var currentT = GradientPosition(current, bounds);
+                var currentInside = keepUpper ? currentT <= middleStop : currentT >= middleStop;
+                if (currentInside != previousInside)
+                {
+                    var denominator = currentT - previousT;
+                    var amount = Mathf.Abs(denominator) > 0.00001f
+                        ? Mathf.Clamp01((middleStop - previousT) / denominator)
+                        : 0f;
+                    AppendDistinct(output, Vector2.Lerp(previous, current, amount));
+                }
+                if (currentInside) AppendDistinct(output, current);
+                previous = current;
+                previousT = currentT;
+                previousInside = currentInside;
+            }
+            RemoveDuplicateClosure(output);
+        }
+
+        static float GradientPosition(Vector2 point, Rect bounds)
+        {
+            var normalizedX = Mathf.InverseLerp(bounds.xMin, bounds.xMax, point.x);
+            var normalizedY = Mathf.InverseLerp(bounds.yMin, bounds.yMax, point.y);
+            return 0.22f * normalizedX + 0.78f * normalizedY;
+        }
+
+        static void AppendDistinct(List<Vector2> points, Vector2 point)
+        {
+            if (points.Count == 0 || (points[points.Count - 1] - point).sqrMagnitude > 0.000001f)
+                points.Add(point);
+        }
+
+        static void RemoveDuplicateClosure(List<Vector2> points)
+        {
+            if (points.Count > 1
+                && (points[points.Count - 1] - points[0]).sqrMagnitude <= 0.000001f)
+                points.RemoveAt(points.Count - 1);
         }
 
         static Vertex GradientVertex(Vector2 point, Rect bounds,
             Color top, Color middle, Color bottom)
         {
-            var normalizedX = Mathf.InverseLerp(bounds.xMin, bounds.xMax, point.x);
-            var normalizedY = Mathf.InverseLerp(bounds.yMin, bounds.yMax, point.y);
-            var t = 0.22f * normalizedX + 0.78f * normalizedY;
+            var t = GradientPosition(point, bounds);
             return new Vertex
             {
                 position = new Vector3(point.x, point.y, Vertex.nearZ),
@@ -308,6 +373,7 @@ namespace NodeEditor.EditorUI
             AppendCubicSamples(samples, leftMiddle,
                 new Vector2(x0, midY - k * radiusY),
                 new Vector2(x0 + radiusX - k * radiusX, y0), topLeft, curveSteps);
+            RemoveDuplicateClosure(samples);
         }
 
         static void AppendCubicSamples(List<Vector2> samples, Vector2 start,

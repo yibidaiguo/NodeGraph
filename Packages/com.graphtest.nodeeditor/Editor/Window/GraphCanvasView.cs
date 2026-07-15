@@ -440,6 +440,8 @@ namespace NodeEditor.EditorUI
             new("--ne-node-validation-outline");
         [System.ThreadStatic] static List<Vector2> s_RolePolygonScratch;
         [System.ThreadStatic] static List<Vector2> s_RoundedSampleScratch;
+        [System.ThreadStatic] static List<Vector2> s_GradientUpperScratch;
+        [System.ThreadStatic] static List<Vector2> s_GradientLowerScratch;
 
         public NodeInstance Instance { get; }
         public NodeDefinition Definition { get; }
