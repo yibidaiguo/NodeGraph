@@ -40,6 +40,8 @@ namespace StateMachine.EditorUI
         {
             if (ctx.graph == null || ctx.graph.module != StateMachineGraphScaffold.Module)
                 return NodeAvailabilityVerdict.Allow;
+            if (string.IsNullOrEmpty(ctx.definition.Module))
+                return NodeAvailabilityVerdict.Allow;
             return ctx.definition is StateMachineNodeDefinition
                 ? NodeAvailabilityVerdict.Allow
                 : NodeAvailabilityVerdict.Deny(L("val.sm.definitionUnavailable", "This node is not available in a State Machine graph."));

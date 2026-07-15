@@ -50,6 +50,11 @@ namespace NodeEditor
             if (definition == null)
                 return NodeAvailabilityVerdict.Deny(
                     Localizer.UI("val.definitionMissing", "The node definition could not be resolved."));
+            if (graph != null
+                && !string.IsNullOrEmpty(definition.Module)
+                && !string.Equals(graph.module, definition.Module, StringComparison.Ordinal))
+                return NodeAvailabilityVerdict.Deny(
+                    Localizer.UI("val.definitionWrongModule", "This node belongs to another graph module."));
             var context = new NodeAvailabilityContext(graph, definition);
             foreach (var entry in s_Rules)
             {

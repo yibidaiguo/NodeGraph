@@ -21,6 +21,7 @@ namespace TaskEditor
 
     public abstract class TaskNodeDefinition : NodeDefinition
     {
+        public override string Module => "task";
         public abstract TaskNodeKind Kind { get; }
         protected override string StableId => "task." + Kind;
     }

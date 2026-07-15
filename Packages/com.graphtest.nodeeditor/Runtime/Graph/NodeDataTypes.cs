@@ -184,6 +184,8 @@ namespace NodeEditor
 
         public string Id => id;
         public string DisplayName => displayName;
+        // Empty means this definition is universal and may be used by every graph module.
+        public virtual string Module => null;
         public NodePurity Purity => purity;
         public NodeRole Role => role;
         public RuntimeKind Runtime => runtimeKind;

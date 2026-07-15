@@ -37,6 +37,8 @@ namespace Dialogue.EditorUI
         {
             if (ctx.graph == null || ctx.graph.module != DialogueGraphScaffold.Module)
                 return NodeAvailabilityVerdict.Allow;
+            if (string.IsNullOrEmpty(ctx.definition.Module))
+                return NodeAvailabilityVerdict.Allow;
             return ctx.definition is DialogueNodeDefinition
                 ? NodeAvailabilityVerdict.Allow
                 : NodeAvailabilityVerdict.Deny(L("val.dialogue.definitionUnavailable", "This node is not available in a Dialogue graph."));

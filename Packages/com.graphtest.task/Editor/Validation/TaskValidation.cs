@@ -33,6 +33,8 @@ namespace TaskEditor.EditorUI
         {
             if (ctx.graph == null || ctx.graph.module != TaskGraphScaffold.Module)
                 return NodeAvailabilityVerdict.Allow;
+            if (string.IsNullOrEmpty(ctx.definition.Module))
+                return NodeAvailabilityVerdict.Allow;
             if (ctx.definition is not TaskNodeDefinition taskDefinition)
                 return DefinitionUnavailable();
 

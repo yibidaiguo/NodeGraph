@@ -18,6 +18,7 @@ namespace StateMachine
     // 机器上/任何重新生成后都解析到相同的 id，从而让已有的图继续可用（照 Dialogue 成例）。
     public abstract class StateMachineNodeDefinition : NodeDefinition
     {
+        public override string Module => "statemachine";
         public abstract StateMachineNodeKind Kind { get; }
         protected override string StableId => "statemachine." + Kind;
     }

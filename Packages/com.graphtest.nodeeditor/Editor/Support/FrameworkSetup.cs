@@ -276,6 +276,7 @@ namespace NodeEditor.EditorUI
             EnsureUI(table, "ui.errVarExists", "本黑板中已存在名为「{0}」的变量。");
             // ---- 框架结构校验消息（GraphValidator，val.*）：节点红黄框 + 画布横幅（C11）。----
             EnsureUI(table, "val.definitionMissing", "无法解析节点定义");
+            EnsureUI(table, "val.definitionWrongModule", "此节点属于其他图模块");
             EnsureUI(table, "val.missingDef", "缺少节点定义");
             EnsureUI(table, "val.inArity", "输入端口「{0}」连接数不符（要求 {1}，实得 {2}）");
             EnsureUI(table, "val.outArity", "输出端口「{0}」连接数不符（要求 {1}，实得 {2}）");
