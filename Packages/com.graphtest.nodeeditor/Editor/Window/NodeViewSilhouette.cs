@@ -21,12 +21,46 @@ namespace NodeEditor.EditorUI
             if (bounds.width <= 0f || bounds.height <= 0f) return;
 
             var painter = context.painter2D;
+
+            // Two offset fills expose only a narrow top highlight and bottom shadow once
+            // the opaque face is drawn, matching the pressed-metal controls elsewhere.
+            DrawOffsetFill(painter, bounds, new Vector2(0f, 2f), m_ShapeShadow);
+            DrawOffsetFill(painter, bounds, new Vector2(0f, -1f), m_ShapeHighlight);
+
+            if (m_ShapeGlow.a > 0f)
+            {
+                painter.strokeColor = m_ShapeGlow;
+                painter.lineWidth = 7f;
+                BeginRoleSilhouettePath(painter, Definition.Role, bounds);
+                painter.Stroke();
+                painter.lineWidth = 4f;
+                BeginRoleSilhouettePath(painter, Definition.Role, bounds);
+                painter.Stroke();
+            }
+
             painter.fillColor = m_ShapeFill;
             painter.strokeColor = m_ShapeOutline;
             painter.lineWidth = Mathf.Max(1f, m_ShapeOutlineWidth);
             BeginRoleSilhouettePath(painter, Definition.Role, bounds);
             painter.Fill();
             painter.Stroke();
+
+            if (selected && m_SelectionOutline.a > 0f)
+            {
+                painter.strokeColor = m_SelectionOutline;
+                painter.lineWidth = 2.5f;
+                BeginRoleSilhouettePath(painter, Definition.Role, bounds);
+                painter.Stroke();
+            }
+        }
+
+        void DrawOffsetFill(Painter2D painter, Rect bounds, Vector2 offset, Color color)
+        {
+            if (color.a <= 0f) return;
+            bounds.position += offset;
+            painter.fillColor = color;
+            BeginRoleSilhouettePath(painter, Definition.Role, bounds);
+            painter.Fill();
         }
 
         static Rect RoleSilhouetteBounds(Rect contentBounds)

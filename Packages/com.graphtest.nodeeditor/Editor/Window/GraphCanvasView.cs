@@ -428,6 +428,14 @@ namespace NodeEditor.EditorUI
             new("--ne-node-shape-outline");
         static readonly CustomStyleProperty<float> s_ShapeOutlineWidth =
             new("--ne-node-shape-outline-width");
+        static readonly CustomStyleProperty<Color> s_ShapeHighlight =
+            new("--ne-node-shape-highlight");
+        static readonly CustomStyleProperty<Color> s_ShapeShadow =
+            new("--ne-node-shape-shadow");
+        static readonly CustomStyleProperty<Color> s_ShapeGlow =
+            new("--ne-node-shape-glow");
+        static readonly CustomStyleProperty<Color> s_SelectionOutline =
+            new("--ne-node-selection-outline");
         [System.ThreadStatic] static List<Vector2> s_RolePolygonScratch;
         [System.ThreadStatic] static List<Vector2> s_RoundedSampleScratch;
 
@@ -441,6 +449,10 @@ namespace NodeEditor.EditorUI
         IVisualElementScheduledItem m_HoverSchedule;   // 悬停满 1 秒后弹出 tooltip 的计划任务（离开/移除时取消）
         Color m_ShapeFill;
         Color m_ShapeOutline;
+        Color m_ShapeHighlight;
+        Color m_ShapeShadow;
+        Color m_ShapeGlow;
+        Color m_SelectionOutline;
         float m_ShapeOutlineWidth = 1f;
 
         public NodeView(NodeInstance inst, NodeDefinition def)
@@ -511,6 +523,10 @@ namespace NodeEditor.EditorUI
             evt.customStyle.TryGetValue(s_ShapeFill, out m_ShapeFill);
             evt.customStyle.TryGetValue(s_ShapeOutline, out m_ShapeOutline);
             evt.customStyle.TryGetValue(s_ShapeOutlineWidth, out m_ShapeOutlineWidth);
+            evt.customStyle.TryGetValue(s_ShapeHighlight, out m_ShapeHighlight);
+            evt.customStyle.TryGetValue(s_ShapeShadow, out m_ShapeShadow);
+            evt.customStyle.TryGetValue(s_ShapeGlow, out m_ShapeGlow);
+            evt.customStyle.TryGetValue(s_SelectionOutline, out m_SelectionOutline);
             MarkDirtyRepaint();
         }
 

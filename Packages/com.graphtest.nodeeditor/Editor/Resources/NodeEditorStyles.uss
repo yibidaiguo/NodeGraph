@@ -41,6 +41,9 @@
     --ne-border-muted:     rgba(63, 55, 43, 0.09);
     --ne-border-node:      rgba(63, 55, 43, 0.32);
     --ne-node-highlight:   rgba(255, 255, 255, 0.85);
+    --ne-node-shape-highlight: rgba(255, 255, 255, 0.70);
+    --ne-node-shape-shadow: rgba(92, 77, 58, 0.20);
+    --ne-node-selection-outline: rgb(150, 84, 55);
     --ne-control-highlight: rgba(255, 255, 255, 0.90);
     --ne-control-shadow:   rgba(105, 92, 72, 0.14);
     --ne-divider:          rgb(222, 217, 207);
@@ -101,6 +104,12 @@
     --ne-status-running:   var(--ne-accent-gold);
     --ne-status-success:   rgb(98, 146, 112);
     --ne-status-failure:   var(--ne-accent-coral);
+    --ne-status-running-fill: rgb(244, 229, 194);
+    --ne-status-running-glow: rgba(163, 126, 71, 0.38);
+    --ne-status-success-fill: rgb(218, 235, 221);
+    --ne-status-success-glow: rgba(98, 146, 112, 0.32);
+    --ne-status-failure-fill: rgb(241, 218, 212);
+    --ne-status-failure-glow: rgba(175, 48, 41, 0.30);
     --ne-validation-error: var(--ne-accent-coral);
     --ne-validation-warn:  var(--ne-accent-gold);
 
@@ -246,6 +255,9 @@
     --ne-border-muted:     rgba(255, 240, 220, 0.045);
     --ne-border-node:      rgba(0, 0, 0, 0.66);
     --ne-node-highlight:   rgba(255, 240, 220, 0.06);
+    --ne-node-shape-highlight: rgba(255, 240, 220, 0.10);
+    --ne-node-shape-shadow: rgba(0, 0, 0, 0.52);
+    --ne-node-selection-outline: rgb(216, 154, 98);
     --ne-control-highlight: rgba(255, 240, 220, 0.05);
     --ne-control-shadow:   rgba(0, 0, 0, 0.45);
     --ne-divider:          rgb(22, 20, 18);
@@ -293,6 +305,12 @@
     --ne-status-running:   var(--ne-accent-gold);
     --ne-status-success:   rgb(126, 176, 138);
     --ne-status-failure:   var(--ne-accent-coral);
+    --ne-status-running-fill: rgb(77, 64, 39);
+    --ne-status-running-glow: rgba(206, 164, 94, 0.42);
+    --ne-status-success-fill: rgb(40, 64, 47);
+    --ne-status-success-glow: rgba(126, 176, 138, 0.35);
+    --ne-status-failure-fill: rgb(72, 40, 36);
+    --ne-status-failure-glow: rgba(206, 84, 66, 0.36);
     --ne-validation-error: var(--ne-accent-coral);
     --ne-validation-warn:  var(--ne-accent-gold);
 
@@ -312,6 +330,7 @@
     --ne-node-shape-fill: var(--ne-bg-node);
     --ne-node-shape-outline: var(--ne-border-soft);
     --ne-node-shape-outline-width: 1;
+    --ne-node-shape-glow: var(--ne-transparent);
 }
 .node-base > #node-border {
     background-color: var(--ne-transparent);
@@ -360,9 +379,7 @@
     --ne-node-shape-outline: var(--ne-hover-border);
 }
 .node-base:checked {
-    --ne-node-shape-fill: var(--ne-bg-node-selected);
-    --ne-node-shape-outline: var(--ne-accent-strong);
-    --ne-node-shape-outline-width: 2;
+    --ne-node-selection-outline: var(--ne-accent-strong);
 }
 
 /* ---- 语义图标：统一金属小底座；领域只注册 kind，不拥有皮肤。---- */
@@ -398,9 +415,9 @@
 }
 
 /* ---- 运行态（play mode）：复用角色轮廓，不换底色。---- */
-.status-running  { --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-outline-width: 2; }
-.status-success  { --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-outline-width: 2; }
-.status-failure  { --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-outline-width: 2; }
+.status-running  { --ne-node-shape-fill: var(--ne-status-running-fill); --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-glow: var(--ne-status-running-glow); --ne-node-shape-outline-width: 2; }
+.status-success  { --ne-node-shape-fill: var(--ne-status-success-fill); --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-glow: var(--ne-status-success-glow); --ne-node-shape-outline-width: 2; }
+.status-failure  { --ne-node-shape-fill: var(--ne-status-failure-fill); --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-glow: var(--ne-status-failure-glow); --ne-node-shape-outline-width: 2; }
 .status-inactive { opacity: 0.45; }
 
 /* ---- 校验标记：error / warn 仍沿角色轮廓。---- */
