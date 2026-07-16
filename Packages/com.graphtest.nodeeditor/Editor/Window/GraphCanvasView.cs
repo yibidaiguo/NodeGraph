@@ -465,7 +465,8 @@ namespace NodeEditor.EditorUI
         {
             Instance = inst; Definition = def;
             // 标题优先级：备注 > 自定义名 > 定义的本地化名称（统一走 NodeInspectorEdits.ResolveTitle）。
-            title = NodeInspectorEdits.ResolveTitle(inst, def);
+            var resolvedTitle = NodeInspectorEdits.ResolveTitle(inst, def);
+            title = resolvedTitle;
 
             var roleName = def.Role.ToString();
             var roleKey = roleName.ToLowerInvariant();
@@ -478,6 +479,12 @@ namespace NodeEditor.EditorUI
             RegisterCallback<CustomStyleResolvedEvent>(OnShapeStyleResolved);
             if (def.Purity == NodePurity.Domain) AddToClassList("node-purity-domain");
             titleContainer.AddToClassList("ne-node-title");
+            var titleLabel = titleContainer.Q<Label>();
+            if (titleLabel != null)
+            {
+                titleLabel.AddToClassList("ne-node-title-label");
+                titleLabel.tooltip = resolvedTitle;
+            }
             var icon = new NodeIconControl(iconKind)
             {
                 tooltip = Localizer.UI($"ui.nodeRole.{roleKey}", roleName)

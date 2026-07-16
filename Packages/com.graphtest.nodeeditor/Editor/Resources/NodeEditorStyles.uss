@@ -346,6 +346,7 @@
 /* ---- 本体：Painter2D 绘制整节点轮廓；GraphView 原生矩形 chrome 必须透明。---- */
 .node-base {
     min-width: 150px;
+    max-width: 240px;
     border-width: 0px;
     overflow: visible;
     --ne-node-shape-fill: var(--ne-bg-node);
@@ -385,6 +386,14 @@
     background-color: var(--ne-transparent);
     border-bottom-width: 1px;
     border-bottom-color: var(--ne-divider);
+}
+.ne-node-title-label {
+    min-width: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .node-base > #node-border > #contents {
     background-color: var(--ne-transparent);
