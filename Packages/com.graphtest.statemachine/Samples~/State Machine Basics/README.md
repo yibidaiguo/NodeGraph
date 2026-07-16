@@ -62,4 +62,4 @@ Assets/Samples/<包显示名>/<版本>/State Machine Basics/
 
 ## 样例生命周期
 
-从 NodeGraph Manager 导入后，Unity 会把样例复制到 `Assets/Samples/NodeGraph State Machine Samples/0.0.1/State Machine Basics`。移除样例包不会自动删除这个已导入副本；不再需要时请手动删除该目录。
+从本包的 Package Manager **Samples** 页签或 NodeGraph Manager 导入后，Unity 会把样例复制到 `Assets/Samples/NodeGraph State Machine/0.0.5/State Machine Basics`。移除 State Machine 包不会自动删除这个已导入副本；不再需要时请手动删除该目录。

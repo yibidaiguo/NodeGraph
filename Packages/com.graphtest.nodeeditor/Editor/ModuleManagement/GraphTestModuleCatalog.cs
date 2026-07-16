@@ -12,13 +12,11 @@ namespace NodeEditor.EditorUI
         public string path;
         public string moduleType;
         public string[] requiredPackageIds = Array.Empty<string>();
-        public string sampleFor;
 
         public string Id => id;
         public string Path => path;
         public string ModuleType => moduleType;
         public IReadOnlyList<string> RequiredPackageIds => requiredPackageIds ?? Array.Empty<string>();
-        public string SampleFor => sampleFor;
     }
 
     [Serializable]
@@ -76,7 +74,7 @@ namespace NodeEditor.EditorUI
                     throw new FormatException($"Duplicate NodeGraph package id '{entry.id}'.");
                 if (!GraphTestPackageSource.IsSafePackagePath(entry.path))
                     throw new FormatException($"NodeGraph package '{entry.id}' has unsafe path '{entry.path}'.");
-                if (entry.moduleType != "framework" && entry.moduleType != "domain" && entry.moduleType != "sample")
+                if (entry.moduleType != "framework" && entry.moduleType != "domain")
                     throw new FormatException($"NodeGraph package '{entry.id}' has unknown module type '{entry.moduleType}'.");
 
                 entry.requiredPackageIds ??= Array.Empty<string>();
@@ -93,18 +91,6 @@ namespace NodeEditor.EditorUI
                         throw new FormatException($"NodeGraph package '{entry.id}' requires unknown package '{dependencyId}'.");
                     if (dependencyId == entry.id)
                         throw new FormatException($"NodeGraph package '{entry.id}' cannot require itself.");
-                }
-
-                if (entry.moduleType == "sample")
-                {
-                    if (string.IsNullOrWhiteSpace(entry.sampleFor) || !m_ById.TryGetValue(entry.sampleFor, out var product))
-                    throw new FormatException($"NodeGraph sample package '{entry.id}' has unknown sampleFor '{entry.sampleFor}'.");
-                    if (product.moduleType != "domain" || !entry.requiredPackageIds.Contains(entry.sampleFor))
-                    throw new FormatException($"NodeGraph sample package '{entry.id}' must require its domain '{entry.sampleFor}'.");
-                }
-                else if (!string.IsNullOrEmpty(entry.sampleFor))
-                {
-                    throw new FormatException($"Only NodeGraph sample packages may declare sampleFor ('{entry.id}').");
                 }
             }
 

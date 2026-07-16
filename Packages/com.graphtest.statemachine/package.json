@@ -1,15 +1,26 @@
 {
   "name": "com.graphtest.statemachine",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "displayName": "NodeGraph State Machine",
   "description": "NodeGraph 状态机运行时与编辑器模块。 / State machine runtime and editor module for NodeGraph.",
   "unity": "6000.0",
   "dependencies": {
-    "com.graphtest.nodeeditor": "0.0.4"
+    "com.graphtest.nodeeditor": "0.0.5",
+    "com.unity.modules.animation": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.physics": "1.0.0",
+    "com.unity.modules.physics2d": "1.0.0"
   },
+  "samples": [
+    {
+      "displayName": "State Machine Basics",
+      "description": "Playable 2D and 3D state machine examples.",
+      "path": "Samples~/State Machine Basics"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/yibidaiguo/NodeGraph.git",
-    "revision": "v0.0.4"
+    "revision": "v0.0.5"
   }
 }

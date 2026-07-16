@@ -10,9 +10,28 @@ namespace NodeEditor.EditorUI
     public static class NodeEditorAssetPathsLocator
     {
         const string ModuleName = "NodeEditor";
+        static NodeEditorAssetPaths s_Cached;
+        static bool s_Resolved;
+
+        static NodeEditorAssetPathsLocator()
+        {
+            EditorApplication.projectChanged += Invalidate;
+        }
 
         public static NodeEditorAssetPaths FindOrCreate()
-            => ProjectAssetPaths.FindOrCreate<NodeEditorAssetPaths>("NodeEditor", ApplyDefaults);
+        {
+            if (s_Resolved) return s_Cached;
+            s_Resolved = true;
+            s_Cached = ProjectAssetPaths.FindOrCreate<NodeEditorAssetPaths>("NodeEditor", ApplyDefaults);
+            return s_Cached;
+        }
+
+        static void Invalidate()
+        {
+            s_Cached = null;
+            s_Resolved = false;
+            EditorLocalizationLocator.Invalidate();
+        }
 
         public static void OpenAssetPaths() =>
             ProjectAssetPaths.Open<NodeEditorAssetPaths>("NodeEditor", ApplyDefaults);

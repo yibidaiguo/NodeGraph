@@ -1,15 +1,23 @@
 {
   "name": "com.graphtest.task",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "displayName": "NodeGraph Task",
   "description": "NodeGraph 任务图运行时与编辑器模块。 / Task graph runtime and editor module for NodeGraph.",
   "unity": "6000.0",
   "dependencies": {
-    "com.graphtest.nodeeditor": "0.0.4"
+    "com.graphtest.nodeeditor": "0.0.5",
+    "com.unity.modules.imgui": "1.0.0"
   },
+  "samples": [
+    {
+      "displayName": "Task Basics",
+      "description": "A playable task graph and UI example.",
+      "path": "Samples~/Task Basics"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/yibidaiguo/NodeGraph.git",
-    "revision": "v0.0.4"
+    "revision": "v0.0.5"
   }
 }

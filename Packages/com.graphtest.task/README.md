@@ -26,7 +26,7 @@ Package consumers automatically receive Task path setup on first install. Node d
 
 ## 安装
 
-独立可安装、编译、卸载的 Task Runtime/Editor 模块，只依赖 `com.graphtest.nodeeditor`，不依赖 Dialogue 或 State Machine。通过 `Tools/NodeGraph/Manager` 安装本模块，再运行 Setup 生成资产（见上）。生成的任务图、步骤图、黑板、本地化与 `TaskAssetPaths` 属于项目，默认写入 `Assets/TaskContent`。产品包不含场景、示例数据或示例脚本；需要演示时在 Manager 里单独安装 `com.graphtest.task.samples` 并显式导入 **Task Basics**。
+独立可安装、编译、卸载的 Task Runtime/Editor 模块，只依赖 `com.graphtest.nodeeditor`，不依赖 Dialogue 或 State Machine。通过 `Tools/NodeGraph/Manager` 安装本模块，再运行 Setup 生成资产（见上）。生成的任务图、步骤图、黑板、本地化与 `TaskAssetPaths` 属于项目，默认写入 `Assets/TaskContent`。需要演示时，直接从本包的 Package Manager **Samples** 页签或 Manager 的 Task 卡片导入 **Task Basics**。
 
 ## 创建第一条任务线
 

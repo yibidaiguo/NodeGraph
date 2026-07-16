@@ -1,5 +1,21 @@
 # 更新日志 / Changelog
 
+## [0.0.5] - 2026-07-17
+
+### 中文
+
+- 节点运行态新增主题色流动高光，标题宽度限制为 240px，超长标题自动省略。
+- 修复运行时切换对话组可能卡死的问题，并缓存高频编辑器资源查询。
+- Dialogue、Task 与 State Machine 示例已合并到各自领域包的 `Samples~`，不再作为独立包发布。
+- 修复 NodeGraph Manager 模块卡片与示例行重叠，示例现在可从领域包内直接导入。
+
+### English
+
+- Added theme-aware flowing runtime highlights, capped node titles at 240px, and ellipsized overflow.
+- Fixed a possible editor freeze when switching dialogue groups at runtime and cached hot editor resource lookups.
+- Embedded Dialogue, Task, and State Machine samples in their domain package `Samples~` directories instead of publishing standalone sample packages.
+- Fixed overlapping module and sample rows in NodeGraph Manager and enabled direct domain-package sample import.
+
 ## [0.0.4] - 2026-07-16
 
 ### 中文
@@ -49,7 +65,7 @@
 ### 中文
 
 - NodeGraph 首个公开发布版本。
-- 包含节点编辑器、对话、任务、状态机及其可选示例包。
+- 包含节点编辑器、对话、任务与状态机；可选样例内嵌在对应领域包的 `Samples~` 中。
 
 ### English
 

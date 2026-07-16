@@ -14,15 +14,17 @@
 - Added 19 concise semantic icons for 27 Dialogue, Task, and StateMachine nodes, with silhouettes selected by concrete node meaning.
 - Running, success, and failure states illuminate the whole node while selection and validation outlines compose independently.
 
-## [Unreleased]
+## [0.0.5] - 2026-07-17
 
 ### 中文
 
 - 为对话节点注册简洁的共享语义图标，并自动继承框架的金属底座、双主题节点层次和整节点运行态照明。
+- 将 Dialogue Basics 合并到领域包的 `Samples~`，可从 Package Manager 或 NodeGraph Manager 直接导入。
 
 ### English
 
 - Registered concise shared semantic icons for Dialogue nodes, inheriting the framework metal base, dual-theme depth, and whole-node runtime illumination.
+- Embedded Dialogue Basics in this package's `Samples~` directory for direct Package Manager or NodeGraph Manager import.
 
 ## [0.0.3] - 2026-07-16
 

@@ -3,7 +3,7 @@
 一个**可直接运行**的对话播放样例，演示如何用 `DialoguePlayer` 驱动一张对话图并把台词/选项画到屏幕上。仿插件结构，自成一个文件夹：
 
 ```
-Assets/Samples/NodeGraph Dialogue Samples/0.0.1/Dialogue Basics/
+Assets/Samples/NodeGraph Dialogue/0.0.5/Dialogue Basics/
 ├─ Scenes/
 │   └─ DialogueTest.unity      # 测试场景：Camera + Light + DialogueTest 物体
 ├─ Scripts/
@@ -42,4 +42,4 @@ Start → Line(问候) → Choice ⟨友善 / 冷淡⟩
 
 ## 样例生命周期
 
-从 NodeGraph Manager 导入后，Unity 会把样例复制到 `Assets/Samples/NodeGraph Dialogue Samples/0.0.1/Dialogue Basics`。移除样例包不会自动删除这个已导入副本；不再需要时请手动删除该目录。
+从本包的 Package Manager **Samples** 页签或 NodeGraph Manager 导入后，Unity 会把样例复制到 `Assets/Samples/NodeGraph Dialogue/0.0.5/Dialogue Basics`。移除 Dialogue 包不会自动删除这个已导入副本；不再需要时请手动删除该目录。

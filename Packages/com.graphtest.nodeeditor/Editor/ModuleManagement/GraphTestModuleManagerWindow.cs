@@ -138,6 +138,18 @@ namespace NodeEditor.EditorUI
     public sealed class GraphTestModuleManagerWindow : EditorWindow
     {
         const string FrameworkId = "com.graphtest.nodeeditor";
+        static readonly Dictionary<string, string> LegacySamplePackages = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["com.graphtest.dialogue"] = "com.graphtest.dialogue.samples",
+            ["com.graphtest.task"] = "com.graphtest.task.samples",
+            ["com.graphtest.statemachine"] = "com.graphtest.statemachine.samples"
+        };
+        static readonly Dictionary<string, string> LegacySamplePaths = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["com.graphtest.dialogue"] = "Assets/Samples/NodeGraph Dialogue Samples/0.0.4/Dialogue Basics",
+            ["com.graphtest.task"] = "Assets/Samples/NodeGraph Task Samples/0.0.4/Task Basics",
+            ["com.graphtest.statemachine"] = "Assets/Samples/NodeGraph State Machine Samples/0.0.4/State Machine Basics"
+        };
 
         readonly Dictionary<string, string> m_TransientStates = new Dictionary<string, string>(StringComparer.Ordinal);
         GraphTestModuleCatalog m_Catalog;
@@ -188,29 +200,36 @@ namespace NodeEditor.EditorUI
                 rootVisualElement.Add(error);
             }
 
-            if (m_Catalog == null) return;
-            AddHeading(Localizer.UI("ui.moduleManager.framework", "Framework"));
-            foreach (var entry in m_Catalog.Packages.Where(entry => entry.ModuleType == "framework"))
-                rootVisualElement.Add(BuildModuleCard(entry));
+            var content = new ScrollView(ScrollViewMode.Vertical);
+            content.style.flexGrow = 1;
+            rootVisualElement.Add(content);
 
-            AddHeading(Localizer.UI("ui.moduleManager.products", "Modules"));
+            if (m_Catalog == null) return;
+            AddLegacyPackageNotices(content);
+            AddHeading(content, Localizer.UI("ui.moduleManager.framework", "Framework"));
+            foreach (var entry in m_Catalog.Packages.Where(entry => entry.ModuleType == "framework"))
+                content.Add(BuildModuleCard(entry));
+
+            AddHeading(content, Localizer.UI("ui.moduleManager.products", "Modules"));
             foreach (var entry in m_Catalog.Packages.Where(entry => entry.ModuleType == "domain"))
-                rootVisualElement.Add(BuildModuleCard(entry));
+                content.Add(BuildModuleCard(entry));
         }
 
-        void AddHeading(string heading)
+        void AddHeading(VisualElement parent, string heading)
         {
             var label = new Label(heading);
             label.AddToClassList("ne-manager-heading");   // 字重走 USS；margin 属布局留内联
             label.style.marginTop = 8;
             label.style.marginBottom = 3;
-            rootVisualElement.Add(label);
+            label.style.flexShrink = 0;
+            parent.Add(label);
         }
 
         VisualElement BuildModuleCard(GraphTestModuleCatalogEntry entry)
         {
             var card = new VisualElement();
             card.AddToClassList("entry-card");
+            card.style.flexShrink = 0;
             card.Add(BuildPackageRow(entry));
 
             if (m_Installed.Contains(entry.Id))
@@ -222,9 +241,8 @@ namespace NodeEditor.EditorUI
                         "The installed module has not registered its NodeGraph actions."), HelpBoxMessageType.Warning));
             }
 
-            foreach (var sample in m_Catalog.Packages.Where(candidate =>
-                         candidate.ModuleType == "sample" && candidate.SampleFor == entry.Id))
-                card.Add(BuildSampleRow(sample));
+            if (m_Installed.Contains(entry.Id) && entry.ModuleType == "domain")
+                card.Add(BuildDomainSampleRows(entry));
             return card;
         }
 
@@ -235,6 +253,7 @@ namespace NodeEditor.EditorUI
             row.style.flexWrap = Wrap.Wrap;
             row.style.marginLeft = 8;
             row.style.marginBottom = 4;
+            row.style.flexShrink = 0;
             foreach (var action in descriptor.Actions)
             {
                 var button = new Button(() => ExecuteAction(action)) { text = action.DisplayName };
@@ -246,29 +265,46 @@ namespace NodeEditor.EditorUI
             return row;
         }
 
-        VisualElement BuildSampleRow(GraphTestModuleCatalogEntry entry)
+        VisualElement BuildDomainSampleRows(GraphTestModuleCatalogEntry entry)
         {
             var container = new VisualElement();
-            container.style.marginLeft = 16;
-            container.Add(BuildPackageRow(entry));
-
-            if (!m_Installed.Contains(entry.Id)) return container;
+            container.style.marginLeft = 8;
+            container.style.marginTop = 2;
+            container.style.flexShrink = 0;
             var package = PackageInfo.GetAllRegisteredPackages().FirstOrDefault(info => info.name == entry.Id);
             if (package == null) return container;
             var samples = PackageSample.FindByPackage(package.name, package.version).ToArray();
+            bool legacyImported = IsLegacySampleImported(entry.Id);
             foreach (var sample in samples)
             {
+                var row = new VisualElement();
+                row.style.flexDirection = FlexDirection.Row;
+                row.style.alignItems = Align.Center;
+                row.style.minHeight = 32;
+                row.style.flexShrink = 0;
+
+                var name = new Label(sample.displayName);
+                name.style.flexGrow = 1;
+                row.Add(name);
+
+                string status = legacyImported
+                    ? Localizer.UI("ui.moduleManager.importedLegacy", "Imported (legacy location)")
+                    : sample.isImported
+                        ? Localizer.UI("ui.moduleManager.imported", "Imported")
+                        : Localizer.UI("ui.moduleManager.available", "Available");
+                var statusLabel = new Label(status);
+                statusLabel.style.width = 180;
+                row.Add(statusLabel);
+
                 var button = new Button(() => ImportSample(sample))
                 {
-                    text = sample.isImported
-                        ? Localizer.UI("ui.moduleManager.imported", "Imported: ") + sample.displayName
-                        : Localizer.UI("ui.moduleManager.import", "Import: ") + sample.displayName
+                    text = Localizer.UI("ui.moduleManager.import", "Import")
                 };
                 EditorUi.ApplyToolbarTextButton(button);
-                button.style.marginLeft = 8;
-                button.style.marginBottom = 3;
-                button.SetEnabled(!sample.isImported);
-                container.Add(button);
+                button.style.width = 86;
+                button.SetEnabled(!legacyImported && !sample.isImported && !GraphTestPackageOperations.IsBusy);
+                row.Add(button);
+                container.Add(row);
             }
             return container;
         }
@@ -279,6 +315,7 @@ namespace NodeEditor.EditorUI
             row.style.flexDirection = FlexDirection.Row;
             row.style.alignItems = Align.Center;
             row.style.minHeight = 34;
+            row.style.flexShrink = 0;
 
             var name = new Label(DisplayName(entry));
             name.tooltip = entry.Id;
@@ -364,10 +401,59 @@ namespace NodeEditor.EditorUI
         static string DisplayName(GraphTestModuleCatalogEntry entry)
         {
             if (entry.Id == FrameworkId) return Localizer.UI("ui.moduleManager.nodeEditor", "Node Editor Framework");
-            string suffix = entry.ModuleType == "sample" ? Localizer.UI("ui.moduleManager.samplesSuffix", " Samples") : string.Empty;
-            string id = entry.ModuleType == "sample" ? entry.SampleFor : entry.Id;
-            string name = id.Substring(id.LastIndexOf('.') + 1);
-            return char.ToUpperInvariant(name[0]) + name.Substring(1) + suffix;
+            string name = entry.Id.Substring(entry.Id.LastIndexOf('.') + 1);
+            return char.ToUpperInvariant(name[0]) + name.Substring(1);
+        }
+
+        void AddLegacyPackageNotices(VisualElement parent)
+        {
+            foreach (var pair in LegacySamplePackages)
+            {
+                if (!m_Installed.Contains(pair.Value)) continue;
+                var notice = new VisualElement();
+                notice.AddToClassList("entry-card");
+                notice.style.flexDirection = FlexDirection.Row;
+                notice.style.alignItems = Align.Center;
+                notice.style.flexShrink = 0;
+
+                var message = new Label(string.Format(Localizer.UI("ui.moduleManager.legacySamplePackage",
+                    "Legacy sample package '{0}' is still installed. Imported sample assets will be kept."), pair.Value));
+                message.style.flexGrow = 1;
+                message.style.whiteSpace = WhiteSpace.Normal;
+                notice.Add(message);
+
+                var button = new Button(() => RemoveLegacyPackage(pair.Value))
+                {
+                    text = Localizer.UI("ui.moduleManager.removeLegacy", "Remove legacy package")
+                };
+                EditorUi.ApplyToolbarTextButton(button);
+                button.SetEnabled(!GraphTestPackageOperations.IsBusy);
+                notice.Add(button);
+                parent.Add(notice);
+            }
+        }
+
+        void RemoveLegacyPackage(string packageId)
+        {
+            Action<string, string> stateChanged = (id, state) =>
+            {
+                m_TransientStates[id] = state;
+                Reload();
+            };
+            Action<bool, string> completed = (succeeded, error) =>
+            {
+                m_TransientStates.Clear();
+                if (!succeeded) m_ContextError = error;
+                Reload();
+            };
+            GraphTestPackageOperations.RemovePackage(packageId, stateChanged, completed);
+        }
+
+        static bool IsLegacySampleImported(string domainPackageId)
+        {
+            if (!LegacySamplePaths.TryGetValue(domainPackageId, out var relativePath)) return false;
+            string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+            return Directory.Exists(Path.Combine(projectRoot, relativePath));
         }
 
         internal static bool TryLoadContext(
@@ -459,8 +545,18 @@ namespace NodeEditor.EditorUI
             if (plan == null || !plan.Succeeded) { completed(false, plan?.Error ?? Localizer.UI("ui.moduleManager.errNoPlan", "The removal plan is unavailable.")); return; }
             if (plan.PackageIds.Count == 0) { completed(true, null); return; }
 
+            RemovePackage(plan.PackageIds[0], stateChanged, completed);
+        }
+
+        public static void RemovePackage(
+            string packageId,
+            Action<string, string> stateChanged,
+            Action<bool, string> completed)
+        {
+            if (IsBusy) { completed(false, Localizer.UI("ui.moduleManager.errBusy", "Another NodeGraph package operation is already running.")); return; }
+            if (string.IsNullOrWhiteSpace(packageId)) { completed(false, Localizer.UI("ui.moduleManager.errNoPlan", "The removal plan is unavailable.")); return; }
+
             IsBusy = true;
-            string packageId = plan.PackageIds[0];
             stateChanged(packageId, Localizer.UI("ui.moduleManager.removing", "Removing") + "...");
             RemoveRequest request = Client.Remove(packageId);
             EditorApplication.update += Poll;

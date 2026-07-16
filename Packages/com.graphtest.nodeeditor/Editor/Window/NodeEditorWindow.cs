@@ -88,13 +88,23 @@ namespace NodeEditor.EditorUI
 
         void OnPlayModeChanged(PlayModeStateChange s)
         {
-            if (s == PlayModeStateChange.EnteredPlayMode) StartRuntimePoll();
-            else if (s == PlayModeStateChange.ExitingPlayMode) { StopRuntimePoll(); DetachRuntimeBinding(); }
+            if (s == PlayModeStateChange.EnteredPlayMode)
+            {
+                m_RuntimeGraphPinned = false;
+                StartRuntimePoll();
+            }
+            else if (s == PlayModeStateChange.ExitingPlayMode)
+            {
+                m_RuntimeGraphPinned = false;
+                StopRuntimePoll();
+                DetachRuntimeBinding();
+            }
         }
 
         // runner 可能晚于 EnteredPlayMode 注册，窗口也会在运行中切图/关闭重开。
         // 因此 play 期间保持一个有界 update 轮询：按当前资产匹配，变化时解绑/重绑；退出 play/关窗才拆除。
         bool m_Polling;
+        bool m_RuntimeGraphPinned;
         void StartRuntimePoll() { if (!m_Polling) { m_Polling = true; EditorApplication.update += PollForRuntime; } }
         void StopRuntimePoll()  { if (m_Polling)  { m_Polling = false; EditorApplication.update -= PollForRuntime; } }
         void PollForRuntime() => PollForRuntime(Application.isPlaying);
@@ -109,7 +119,7 @@ namespace NodeEditor.EditorUI
             {
                 attachedGraph = RuntimeGraphLocator.FindReportedActiveGraph(m_AttachedRuntime, m_ModuleFilter);
                 reportedGraph = attachedGraph ?? RuntimeGraphLocator.FindReportedActiveGraph(m_ModuleFilter, m_Asset);
-                if (reportedGraph != null && reportedGraph != m_Asset)
+                if (!m_RuntimeGraphPinned && reportedGraph != null && reportedGraph != m_Asset)
                 {
                     LoadGraph(reportedGraph, attachedGraph != null ? m_AttachedRuntime : null);
                     return;
@@ -130,12 +140,12 @@ namespace NodeEditor.EditorUI
                     m_RuntimeGraphCandidatesModule = m_ModuleFilter;
                 }
 
-                if (reportedGraph == null)
+                if (!m_RuntimeGraphPinned && reportedGraph == null)
                 {
                     var activeGraph = RuntimeGraphLocator.FindActiveGraph(m_RuntimeGraphCandidates, m_Asset);
                     if (activeGraph != null && activeGraph != m_Asset)
                     {
-                        LoadGraph(activeGraph);
+                        LoadGraph(activeGraph, null);
                         return;
                     }
                 }
@@ -197,7 +207,7 @@ namespace NodeEditor.EditorUI
             var leftColumn = new TwoPaneSplitView(0, 240, TwoPaneSplitViewOrientation.Vertical);
             m_GraphList = new GraphListPane(m_ModuleFilter);
             // 在列表里点选一个图/对话组 → 入栈导航历史并加载（与工具栏选择框走同一条路径）。
-            m_GraphList.OnSelected = a => { if (a != m_Asset) { m_Nav.Push(a); LoadGraph(a); } };
+            m_GraphList.OnSelected = a => { if (a != m_Asset) { m_Nav.Push(a); LoadGraphFromUserSelection(a); } };
             // 列表里删除了一张图 → 若删的正是当前打开的图，换载替补（同模块的下一张；replacement 为 null=已无图则清空画布）。
             // 删别的图不影响当前画布。判据：DeleteAsset 会销毁内存对象，被删的正是当前图时 m_Asset 经 Unity 重载的 ==
             // 比较即为 null；删的是别的图则 m_Asset 仍存活 → 不动画布。换载走 LoadGraph（不入导航历史，属"被动替补"非主动跳转）。
@@ -238,14 +248,20 @@ namespace NodeEditor.EditorUI
 
             // 在 domain reload 之后 m_Asset 会保留（[SerializeField]），但 m_Registry/m_Blackboard 不会——
             // 走 LoadGraph 重新解析它们，而非 ReloadCanvas（后者会使用为 null 的 locator）。
-            if (m_Asset != null) LoadGraph(m_Asset);
+            if (m_Asset != null) LoadGraph(m_Asset, null);
 
             // 如果窗口是在已处于播放模式时被（重新）构建的——例如在进入播放的 domain reload 期间，
             // EnteredPlayMode 时机点先于本次 CreateGUI 触发——则补做运行时挂接。
             if (Application.isPlaying) StartRuntimePoll();
         }
 
-        public void LoadGraph(NodeGraphAsset asset) => LoadGraph(asset, null);
+        public void LoadGraph(NodeGraphAsset asset) => LoadGraphFromUserSelection(asset);
+
+        void LoadGraphFromUserSelection(NodeGraphAsset asset)
+        {
+            if (Application.isPlaying) m_RuntimeGraphPinned = true;
+            LoadGraph(asset, null);
+        }
 
         void LoadGraph(NodeGraphAsset asset, IRuntimeGraph runtime)
         {
@@ -261,7 +277,6 @@ namespace NodeEditor.EditorUI
             if (Application.isPlaying)
             {
                 StartRuntimePoll();
-                if (runtime == null) PollForRuntime();
             }
         }
 

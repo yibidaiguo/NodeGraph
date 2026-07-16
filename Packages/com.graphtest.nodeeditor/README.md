@@ -17,7 +17,7 @@ When several production modules arrive together, their windows are queued in Fra
 1. 在 Unity Package Manager 中添加一次框架 Git URL：
 
    ```text
-   <repository>.git?path=/Packages/com.graphtest.nodeeditor#v0.0.4
+   <repository>.git?path=/Packages/com.graphtest.nodeeditor#v0.0.5
    ```
 
 2. 打开 `Tools/NodeGraph/Manager`。

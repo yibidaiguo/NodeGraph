@@ -5,7 +5,7 @@
 // 只搭产品创作基础：节点定义 / 注册表 / 领域本地化种子。
 // 框架核心资产（本地化表/语言选项/双配置/全局黑板）与框架种子由 FrameworkSetup.EnsureCoreAssets 负责
 //（C11 所有权：框架 key 框架种、对话 key 本文件种）；定义/注册表管线在框架 DomainSetupPipeline。
-// 可运行演示属于可选 samples 包，不是产品 Setup 的依赖。仅 Editor/ 程序集 —— 本文件无运行时依赖。
+// 可运行演示属于本包的可选 Samples 内容，不是产品 Setup 的依赖。仅 Editor/ 程序集 —— 本文件无运行时依赖。
 
 using UnityEditor;
 using UnityEngine;
@@ -18,7 +18,7 @@ namespace Dialogue.EditorUI
     {
         public static void Run()
         {
-            // 产品 Setup 不创建或依赖可选 samples 包中的演示内容。
+            // 产品 Setup 不创建或依赖可选 Samples 内容。
             var dialoguePaths = DialogueAssetPathsLocator.FindOrCreate();
             var nodePaths = NodeEditorAssetPathsLocator.FindOrCreate();
             if (dialoguePaths == null || nodePaths == null) return;

@@ -20,10 +20,24 @@ namespace NodeEditor.EditorUI
     // 把适用各档按「全局→模块→组」合并成一个 BlackboardSet（运行播种 / 校验 / 检视面板的「键」下拉都读它）。
     public static class BlackboardLocator
     {
-        static IEnumerable<BlackboardAsset> All() =>
-            AssetDatabase.FindAssets("t:BlackboardAsset")
+        static List<BlackboardAsset> s_All;
+
+        static BlackboardLocator()
+        {
+            EditorApplication.projectChanged += Invalidate;
+        }
+
+        static IEnumerable<BlackboardAsset> All()
+        {
+            if (s_All != null) return s_All;
+            s_All = AssetDatabase.FindAssets("t:BlackboardAsset")
                 .Select(g => AssetDatabase.LoadAssetAtPath<BlackboardAsset>(AssetDatabase.GUIDToAssetPath(g)))
-                .Where(a => a != null);
+                .Where(a => a != null)
+                .ToList();
+            return s_All;
+        }
+
+        static void Invalidate() => s_All = null;
 
         // 全局黑板（标签皆空）：每项目假设一块；发现多个时告警而非静默取第一个（那会掩盖歧义）。
         public static BlackboardAsset FindGlobal()

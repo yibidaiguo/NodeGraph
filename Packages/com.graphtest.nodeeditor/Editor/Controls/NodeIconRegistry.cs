@@ -25,6 +25,7 @@ namespace NodeEditor.EditorUI
             if (s_Map != null) return;
             s_Map = new Dictionary<Type, NodeIconKind>();
             foreach (var carrier in TypeCache.GetTypesWithAttribute<NodeIconAttribute>()
+                         .Where(type => !IsTestAssembly(type))
                          .OrderBy(type => type.AssemblyQualifiedName, StringComparer.Ordinal))
             {
                 foreach (NodeIconAttribute attr in carrier.GetCustomAttributes(typeof(NodeIconAttribute), false))
@@ -41,6 +42,9 @@ namespace NodeEditor.EditorUI
                 }
             }
         }
+
+        static bool IsTestAssembly(Type type) => type.Assembly.GetReferencedAssemblies()
+            .Any(reference => reference.Name == "nunit.framework");
 
         static NodeIconKind Fallback(NodeRole role) => role switch
         {

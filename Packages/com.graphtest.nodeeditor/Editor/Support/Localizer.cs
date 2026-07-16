@@ -12,17 +12,23 @@ namespace NodeEditor.EditorUI
     public static class EditorLocalizationLocator
     {
         static EditorLocalizationConfig s_Cached;
+        static bool s_Resolved;
         public static EditorLocalizationConfig Config()
         {
+            if (s_Resolved) return s_Cached;
+            s_Resolved = true;
             var paths = NodeEditorAssetPathsLocator.FindOrCreate();
             if (paths == null) { s_Cached = null; return null; }
             var configuredPath = (paths.editorLocalizationConfigPath ?? string.Empty).Replace('\\', '/').Trim();
-            if (s_Cached != null && AssetDatabase.GetAssetPath(s_Cached) == configuredPath) return s_Cached;
             s_Cached = ProjectAssetPaths.FindConfigured<EditorLocalizationConfig>(
                 "NodeEditor", configuredPath);
             return s_Cached;
         }
-        public static void Invalidate() => s_Cached = null;
+        public static void Invalidate()
+        {
+            s_Cached = null;
+            s_Resolved = false;
+        }
     }
 
     public static class Localizer

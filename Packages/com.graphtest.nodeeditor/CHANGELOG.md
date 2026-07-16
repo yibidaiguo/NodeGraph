@@ -14,19 +14,25 @@
 - Added 19 concise semantic icons for 27 Dialogue, Task, and StateMachine nodes, with silhouettes selected by concrete node meaning.
 - Running, success, and failure states illuminate the whole node while selection and validation outlines compose independently.
 
-## [Unreleased]
+## [0.0.5] - 2026-07-17
 
 ### 中文
 
 - 节点轮廓新增与面板按钮一致的上沿高光、下沿阴影和精密压边层次，完整支持亮色与暗色主题。
 - 新增共享 Painter2D 语义图标注册表与 24px 金属底座控件；27 个领域节点复用 19 种简洁图标，并保留按角色回退。
 - 运行中、成功、失败改为整个节点填充与辉光；选中状态仅叠加独立描边，不再覆盖节点填充。
+- 节点运行态新增主题色流动高光，标题宽度限制为 240px，超长标题自动省略。
+- 修复运行时切换对话组可能卡死的问题，并缓存高频编辑器资源查询。
+- NodeGraph Manager 改用可滚动的稳定纵向布局，并直接显示领域包内的示例。
 
 ### English
 
 - Added premium top highlights, bottom shadows, and pressed-edge depth to every node silhouette in both themes.
 - Added a shared Painter2D semantic icon registry and 24px metal-base control; 27 domain nodes reuse 19 concise icons with role fallbacks.
 - Runtime states now illuminate the whole node, while selection adds only an independent outline.
+- Added theme-aware flowing runtime highlights, capped node titles at 240px, and ellipsized overflow.
+- Fixed a possible editor freeze when switching dialogue groups at runtime and cached hot editor resource lookups.
+- Switched NodeGraph Manager to a stable scrollable layout that lists samples owned by domain packages.
 
 ## [0.0.3] - 2026-07-16
 
