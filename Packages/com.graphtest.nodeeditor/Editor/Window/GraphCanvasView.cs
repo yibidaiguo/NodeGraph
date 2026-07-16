@@ -546,6 +546,7 @@ namespace NodeEditor.EditorUI
             evt.customStyle.TryGetValue(s_ShapeGlow, out m_ShapeGlow);
             evt.customStyle.TryGetValue(s_SelectionOutline, out m_SelectionOutline);
             evt.customStyle.TryGetValue(s_ValidationOutline, out m_ValidationOutline);
+            ResolveRunningFlowStyle(evt);
             MarkDirtyRepaint();
         }
 

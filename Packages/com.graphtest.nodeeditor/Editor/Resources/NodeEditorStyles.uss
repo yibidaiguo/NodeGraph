@@ -112,6 +112,7 @@
     --ne-status-running-highlight: rgb(255, 248, 218);
     --ne-status-running-shadow: rgb(210, 163, 74);
     --ne-status-running-glow: rgba(215, 158, 61, 0.66);
+    --ne-node-running-flow: rgba(255, 252, 232, 0.16);
     --ne-status-success-fill: rgb(184, 216, 185);
     --ne-status-success-highlight: rgb(234, 244, 233);
     --ne-status-success-shadow: rgb(131, 178, 139);
@@ -323,6 +324,7 @@
     --ne-status-running-highlight: rgb(91, 68, 37);
     --ne-status-running-shadow: rgb(73, 49, 26);
     --ne-status-running-glow: rgba(215, 158, 61, 0.66);
+    --ne-node-running-flow: rgba(255, 225, 151, 0.22);
     --ne-status-success-fill: rgb(52, 90, 62);
     --ne-status-success-highlight: rgb(38, 62, 44);
     --ne-status-success-shadow: rgb(32, 54, 38);

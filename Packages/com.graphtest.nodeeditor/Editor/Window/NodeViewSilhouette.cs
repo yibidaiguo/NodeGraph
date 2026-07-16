@@ -40,6 +40,7 @@ namespace NodeEditor.EditorUI
 
             DrawGradientFace(context, m_VisualRole, bounds,
                 m_ShapeHighlight, m_ShapeFill, m_ShapeShadow);
+            DrawRunningFlow(context, m_VisualRole, bounds);
 
             painter.strokeColor = m_ShapeOutline;
             painter.lineWidth = Mathf.Max(1f, m_ShapeOutlineWidth);
