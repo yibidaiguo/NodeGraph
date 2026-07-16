@@ -30,7 +30,7 @@ namespace Dialogue.EditorUI
         static DialogueValidation()
         {
             GraphValidator.RegisterExtension("dialogue", CheckAll);
-            NodeDefinitionAvailability.Register("dialogue", CheckDefinitionAvailability);
+            NodeAdmission.Register("dialogue", CheckDefinitionAvailability);
         }
 
         static NodeAvailabilityVerdict CheckDefinitionAvailability(NodeAvailabilityContext ctx)

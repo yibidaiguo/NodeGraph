@@ -33,7 +33,7 @@ namespace StateMachine.EditorUI
             GraphValidator.RegisterExtension("statemachine", CheckAll);
             // 节点可用性谓词（照 DialogueValidation 成例）：状态机图里只允许放本域节点——
             // 搜索框可见 ≠ 在当前图中合法（Task/VISION 已知偏差的教训），在源头拦别域节点混入。
-            NodeDefinitionAvailability.Register("statemachine", CheckDefinitionAvailability);
+            NodeAdmission.Register("statemachine", CheckDefinitionAvailability);
         }
 
         static NodeAvailabilityVerdict CheckDefinitionAvailability(NodeAvailabilityContext ctx)

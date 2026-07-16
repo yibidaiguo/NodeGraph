@@ -140,6 +140,7 @@ namespace NodeEditor.EditorUI
                 {
                     var def = registry.Find(inst.definitionId);
                     if (def == null) continue;
+                    if (!NodeAdmission.Evaluate(asset, def).allowed) continue;
                     var view = new NodeView(inst, def);
                     view.OnSelectedCallback = () => OnNodeSelected?.Invoke(view);
                     view.SetPosition(new Rect(inst.position, Vector2.zero));
@@ -195,7 +196,7 @@ namespace NodeEditor.EditorUI
             var sv = start as PortView;
             if (sv == null) return new List<Port>();
             var startDef = (start.node as NodeView)?.Definition;
-            if (!NodeDefinitionAvailability.Evaluate(Asset, startDef).allowed)
+            if (!NodeAdmission.Evaluate(Asset, startDef).allowed)
                 return new List<Port>();
             bool startIsOutput = start.direction == Direction.Output;
             return ports.ToList().Where(p =>
@@ -205,7 +206,7 @@ namespace NodeEditor.EditorUI
                 if (!TypeRefCompat.Compatible(sv.PortType, pv.PortType)) return false;
                 // 边永远 output->input：按 start 的方向定出 from/to 两端，再问连接规则。
                 var otherDef = (pv.node as NodeView)?.Definition;
-                if (!NodeDefinitionAvailability.Evaluate(Asset, otherDef).allowed) return false;
+                if (!NodeAdmission.Evaluate(Asset, otherDef).allowed) return false;
                 var fromDef  = startIsOutput ? startDef : otherDef;
                 var fromPort = startIsOutput ? sv.PortName : pv.PortName;
                 var toDef    = startIsOutput ? otherDef : startDef;
@@ -351,7 +352,7 @@ namespace NodeEditor.EditorUI
         public NodeView CreateNode(NodeDefinition def, Vector2 graphPos)
         {
             if (Asset == null) return null;   // 未加载任何图（例如在打开图之前通过菜单打开了窗口）—— 无处可添加
-            var availability = NodeDefinitionAvailability.Evaluate(Asset, def);
+            var availability = NodeAdmission.Evaluate(Asset, def);
             if (!availability.allowed)
             {
                 Debug.LogWarning(availability.reason);
@@ -382,12 +383,12 @@ namespace NodeEditor.EditorUI
         // 'new'：有意隐藏 GraphView.CanPasteSerializedData。GraphView 是通过构造函数中赋值的
         // canPasteSerializedData 委托来调用我们的粘贴检查，而非通过此方法名，因此
         // 隐藏基类成员是刻意为之（并消除 CS0108 警告）。
-        new bool CanPasteSerializedData(string data) => ClipboardCodec.CanPaste(data);
+        new bool CanPasteSerializedData(string data) => ClipboardCodec.CanPaste(data, Registry, Asset);
 
         void UnserializeAndPaste(string operationName, string data)
         {
             if (Asset == null || Registry == null) return;
-            var pasted = ClipboardCodec.BuildPasted(data, Registry, new Vector2(30f, 30f));
+            var pasted = ClipboardCodec.BuildPasted(data, Registry, Asset, new Vector2(30f, 30f));
             if (pasted.Count == 0) return;   // 剪贴板为空/无效，或没有解析到 definition
 
             // RegisterCompleteObjectUndo（而非 RecordObject）：粘贴会扩大 instances 列表，这是一次

@@ -104,23 +104,26 @@ namespace NodeEditor.EditorUI
             return ToJson(payload);
         }
 
-        // 仅当剪贴板数据是本编解码器产生的（带 marker 标记、至少一个节点）才返回 true ——
-        // 从其他应用复制的任意剪贴板文本不得在此被识别为可粘贴。
-        public static bool CanPaste(string data)
+        // 仅当剪贴板数据来自本编解码器，且至少一个节点可被当前图准入时返回 true。
+        // 从其他应用复制的文本以及只含其他模块节点的负载都不可粘贴。
+        public static bool CanPaste(string data, NodeRegistry registry, NodeGraphAsset graph)
         {
             var payload = Parse(data);
-            return payload != null && payload.nodes.Count > 0;
+            if (payload == null || registry == null || graph == null) return false;
+            return payload.nodes.Any(node =>
+                NodeAdmission.Evaluate(graph, registry.Find(node.definitionId)).allowed);
         }
 
         // 解码并重建为全新实例：新的 GUID instanceId，内部连接重映射到
         // 这些新 id 上（指向未被复制或已跳过节点的连线会被丢弃），位置按 `offset` 偏移，
-        // 任何在 `registry` 中不再能解析的 definition 会被跳过，而不是作为损坏节点粘贴。
+        // 任何无法解析或不被当前图模块准入的 definition 都会被跳过。
         // 对 null/无效/无法解析的数据返回空列表（绝不返回 null）。
-        public static List<NodeInstance> BuildPasted(string data, NodeRegistry registry, Vector2 offset)
+        public static List<NodeInstance> BuildPasted(
+            string data, NodeRegistry registry, NodeGraphAsset graph, Vector2 offset)
         {
             var result = new List<NodeInstance>();
             var payload = Parse(data);
-            if (payload == null || registry == null) return result;
+            if (payload == null || registry == null || graph == null) return result;
 
             var idMap = new Dictionary<string, string>();
             foreach (var n in payload.nodes) idMap[n.instanceId] = System.Guid.NewGuid().ToString();
@@ -128,7 +131,8 @@ namespace NodeEditor.EditorUI
             var byNewId = new Dictionary<string, NodeInstance>();
             foreach (var n in payload.nodes)
             {
-                if (registry.Find(n.definitionId) == null) continue;   // definition 自复制以来已被移除/重命名
+                var definition = registry.Find(n.definitionId);
+                if (!NodeAdmission.Evaluate(graph, definition).allowed) continue;
                 var inst = new NodeInstance
                 {
                     instanceId = idMap[n.instanceId],

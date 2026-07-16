@@ -22,7 +22,7 @@ namespace TaskEditor.EditorUI
         static TaskValidation()
         {
             GraphValidator.RegisterExtension("task", CheckAll);
-            NodeDefinitionAvailability.Register("task", CheckDefinitionAvailability);
+            NodeAdmission.Register("task", CheckDefinitionAvailability);
         }
 
         static string L(string key, string en) => Localizer.UI(key, en);

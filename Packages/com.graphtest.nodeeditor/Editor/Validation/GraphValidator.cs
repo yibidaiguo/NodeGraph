@@ -74,7 +74,7 @@ namespace NodeEditor
             var issues = new List<ValidationIssue>();
             foreach (var instance in g.instances)
             {
-                var verdict = NodeDefinitionAvailability.Evaluate(g, reg.Find(instance.definitionId));
+                var verdict = NodeAdmission.Evaluate(g, reg.Find(instance.definitionId));
                 if (!verdict.allowed)
                     issues.Add(ValidationIssue.Error(instance.instanceId, verdict.reason));
             }
