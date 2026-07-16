@@ -512,6 +512,7 @@ namespace NodeEditor.EditorUI
                 m_HoverSchedule = schedule.Execute(() => NodeHoverTooltip.Show(this)).StartingIn(1000));
             RegisterCallback<MouseLeaveEvent>(_ => { m_HoverSchedule?.Pause(); NodeHoverTooltip.Hide(); });
             RegisterCallback<DetachFromPanelEvent>(_ => { m_HoverSchedule?.Pause(); NodeHoverTooltip.Hide(); });
+            InitializeRunningFlowLifecycle();
         }
 
         void BuildPorts()
@@ -614,6 +615,7 @@ namespace NodeEditor.EditorUI
             RemoveFromClassList("status-success"); RemoveFromClassList("status-failure");
             RemoveFromClassList("status-running");  RemoveFromClassList("status-inactive");
             if (!string.IsNullOrEmpty(statusClass)) AddToClassList(statusClass);
+            SetRunningFlowEnabled(statusClass == "status-running");
             MarkDirtyRepaint();
         }
         public void MarkValidation(ValidationSeverity sev)
