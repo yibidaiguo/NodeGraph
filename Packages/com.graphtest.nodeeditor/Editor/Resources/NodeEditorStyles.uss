@@ -351,6 +351,7 @@
     max-width: 240px;
     border-width: 0px;
     overflow: visible;
+    --ne-node-running-flow-color: var(--ne-node-running-flow);
     --ne-node-shape-fill: var(--ne-bg-node);
     --ne-node-shape-outline: var(--ne-node-shape-outline-neutral);
     --ne-node-shape-outline-width: 1;

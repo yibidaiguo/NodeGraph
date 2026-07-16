@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -12,7 +13,7 @@ namespace NodeEditor.EditorUI
         const float RunningFlowHalfWidth = 0.14f;
 
         static readonly CustomStyleProperty<Color> s_RunningFlowColor =
-            new("--ne-node-running-flow");
+            new("--ne-node-running-flow-color");
         [System.ThreadStatic] static List<Vector2> s_RunningFlowClipScratchA;
         [System.ThreadStatic] static List<Vector2> s_RunningFlowClipScratchB;
 
@@ -61,11 +62,16 @@ namespace NodeEditor.EditorUI
                 PauseRunningFlowAnimation();
                 return;
             }
+            if (!ShouldAdvanceRunningFlow(m_RunningFlowEnabled,
+                    InternalEditorUtility.isApplicationActive)) return;
 
             var elapsed = EditorApplication.timeSinceStartup - m_RunningFlowStartedAt;
             m_RunningFlowPhase = Mathf.Repeat((float)(elapsed / RunningFlowPeriodSeconds), 1f);
             MarkDirtyRepaint();
         }
+
+        static bool ShouldAdvanceRunningFlow(bool enabled, bool applicationActive)
+            => enabled && applicationActive;
 
         static float RunningFlowCenter(float phase, float halfWidth)
             => Mathf.Lerp(-halfWidth, 1f + halfWidth, Mathf.Clamp01(phase));
