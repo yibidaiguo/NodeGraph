@@ -21,7 +21,8 @@ namespace NodeEditor.EditorUI
                     // 框架自足的 Setup：核心资产（本地化表/语言选项/双配置/全局黑板）+ 框架种子，无需任何领域模块。
                     new NodeGraphModuleAction("setup", "Setup Assets", FrameworkSetup.Run),
                     new NodeGraphModuleAction("asset-paths", "Open Asset Paths", NodeEditorAssetPathsLocator.OpenAssetPaths),
-                });
+                },
+                GraphOrientation.Vertical);
 
             if (!NodeGraphModules.Registry.TryRegister(descriptor, out var error))
                 Debug.LogError(error);

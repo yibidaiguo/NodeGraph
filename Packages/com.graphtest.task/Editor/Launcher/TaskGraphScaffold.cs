@@ -43,6 +43,7 @@ namespace TaskEditor.EditorUI
             if (graph == null) return false;
             graph.module = Module;
             graph.graphType = GraphType.DependencyDag;
+            graph.orientation = GraphOrientation.Horizontal;
             return true;
         }
 
@@ -53,6 +54,7 @@ namespace TaskEditor.EditorUI
             if (startDefinition == null) return false;
             graph.module = Module;
             graph.graphType = GraphType.ControlFlow;
+            graph.orientation = GraphOrientation.Horizontal;
             var start = new NodeInstance
             {
                 definitionId = startDefinition.Id,
