@@ -63,7 +63,10 @@ namespace NodeEditor.EditorUI
         public static IReadOnlyList<GraphCreateRecipe> ForModule(string module) =>
             s_Recipes.Where(item => item.module == module).ToList();
 
-        internal static bool HasExplicitModuleOwnership(string module) =>
+        // 该模块是否自己登记过创建配方（而非落进 GraphListPane 的 legacy 兜底配方）。
+        // 公开是为了让契约测试能断言「每个模块都必须自带创建配方」——兜底配方只会显示框架通用的
+        // 「新建」，模块也拿不到自己的文案位，那是模块化没做完的信号，不该无声通过。
+        public static bool HasExplicitModuleOwnership(string module) =>
             s_ExplicitModules.Contains(module);
     }
 }

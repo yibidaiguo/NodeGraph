@@ -23,7 +23,11 @@ namespace NodeEditor.EditorUI
 
     public static class NodeCatalog
     {
-        public static IReadOnlyList<NodeCatalogEntry> Query(NodeGraphAsset graph)
+        public static IReadOnlyList<NodeCatalogEntry> Query(NodeGraphAsset graph) => Query(graph, null);
+
+        // moduleScope：编辑器外壳锁定的模块（自由模式传 null）。图还没建出来时（模块模式空壳）
+        // 只有它能约束候选集 —— 否则"添加节点"会把全部模块的节点都列出来。
+        public static IReadOnlyList<NodeCatalogEntry> Query(NodeGraphAsset graph, string moduleScope)
         {
             var entries = new List<NodeCatalogEntry>();
             foreach (var type in TypeCache.GetTypesDerivedFrom<NodeDefinition>())
@@ -33,7 +37,7 @@ namespace NodeEditor.EditorUI
                 if (menu == null) continue;
 
                 var definition = NodeDefinitionLocator.ForType(type);
-                if (!NodeAdmission.Evaluate(graph, definition).allowed) continue;
+                if (!NodeAdmission.Evaluate(graph, moduleScope, definition).allowed) continue;
 
                 var parts = menu.Path.Split('/');
                 var leafLabel = Localizer.NodeName(definition);
