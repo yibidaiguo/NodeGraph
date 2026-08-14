@@ -1,0 +1,8 @@
+<!-- 只含特性的 Unity shim，仅在 dotnet 构建里编译；Unity 忽略 Shim~ 目录，永不参与其编译。 -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework><Nullable>disable</Nullable>
+    <AssemblyName>NodeEditor.UnityShim</AssemblyName><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup><Compile Include="com.graphtest.nodeeditor\Shim~\UnityShim.cs"><Link>UnityShim.cs</Link></Compile></ItemGroup>
+</Project>

@@ -1,0 +1,11 @@
+<!-- 纯 C# 构建的公共属性。Unity 不读它；dotnet 侧的四个 Runtime 工程各自 Import。 -->
+<Project>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>CS0169;CS0649</NoWarn>
+    <PkgRoot>$(MSBuildThisFileDirectory)Packages</PkgRoot>
+  </PropertyGroup>
+</Project>

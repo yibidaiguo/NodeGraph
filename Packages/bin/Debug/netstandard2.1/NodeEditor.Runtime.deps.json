@@ -1,0 +1,40 @@
+{
+  "runtimeTarget": {
+    "name": ".NETStandard,Version=v2.1/",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETStandard,Version=v2.1": {},
+    ".NETStandard,Version=v2.1/": {
+      "NodeEditor.Runtime/1.0.0": {
+        "dependencies": {
+          "NodeEditor.UnityShim": "1.0.0"
+        },
+        "runtime": {
+          "NodeEditor.Runtime.dll": {}
+        }
+      },
+      "NodeEditor.UnityShim/1.0.0": {
+        "runtime": {
+          "NodeEditor.UnityShim.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "NodeEditor.Runtime/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NodeEditor.UnityShim/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

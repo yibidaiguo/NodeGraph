@@ -1,5 +1,48 @@
 # 更新日志 / Changelog
 
+## [0.1.0] - 2026-08-15
+
+### 中文
+
+**破坏性变更。升级前请读 [MIGRATION-0.1.0.md](MIGRATION-0.1.0.md)。**
+
+执行层从 Unity 上摘了下来。四个包的 `Runtime/` 现在是零 UnityEngine 依赖的纯 C#，可在 .NET
+控制台 / 服务器 / `dotnet test` 下运行；Unity 侧只保留载体与编辑器。三个领域执行器是**整体搬迁**
+的同一份实现，Unity 侧不留副本——不存在两套执行器、也就不会有语义漂移。
+
+- 每个包拆成两个程序集：`X.Runtime`（纯层，**沿用原名**）+ `X.Unity`（载体）。纯层刻意保留原
+  程序集名——已发布资产里 90 条 `[SerializeReference]` 记录写死了 `asm: NodeEditor.Runtime`，
+  换名会让每个节点定义的端口和参数静默变成 null。
+- 新增纯 C# 类型：`NodeSchema`（`NodeDefinition` 的数据投影）、`GraphData`、`Vec2`、
+  `BlackboardDecl`、`IGraphSource`、`IGraphLog`。
+- 载体实现纯接口（`NodeRegistry : ISchemaSource`、`BlackboardAsset : IBlackboardDecl`、
+  `DialogueDatabase : IDialogueTextSource`），因此**多数既有调用点无需修改**。
+- 子图引用由 `UnityEngine.Object` 直连改为稳定 `graphId`。附一次性迁移：
+  菜单 `NodeEditor / Migrate / Upgrade Graph References (0.1.0)`。
+- `DialogueLineView` 移除 `portrait`/`voice`，改携 `lineKey` 由表现层回查。
+- `DialogueState` 的图引用改为 `graphId`——顺带修好了 0.0.x 自陈的"存档无法跨会话往返图指针"。
+- 新增 `Tools/PureCheck` 纯度门禁与 `Tests/NodeGraph.Core.Tests`（15 项，无 Unity 运行）。
+
+### English
+
+**Breaking. Read [MIGRATION-0.1.0.md](MIGRATION-0.1.0.md) before upgrading.**
+
+The execution layer is off Unity. Every package's `Runtime/` is now pure C# with zero
+UnityEngine dependency and runs under .NET console / server / `dotnet test`; Unity keeps only
+the asset carriers and the editor. The three domain runners were moved wholesale — there is no
+second executor implementation, so the two sides cannot drift apart.
+
+- Each package splits into `X.Runtime` (pure, **keeps its original name**) and `X.Unity`
+  (carriers). The pure layer deliberately keeps the old assembly name: 90 `[SerializeReference]`
+  records in shipped assets hard-code `asm: NodeEditor.Runtime`, and renaming would silently
+  null out every node definition's ports and params.
+- New pure types: `NodeSchema`, `GraphData`, `Vec2`, `BlackboardDecl`, `IGraphSource`, `IGraphLog`.
+- Carriers implement the pure contracts, so most existing call sites compile unchanged.
+- Sub-graph references move from `UnityEngine.Object` to a stable `graphId`, with a one-shot
+  migration under `NodeEditor / Migrate`.
+- `DialogueLineView` drops `portrait`/`voice` for `lineKey`; `DialogueState` stores `graphId`.
+- Adds `Tools/PureCheck` (purity gate) and `Tests/NodeGraph.Core.Tests` (15 tests, no Unity).
+
 ## [0.0.6] - 2026-08-14
 
 ### 中文

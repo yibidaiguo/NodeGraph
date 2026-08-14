@@ -1,0 +1,10 @@
+D:\Projects\Unity\GraphTest-refactor\Packages\bin\Debug\netstandard2.1\NodeEditor.UnityShim.deps.json
+D:\Projects\Unity\GraphTest-refactor\Packages\bin\Debug\netstandard2.1\NodeEditor.UnityShim.dll
+D:\Projects\Unity\GraphTest-refactor\Packages\bin\Debug\netstandard2.1\NodeEditor.UnityShim.pdb
+D:\Projects\Unity\GraphTest-refactor\Packages\obj\Debug\netstandard2.1\NodeEditor.UnityShim.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\Unity\GraphTest-refactor\Packages\obj\Debug\netstandard2.1\NodeEditor.UnityShim.AssemblyInfoInputs.cache
+D:\Projects\Unity\GraphTest-refactor\Packages\obj\Debug\netstandard2.1\NodeEditor.UnityShim.AssemblyInfo.cs
+D:\Projects\Unity\GraphTest-refactor\Packages\obj\Debug\netstandard2.1\NodeEditor.UnityShim.csproj.CoreCompileInputs.cache
+D:\Projects\Unity\GraphTest-refactor\Packages\obj\Debug\netstandard2.1\NodeEditor.UnityShim.sourcelink.json
+D:\Projects\Unity\GraphTest-refactor\Packages\obj\Debug\netstandard2.1\NodeEditor.UnityShim.dll
+D:\Projects\Unity\GraphTest-refactor\Packages\obj\Debug\netstandard2.1\NodeEditor.UnityShim.pdb

@@ -1,0 +1,15 @@
+<!-- NodeEditor 的纯 C# 层。与 Unity 共用同一份源码（Runtime/ 目录），不复制文件。 -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework><LangVersion>9.0</LangVersion><Nullable>disable</Nullable>
+    <AssemblyName>NodeEditor.Runtime</AssemblyName><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>CS0169;CS0649</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="com.graphtest.nodeeditor\Runtime\**\*.cs"><Link>%(RecursiveDir)%(Filename)%(Extension)</Link></Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="NodeEditor.UnityShim.csproj" />
+
+  </ItemGroup>
+</Project>
