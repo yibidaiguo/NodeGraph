@@ -1,11 +1,11 @@
 {
   "name": "com.graphtest.dialogue",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "displayName": "NodeGraph Dialogue",
   "description": "NodeGraph 对话图运行时与编辑器模块。 / Dialogue graph runtime and editor module for NodeGraph.",
   "unity": "6000.0",
   "dependencies": {
-    "com.graphtest.nodeeditor": "0.1.1",
+    "com.graphtest.nodeeditor": "0.1.2",
     "com.unity.modules.audio": "1.0.0",
     "com.unity.modules.imgui": "1.0.0"
   },
