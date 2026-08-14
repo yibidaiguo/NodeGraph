@@ -1,0 +1,10 @@
+{
+  "name": "NodeEditor.Unity",
+  "rootNamespace": "NodeEditor",
+  "references": [
+    "NodeEditor.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

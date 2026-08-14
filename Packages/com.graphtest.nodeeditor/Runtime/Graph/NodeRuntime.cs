@@ -40,9 +40,9 @@ namespace NodeEditor
     public class InstanceParamLookup : IParamLookup
     {
         readonly NodeInstance m_Inst;
-        readonly NodeDefinition m_Def;
-        public InstanceParamLookup(NodeInstance inst, NodeDefinition def) { m_Inst = inst; m_Def = def; }
-        public string Get(string paramName) => ParamResolver.Resolve(m_Inst, m_Def, paramName);
+        readonly NodeSchema m_Schema;
+        public InstanceParamLookup(NodeInstance inst, NodeSchema schema) { m_Inst = inst; m_Schema = schema; }
+        public string Get(string paramName) => ParamResolver.Resolve(m_Inst, m_Schema, paramName);
     }
 
     // ---- 按 graph 类型划分的运行时接口（layer-3 签名）----
@@ -87,9 +87,13 @@ namespace NodeEditor
 
     // Optional graph-identity contract consumed by editor-side runtime discovery.
     // Separate from IRuntimeGraph so existing third-party runtimes remain source-compatible.
+    //
+    // 0.1.0：参数由 NodeGraphAsset 改为纯 C# 的 GraphData——运行时契约不该认识 asset。
+    // 编辑器侧调用点用 asset.ToData() 取得同一个 GraphData 实例（ToData 有缓存、引用稳定），
+    // 因此 OwnsGraph 的引用相等语义与 0.0.x 完全一致。
     public interface IRuntimeGraphSource
     {
-        bool OwnsGraph(NodeGraphAsset graph);
+        bool OwnsGraph(GraphData graph);
     }
 
     // Optional O(1), side-effect-free current-graph contract for runtimes that switch graphs.
@@ -98,7 +102,7 @@ namespace NodeEditor
     // Editor discovery falls back to IRuntimeGraphSource for existing third-party runtimes.
     public interface IActiveRuntimeGraphSource : IRuntimeGraphSource
     {
-        NodeGraphAsset ActiveGraph { get; }
+        GraphData ActiveGraph { get; }
     }
 
     // ====================================================================================

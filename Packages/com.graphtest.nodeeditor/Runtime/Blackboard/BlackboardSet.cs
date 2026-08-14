@@ -16,16 +16,27 @@ namespace NodeEditor
     public sealed class BlackboardSet
     {
         // 由外到内排列：全局在前、组在后。null 档会被剔除，因此缺某一档（如某图没有组黑板）也安全。
-        readonly List<BlackboardAsset> m_Layers;
+        //
+        // 0.1.0：元素类型由 BlackboardAsset（ScriptableObject）改为纯层的 IBlackboardDecl。
+        // BlackboardAsset 实现了该接口，且数组存在协变转换，因此既有调用点
+        // `new BlackboardSet(blackboardAssets)` 一字不改仍然编译通过。
+        //
+        // ⚠ 一处需要调用方配合的语义差异：Unity 为 UnityEngine.Object 重载了 operator==，
+        // 使「已销毁/丢失的资产」比较为 null；但**通过接口引用比较时该重载不生效**（走普通引用相等）。
+        // 因此"已销毁的 BlackboardAsset"不再被这里的 != null 过滤掉。
+        // 约定：Unity 侧调用方（BlackboardLocator / 各 Player）在构造前自行剔除已销毁资产——
+        // 它们本来就持有强类型引用，那里才判得准。详见 MIGRATION.md。
+        readonly List<IBlackboardDecl> m_Layers;
 
-        public BlackboardSet(params BlackboardAsset[] layers) : this((IEnumerable<BlackboardAsset>)layers) { }
-        public BlackboardSet(IEnumerable<BlackboardAsset> layers)
+        public BlackboardSet(params IBlackboardDecl[] layers) : this((IEnumerable<IBlackboardDecl>)layers) { }
+        public BlackboardSet(IEnumerable<IBlackboardDecl> layers)
         {
-            m_Layers = (layers ?? Enumerable.Empty<BlackboardAsset>()).Where(a => a != null).ToList();
+            m_Layers = (layers ?? Enumerable.Empty<IBlackboardDecl>()).Where(a => a != null).ToList();
         }
 
-        // 由外到内的各档 asset（全局在前）。编辑器据此知道某一档对应哪块 SO（去哪写入 / 是否缺该档）。
-        public IReadOnlyList<BlackboardAsset> Layers => m_Layers;
+        // 由外到内的各档声明（全局在前）。编辑器据此知道某一档对应哪块 SO（去哪写入 / 是否缺该档）——
+        // Unity 侧把元素强转回 BlackboardAsset 即可。
+        public IReadOnlyList<IBlackboardDecl> Layers => m_Layers;
 
         // 就近覆盖：从最专一档往外找，第一个命中即返回（更专的层级遮蔽更泛的）。
         public VariableDef Find(string key)

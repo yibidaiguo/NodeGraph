@@ -17,8 +17,10 @@ using UnityEngine;
 
 namespace NodeEditor
 {
+    // 实现纯层的 IBlackboardDecl（Module/Group/Variables/Find 本来就在，只加接口声明）：
+    // BlackboardSet 由此只依赖纯契约，而既有调用点传 BlackboardAsset[] 仍然编译通过。
     [CreateAssetMenu(menuName = "NodeEditor/Blackboard")]
-    public class BlackboardAsset : ScriptableObject
+    public class BlackboardAsset : ScriptableObject, IBlackboardDecl
     {
         // 作用域标签（见文件头）。空模块=全局；带模块、空组=模块级；模块+组=组级。
         // 框架只认这两个字符串、不认任何领域语义；"我属于哪个模块/组"由创作者直接在 Inspector 里填，

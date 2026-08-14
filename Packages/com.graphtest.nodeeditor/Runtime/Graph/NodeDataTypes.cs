@@ -151,77 +151,10 @@ namespace NodeEditor
         public NodeMenuAttribute(string path) => Path = path;
     }
 
-    // ---- 节点定义（layer-3 NodeDefinition）----
-    // 抽象类：它自身永远不会作为 asset 被实例化，所以不需要同名文件 / MonoScript。
-    // 具体子类（例如对话节点）必须各自存放在以该类命名的独立文件中。
-    public abstract class NodeDefinition : ScriptableObject
-    {
-        [Header("Metadata")]
-        [SerializeField] private string id = System.Guid.NewGuid().ToString();
-        [SerializeField] private string displayName;
-        [SerializeField] private string category;
-        [SerializeField] private string docString;
-
-        [Header("Classification")]
-        [SerializeField] private NodePurity purity;
-        [SerializeField] private NodeRole role;
-
-        [Header("Interface")]
-        [SerializeField] private List<PortDef> inputPorts  = new();
-        [SerializeField] private List<PortDef> outputPorts = new();
-        [SerializeField] private List<ParamDef> parameters = new();
-        [SerializeField] private RuntimeKind runtimeKind;
-
-        [Header("Blackboard")]
-        [SerializeField] private List<BlackboardKeyRef> blackboardReads  = new();
-        [SerializeField] private List<BlackboardKeyRef> blackboardWrites = new();
-
-        [Header("Validation")]
-        [SerializeReference] private List<Constraint> constraints = new();
-
-        [Header("Versioning")]
-        [SerializeField] private int version = 1;
-
-        public string Id => id;
-        public string DisplayName => displayName;
-        // Empty means this definition is universal and may be used by every graph module.
-        public virtual string Module => null;
-        public NodePurity Purity => purity;
-        public NodeRole Role => role;
-        public RuntimeKind Runtime => runtimeKind;
-        public IReadOnlyList<PortDef> InputPorts => inputPorts;
-        public IReadOnlyList<PortDef> OutputPorts => outputPorts;
-        public IReadOnlyList<ParamDef> Parameters => parameters;
-        public IReadOnlyList<BlackboardKeyRef> Reads => blackboardReads;
-        public IReadOnlyList<BlackboardKeyRef> Writes => blackboardWrites;
-        public IReadOnlyList<Constraint> Constraints => constraints;
-        public int Version => version;
-
-        // ---- 代码创作钩子 ----
-        // 子类在 Define() 中声明自己的接口，而不是手工配置 .asset。
-        // 编辑器工具会实例化每个子类并调用 RebuildFromCode() 来烘焙出 asset。
-        protected void Meta(string name, NodeRole r) { displayName = name; role = r; }
-        protected void AddIn(string portName, Arity a)  => inputPorts.Add(new PortDef { name = portName, arity = a, type = TypeRef.Any });
-        protected void AddOut(string portName, Arity a) => outputPorts.Add(new PortDef { name = portName, arity = a, type = TypeRef.Any });
-        protected void AddParam(string paramName, TypeRef t) => parameters.Add(new ParamDef { name = paramName, type = t });
-        // 带候选来源的重载：把该 string 参数标记为"从一组动态候选里选"（编辑器渲染为可搜索下拉）。
-        protected void AddParam(string paramName, TypeRef t, string choiceSource) => parameters.Add(new ParamDef { name = paramName, type = t, choiceSource = choiceSource });
-        // 可组合单元槽（见 TypeRef.Unit）：节点不自带比较/门控/赋值参数，改持一个 Unit 槽。
-        protected void AddUnitParam(string paramName, string family) => parameters.Add(new ParamDef { name = paramName, type = TypeRef.Unit(family) });
-        // 声明式校验约束（见上方 Constraint 层次）：子类在 Define() 里声明，由 4c 校验器按子类型分派消费。
-        protected void AddConstraint(Constraint c) => constraints.Add(c);
-        protected virtual void Define() { }
-        // 用代码创作的定义可以声明一个确定性 id（由其类型/种类派生），这样同一个定义在任何机器上、
-        // 任何一次重新生成中都会解析到相同的 id——即使定义的 .asset 被重建，graph 仍能继续工作。
-        // 为 null 时则保留创建时分配的随机 GUID。
-        protected virtual string StableId => null;
-        public void RebuildFromCode()
-        {
-            if (StableId != null) id = StableId;
-            inputPorts.Clear(); outputPorts.Clear(); parameters.Clear(); constraints.Clear();
-            Define();
-        }
-    }
+    // ---- 节点定义 ----
+    // NodeDefinition（ScriptableObject）已移至 Unity/Graph/NodeDefinition.cs（NodeEditor.Unity 程序集）：
+    // 它是 asset 支撑的创作物，属于 Unity 侧。执行器改读其纯 C# 投影 NodeSchema
+    //（见 NodeSchema.cs），由 NodeDefinition.ToSchema() 烘出。
 
     // ---- 节点实例（layer-3 NodeInstance）----
     [Serializable]
@@ -229,20 +162,25 @@ namespace NodeEditor
     {
         public string instanceId = System.Guid.NewGuid().ToString();
         public string definitionId;
-        public Vector2 position;
+        // 画布位置。Vec2 是纯 C# 结构，字段名/顺序与 UnityEngine.Vector2 一致，
+        // 序列化出的 YAML 逐字节相同（position: {x: .., y: ..}）——已有 .asset 无需迁移。
+        public Vec2 position;
         public string displayName;   // 可选的每节点自定义名称；为空/null => 回退到定义的（本地化）名称
         public string note;          // 可选的每节点备注；非空时在视图上作为节点标题显示（优先于 displayName）
         public bool pinned;          // 钉住=固定节点：不可删除（如对话图的进入/退出节点）。框架提供机制，领域层决定谁被钉住。
         public List<Connection> connections = new();
         public List<ParamOverride> parameterOverrides = new();
-        public List<ObjectOverride> objectOverrides = new();   // 真实的 asset 引用（构建安全），用于 Object 类型的参数
+        public List<GraphRef> graphRefs = new();                 // 子图引用（按稳定 graphId），用于 Object 类型的图参数
         public List<UnitOverride> unitOverrides = new();        // 可组合单元槽（SerializeReference 多态树），用于 Unit/UnitList 类型的参数
     }
     [Serializable] public class Connection    { public string fromPort; public string toInstanceId; public string toPort; }
     [Serializable] public class ParamOverride { public string paramName; public string valueJson; }
-    // Object 类型的参数保留一个真正的 UnityEngine.Object 引用（能在 player 构建中存活），
-    // 而不是仅编辑器可用的 asset 路径。Primitive/enum/key 类型的参数仍以字符串形式保留在 parameterOverrides 中。
-    [Serializable] public class ObjectOverride { public string paramName; public UnityEngine.Object value; }
+    // 子图引用。0.0.x 里这里存的是真正的 UnityEngine.Object 引用（ObjectOverride），
+    // 使得数据模型钉死在 Unity 上；但实测运行期 4 处读取**全部**强转为 NodeGraphAsset，
+    // 即它从来只用于"图指向图"。故 0.1.0 收敛为稳定 graphId 字符串：纯层可解析，
+    // Unity 侧由 NodeGraphAsset.graphId 提供，跨会话/跨引擎都稳定。
+    // 迁移：旧 asset 的 objectOverrides 由 Tools/Migrate 一次性转换（见 MIGRATION.md）。
+    [Serializable] public class GraphRef { public string paramName; public string graphId; }
     // Unit 类型的参数保留一棵内联的多态单元树（SerializeReference，构建安全、可嵌套装饰）。
     // 列表本身按值序列化；仅 value 字段是托管引用，从而 null 保持 null、装饰子树可任意深度。
     [Serializable] public class UnitOverride { public string paramName; [SerializeReference] public Unit value; }
@@ -272,24 +210,29 @@ namespace NodeEditor
     // 被重命名/移除的端口由校验（4c）暴露出来，而不是在这里处理。
     public static class ParamResolver
     {
-        public static UnityEngine.Object ResolveObject(NodeInstance inst, string paramName) =>
-            inst.objectOverrides.FirstOrDefault(o => o.paramName == paramName)?.value;
+        // 取某个图参数指向的子图 id（无覆盖 => null，由运行时按语义兜底，如未设置子图=跳过）。
+        // 0.0.x 的 ResolveObject(inst, name) 返回 UnityEngine.Object；0.1.0 改为返回稳定 graphId。
+        // Unity 侧要拿回 NodeGraphAsset，用 NodeGraphRegistry.Resolve(graphId)（见 Unity 层）。
+        public static string ResolveGraphRef(NodeInstance inst, string paramName) =>
+            inst.graphRefs.FirstOrDefault(o => o.paramName == paramName)?.graphId;
 
         // 取某 Unit 槽的内联单元树（无覆盖 => null，由运行时按语义兜底，如空门控=可见）。
         public static Unit ResolveUnit(NodeInstance inst, string paramName) =>
             inst.unitOverrides.FirstOrDefault(o => o.paramName == paramName)?.value;
 
-        public static string Resolve(NodeInstance inst, NodeDefinition def, string paramName)
+        // 实例覆盖优先；缺失的覆盖则从 schema 的当前默认值回填（版本控制契约：
+        // 定义版本提升后，没被覆盖的参数自动跟随新默认值，而不是静默留空）。
+        public static string Resolve(NodeInstance inst, NodeSchema schema, string paramName)
         {
             var ov = inst.parameterOverrides.FirstOrDefault(p => p.paramName == paramName);
             if (ov != null) return ov.valueJson;                 // 实例覆盖优先
-            var pd = def.Parameters.FirstOrDefault(p => p.name == paramName);
+            var pd = schema?.Param(paramName);
             return pd?.defaultJson;                              // 从当前定义的默认值回填
         }
 
         // 如果某个实例连接指向了定义中已不存在的端口（被重命名/移除的端口），则返回 true——
         // 校验（4c）会把这些情况转为错误，而不是悄无声息地丢弃。
-        public static bool PortExists(NodeDefinition def, string portName) =>
-            def.InputPorts.Any(p => p.name == portName) || def.OutputPorts.Any(p => p.name == portName);
+        public static bool PortExists(NodeSchema schema, string portName) =>
+            schema != null && schema.PortExists(portName);
     }
 }
