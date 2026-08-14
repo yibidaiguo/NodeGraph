@@ -14,6 +14,7 @@ namespace NodeEditor.EditorUI
 
         static readonly CustomStyleProperty<Color> s_RunningFlowColor =
             new("--ne-node-running-flow-color");
+        [System.ThreadStatic] static List<Vector2> s_RunningFlowSampleScratch;
         [System.ThreadStatic] static List<Vector2> s_RunningFlowClipScratchA;
         [System.ThreadStatic] static List<Vector2> s_RunningFlowClipScratchB;
 
@@ -87,20 +88,20 @@ namespace NodeEditor.EditorUI
             evt.customStyle.TryGetValue(s_RunningFlowColor, out m_RunningFlowColor);
         }
 
-        void DrawRunningFlow(MeshGenerationContext context, NodeRole role, Rect bounds)
+        void DrawRunningFlow(MeshGenerationContext context, Rect bounds)
         {
             if (!m_RunningFlowEnabled || m_RunningFlowColor.a <= 0f) return;
 
-            var perimeter = s_RoundedSampleScratch ??= new List<Vector2>(64);
-            BuildRoleSilhouetteSamples(role, bounds, perimeter);
-            if (perimeter.Count < 3) return;
+            var samples = s_RunningFlowSampleScratch ??= new List<Vector2>(64);
+            BuildRoundedRectSamples(bounds, m_CornerRadius, samples);
+            if (samples.Count < 3) return;
 
             var center = RunningFlowCenter(m_RunningFlowPhase, RunningFlowHalfWidth);
             var lower = center - RunningFlowHalfWidth;
             var upper = center + RunningFlowHalfWidth;
             var firstPass = s_RunningFlowClipScratchA ??= new List<Vector2>(64);
             var band = s_RunningFlowClipScratchB ??= new List<Vector2>(64);
-            ClipRunningFlowRegion(perimeter, bounds, lower, true, firstPass);
+            ClipRunningFlowRegion(samples, bounds, lower, true, firstPass);
             ClipRunningFlowRegion(firstPass, bounds, upper, false, band);
             if (band.Count < 3) return;
 
@@ -168,6 +169,40 @@ namespace NodeEditor.EditorUI
                 tint = color,
                 uv = Vector2.zero
             };
+        }
+
+        static float GradientPosition(Vector2 point, Rect bounds)
+        {
+            var normalizedX = Mathf.InverseLerp(bounds.xMin, bounds.xMax, point.x);
+            var normalizedY = Mathf.InverseLerp(bounds.yMin, bounds.yMax, point.y);
+            return 0.22f * normalizedX + 0.78f * normalizedY;
+        }
+
+        static void AppendDistinct(List<Vector2> points, Vector2 point)
+        {
+            if (points.Count == 0 || (points[points.Count - 1] - point).sqrMagnitude > 0.000001f)
+                points.Add(point);
+        }
+
+        static void RemoveDuplicateClosure(List<Vector2> points)
+        {
+            if (points.Count > 1
+                && (points[points.Count - 1] - points[0]).sqrMagnitude <= 0.000001f)
+                points.RemoveAt(points.Count - 1);
+        }
+
+        static void AppendCubicSamples(List<Vector2> samples, Vector2 start,
+            Vector2 firstControl, Vector2 secondControl, Vector2 end, int steps)
+        {
+            for (var step = 1; step <= steps; step++)
+            {
+                var t = step / (float)steps;
+                var oneMinusT = 1f - t;
+                samples.Add(oneMinusT * oneMinusT * oneMinusT * start
+                    + 3f * oneMinusT * oneMinusT * t * firstControl
+                    + 3f * oneMinusT * t * t * secondControl
+                    + t * t * t * end);
+            }
         }
     }
 }

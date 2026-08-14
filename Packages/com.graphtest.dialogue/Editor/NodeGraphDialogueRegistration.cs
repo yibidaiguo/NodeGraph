@@ -1,3 +1,4 @@
+using NodeEditor;
 using NodeEditor.EditorUI;
 using UnityEditor;
 using UnityEngine;
@@ -28,7 +29,8 @@ namespace Dialogue.EditorUI
                     new NodeGraphModuleAction("open", "Open Editor", DialogueEditorLauncher.Open),
                     new NodeGraphModuleAction("setup", "Setup Assets", DialogueSetup.Run),
                     new NodeGraphModuleAction("asset-paths", "Open Asset Paths", DialogueAssetPathsLocator.OpenAssetPaths),
-                });
+                },
+                GraphOrientation.Horizontal);
 
             if (!NodeGraphModules.Registry.TryRegister(descriptor, out var error))
                 Debug.LogError(error);

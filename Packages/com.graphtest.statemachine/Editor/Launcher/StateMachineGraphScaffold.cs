@@ -39,6 +39,7 @@ namespace StateMachine.EditorUI
 
             var entry = new NodeInstance { definitionId = def.Id, position = new Vector2(0, 0), pinned = true };
             g.graphType = GraphType.ControlFlow;
+            g.orientation = GraphOrientation.Vertical;
             g.module = Module;                           // 归入左侧「状态机」分组 / 状态机编辑器的模块过滤
             g.instances.Add(entry);
             g.entryInstanceIds.Add(entry.instanceId);    // Entry 是控制流入口（也是可达性播种源）

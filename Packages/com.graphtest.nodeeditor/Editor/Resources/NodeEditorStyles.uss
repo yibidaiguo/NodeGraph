@@ -40,28 +40,16 @@
     --ne-border-soft:      rgba(63, 55, 43, 0.15);
     --ne-border-muted:     rgba(63, 55, 43, 0.09);
     --ne-border-node:      rgba(63, 55, 43, 0.32);
-    --ne-node-highlight:   rgba(255, 255, 255, 0.85);
-    --ne-node-shape-highlight: rgba(255, 255, 255, 0.95);
-    --ne-node-shape-shadow: rgba(75, 52, 30, 0.20);
     --ne-node-shape-outline-neutral: rgb(166, 154, 140);
     --ne-node-selection-outline: rgb(182, 103, 63);
-    --ne-node-icon-bg: rgb(244, 239, 230);
-    --ne-node-icon-border: rgba(75, 55, 35, 0.20);
-    --ne-node-icon-color-theme: rgb(164, 100, 61);
-    --ne-control-highlight: rgba(255, 255, 255, 0.90);
-    --ne-control-shadow:   rgba(105, 92, 72, 0.14);
     --ne-divider:          rgb(222, 217, 207);
     --ne-hover-border:     rgba(176, 104, 72, 0.42);
     --ne-surface-glow:     rgba(176, 104, 72, 0.12);
-    --ne-metal-highlight:  rgba(255, 255, 255, 0.85);
-    --ne-metal-shadow:     rgba(105, 92, 72, 0.18);
     --ne-button-bg:        rgb(247, 244, 238);
     --ne-button-bg-hover:  rgb(253, 251, 246);
     --ne-button-bg-active: rgb(236, 232, 224);
     --ne-button-border:    rgba(94, 82, 64, 0.22);
     --ne-button-border-hover: rgba(176, 104, 72, 0.55);
-    --ne-button-highlight: rgba(255, 255, 255, 0.92);
-    --ne-button-shadow:    rgba(105, 92, 72, 0.22);
     --ne-scroll-thumb:     rgb(196, 189, 176);
     --ne-scroll-thumb-hover: rgb(178, 170, 156);
 
@@ -109,17 +97,11 @@
     --ne-status-success:   rgb(99, 144, 108);
     --ne-status-failure:   rgb(159, 78, 72);
     --ne-status-running-fill: rgb(239, 208, 131);
-    --ne-status-running-highlight: rgb(255, 248, 218);
-    --ne-status-running-shadow: rgb(210, 163, 74);
     --ne-status-running-glow: rgba(215, 158, 61, 0.66);
     --ne-node-running-flow: rgba(255, 252, 232, 0.16);
     --ne-status-success-fill: rgb(184, 216, 185);
-    --ne-status-success-highlight: rgb(234, 244, 233);
-    --ne-status-success-shadow: rgb(131, 178, 139);
     --ne-status-success-glow: rgba(91, 151, 105, 0.58);
     --ne-status-failure-fill: rgb(223, 162, 154);
-    --ne-status-failure-highlight: rgb(248, 231, 227);
-    --ne-status-failure-shadow: rgb(189, 107, 100);
     --ne-status-failure-glow: rgba(185, 65, 57, 0.57);
     --ne-validation-error: var(--ne-accent-coral);
     --ne-validation-warn:  var(--ne-accent-gold);
@@ -144,6 +126,11 @@
     --ne-label-w:          110px;
     --ne-font-sm:          11px;
     --ne-font-md:          12px;
+
+    --ne-node-title-height-px:  26px;
+    --ne-node-title-text:    var(--ne-text-on-accent);
+    --ne-wire:               var(--ne-accent-cyan);
+    --ne-wire-selected:      var(--ne-accent);
 }
 
 /* ---- 浅色主题覆写 ---- */
@@ -177,21 +164,14 @@
     --ne-border-soft:      rgba(63, 55, 43, 0.15);
     --ne-border-muted:     rgba(63, 55, 43, 0.09);
     --ne-border-node:      rgba(63, 55, 43, 0.32);
-    --ne-node-highlight:   rgba(255, 255, 255, 0.85);
-    --ne-control-highlight: rgba(255, 255, 255, 0.90);
-    --ne-control-shadow:   rgba(105, 92, 72, 0.14);
     --ne-divider:          rgb(222, 217, 207);
     --ne-hover-border:     rgba(176, 104, 72, 0.42);
     --ne-surface-glow:     rgba(176, 104, 72, 0.12);
-    --ne-metal-highlight:  rgba(255, 255, 255, 0.85);
-    --ne-metal-shadow:     rgba(105, 92, 72, 0.18);
     --ne-button-bg:        rgb(247, 244, 238);
     --ne-button-bg-hover:  rgb(253, 251, 246);
     --ne-button-bg-active: rgb(236, 232, 224);
     --ne-button-border:    rgba(94, 82, 64, 0.22);
     --ne-button-border-hover: rgba(176, 104, 72, 0.55);
-    --ne-button-highlight: rgba(255, 255, 255, 0.92);
-    --ne-button-shadow:    rgba(105, 92, 72, 0.22);
     --ne-scroll-thumb:     rgb(196, 189, 176);
     --ne-scroll-thumb-hover: rgb(178, 170, 156);
 
@@ -230,6 +210,11 @@
     --ne-grid-line:        rgba(63, 55, 43, 0.08);
     --ne-grid-thick:       rgba(63, 55, 43, 0.145);
     --ne-transparent:      rgba(0, 0, 0, 0);
+
+    --ne-node-title-height-px:  26px;
+    --ne-node-title-text:    var(--ne-text-on-accent);
+    --ne-wire:               var(--ne-accent-cyan);
+    --ne-wire-selected:      var(--ne-accent);
 }
 
 /* ---- 深色主题：暖炭铜金（浓缩咖啡底 + 铜/琥珀点缀）。用户经工具栏开关切换，
@@ -265,28 +250,16 @@
     --ne-border-soft:      rgba(255, 240, 220, 0.07);
     --ne-border-muted:     rgba(255, 240, 220, 0.045);
     --ne-border-node:      rgba(0, 0, 0, 0.66);
-    --ne-node-highlight:   rgba(255, 240, 220, 0.06);
-    --ne-node-shape-highlight: rgba(255, 240, 220, 0.10);
-    --ne-node-shape-shadow: rgba(0, 0, 0, 0.68);
     --ne-node-shape-outline-neutral: rgb(8, 7, 6);
     --ne-node-selection-outline: rgb(182, 103, 63);
-    --ne-node-icon-bg: rgb(50, 44, 38);
-    --ne-node-icon-border: rgb(8, 7, 6);
-    --ne-node-icon-color-theme: rgb(213, 155, 104);
-    --ne-control-highlight: rgba(255, 240, 220, 0.05);
-    --ne-control-shadow:   rgba(0, 0, 0, 0.45);
     --ne-divider:          rgb(22, 20, 18);
     --ne-hover-border:     rgba(200, 127, 74, 0.45);
     --ne-surface-glow:     rgba(200, 127, 74, 0.13);
-    --ne-metal-highlight:  rgba(255, 240, 220, 0.09);
-    --ne-metal-shadow:     rgba(0, 0, 0, 0.55);
     --ne-button-bg:        rgb(51, 47, 42);
     --ne-button-bg-hover:  rgb(60, 55, 49);
     --ne-button-bg-active: rgb(41, 37, 33);
     --ne-button-border:    rgba(0, 0, 0, 0.55);
     --ne-button-border-hover: rgba(216, 154, 98, 0.60);
-    --ne-button-highlight: rgba(255, 240, 220, 0.12);
-    --ne-button-shadow:    rgba(0, 0, 0, 0.60);
     --ne-scroll-thumb:     rgb(66, 60, 53);
     --ne-scroll-thumb-hover: rgb(80, 73, 64);
 
@@ -321,17 +294,11 @@
     --ne-status-success:   rgb(129, 189, 140);
     --ne-status-failure:   rgb(223, 119, 112);
     --ne-status-running-fill: rgb(124, 88, 40);
-    --ne-status-running-highlight: rgb(91, 68, 37);
-    --ne-status-running-shadow: rgb(73, 49, 26);
     --ne-status-running-glow: rgba(215, 158, 61, 0.66);
     --ne-node-running-flow: rgba(255, 225, 151, 0.22);
     --ne-status-success-fill: rgb(52, 90, 62);
-    --ne-status-success-highlight: rgb(38, 62, 44);
-    --ne-status-success-shadow: rgb(32, 54, 38);
     --ne-status-success-glow: rgba(91, 151, 105, 0.58);
     --ne-status-failure-fill: rgb(108, 48, 45);
-    --ne-status-failure-highlight: rgb(75, 37, 34);
-    --ne-status-failure-shadow: rgb(58, 29, 27);
     --ne-status-failure-glow: rgba(185, 65, 57, 0.57);
     --ne-validation-error: var(--ne-accent-coral);
     --ne-validation-warn:  var(--ne-accent-gold);
@@ -339,13 +306,18 @@
     --ne-grid-line:        rgba(255, 240, 220, 0.04);
     --ne-grid-thick:       rgba(255, 240, 220, 0.075);
     --ne-transparent:      rgba(0, 0, 0, 0);
+
+    --ne-node-title-height-px:  26px;
+    --ne-node-title-text:    var(--ne-text-on-accent);
+    --ne-wire:               var(--ne-accent-cyan);
+    --ne-wire-selected:      var(--ne-accent);
 }
 
 /* ============================================================
    NODE — .node-base > #node-border > #title/#contents
    ============================================================ */
 
-/* ---- 本体：Painter2D 绘制整节点轮廓；GraphView 原生矩形 chrome 必须透明。---- */
+/* ---- 本体：Painter2D 绘制圆角矩形 + 标题色带；GraphView 原生矩形 chrome 必须透明。---- */
 .node-base {
     min-width: 150px;
     max-width: 240px;
@@ -357,6 +329,14 @@
     --ne-node-shape-outline-width: 1;
     --ne-node-shape-glow: var(--ne-transparent);
     --ne-node-validation-outline: var(--ne-transparent);
+    --ne-node-title-fill: var(--ne-role-control);
+    /* Painter2D 几何：C# 经 CustomStyleProperty<float> 读这两个值，而它只认**无单位**数字——
+       写成 26px 会被当成长度、TryGetValue 返回 false 并把 out 写成 0，
+       结果是整条标题色带不画、圆角变方角。对照 --ne-node-shape-outline-width 也是无单位。
+       几何三套主题一致，所以直接写字面量、不进主题块；#title 的布局另用 -px 版本，
+       两者必须同步（NodeSurfaceStyleTests 有断言盯着）。 */
+    --ne-node-title-height: 26;
+    --ne-node-corner-radius: 6;
 }
 .node-base > #node-border {
     background-color: var(--ne-transparent);
@@ -378,17 +358,16 @@
     border-width: 0px;
 }
 
-/* ---- 标题条：保持透明，视觉类别只由整节点轮廓表达 ---- */
+/* ---- 标题条：透明底，色带由 Painter2D 绘制 ---- */
 .node-base > #node-border > #title {
     font-size: var(--ne-font-md);
     -unity-font-style: bold;
     -unity-text-align: middle-left;
-    padding: 5px 11px;
-    min-height: 34px;
-    color: var(--ne-text-strong);
+    padding: 0 8px;
+    min-height: var(--ne-node-title-height-px);
+    height: var(--ne-node-title-height-px);
+    color: var(--ne-node-title-text);
     background-color: var(--ne-transparent);
-    border-bottom-width: 1px;
-    border-bottom-color: var(--ne-divider);
 }
 .ne-node-title-label {
     min-width: 0;
@@ -404,14 +383,19 @@
 }
 #extra-content {
     background-color: var(--ne-transparent);
-    padding: 3px 9px 7px 9px;
+    padding: 4px 8px 6px 8px;
 }
-.node-role-provider #extra-content { padding-left: 22px; padding-right: 22px; }
-.node-role-condition #extra-content { padding-left: 19px; padding-right: 19px; }
-.node-role-action #extra-content { padding-left: 12px; padding-right: 22px; }
-.node-role-control #extra-content { padding-left: 14px; padding-right: 14px; }
 
-/* ---- 角色由互不相同的整节点轮廓表达；颜色不再重复污染整节点 chrome。---- */
+/* ---- 角色色带 ---- */
+.node-role-provider  { --ne-node-title-fill: var(--ne-role-provider); }
+.node-role-condition { --ne-node-title-fill: var(--ne-role-condition); }
+.node-role-action    { --ne-node-title-fill: var(--ne-role-action); }
+.node-role-control   { --ne-node-title-fill: var(--ne-role-control); }
+
+/* ---- 语义覆盖（排在角色之后层叠胜出）---- */
+.node-kind-entry    { --ne-node-title-fill: var(--ne-status-success); }
+.node-kind-terminal { --ne-node-title-fill: var(--ne-accent-coral); }
+.node-kind-failure  { --ne-node-title-fill: var(--ne-accent-coral); }
 
 /* ---- hover / selected：仅改 Painter2D 的同一条轮廓，不恢复矩形边框。---- */
 .node-base:hover {
@@ -422,27 +406,21 @@
     --ne-node-selection-outline: var(--ne-accent-strong);
 }
 
-/* ---- 语义图标：统一金属小底座；领域只注册 kind，不拥有皮肤。---- */
+/* ---- 语义图标：扁平 glyph，无底座。---- */
 .node-icon {
     position: relative;
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    margin-right: 7px;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin-right: 6px;
     flex-shrink: 0;
-    border-width: 1px;
-    border-radius: 7px;
-    border-color: var(--ne-node-icon-border);
-    border-top-color: var(--ne-node-highlight);
-    border-bottom-width: 2px;
-    border-bottom-color: var(--ne-control-shadow);
-    background-color: var(--ne-node-icon-bg);
-    --ne-node-icon-color: var(--ne-node-icon-color-theme);
+    /* 标题行比图标高，默认 align-self:auto 会把图标顶在上沿（#title-label 自带居中，
+       图标不加就成了唯一没对齐的元素）。 */
+    align-self: center;
+    border-width: 0;
+    background-color: var(--ne-transparent);
+    --ne-node-icon-color: var(--ne-node-title-text);
 }
-.node-role-provider > #node-border > #title  { margin-left: 22px; margin-right: 22px; }
-.node-role-condition > #node-border > #title { margin-left: 19px; margin-right: 19px; }
-.node-role-action > #node-border > #title    { margin-left: 12px; margin-right: 22px; }
-.node-role-control > #node-border > #title   { margin-left: 14px; margin-right: 14px; }
 
 /* ---- purity 二级提示：节点底部细带。---- */
 .node-purity-domain > #node-border > #contents {
@@ -450,10 +428,10 @@
     border-bottom-color: var(--ne-purity-domain);
 }
 
-/* ---- 运行态（play mode）：保持语义轮廓，换色整个节点材质。---- */
-.status-running  { --ne-node-shape-fill: var(--ne-status-running-fill); --ne-node-shape-highlight: var(--ne-status-running-highlight); --ne-node-shape-shadow: var(--ne-status-running-shadow); --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-glow: var(--ne-status-running-glow); --ne-node-shape-outline-width: 2; }
-.status-success  { --ne-node-shape-fill: var(--ne-status-success-fill); --ne-node-shape-highlight: var(--ne-status-success-highlight); --ne-node-shape-shadow: var(--ne-status-success-shadow); --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-glow: var(--ne-status-success-glow); --ne-node-shape-outline-width: 2; }
-.status-failure  { --ne-node-shape-fill: var(--ne-status-failure-fill); --ne-node-shape-highlight: var(--ne-status-failure-highlight); --ne-node-shape-shadow: var(--ne-status-failure-shadow); --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-glow: var(--ne-status-failure-glow); --ne-node-shape-outline-width: 2; }
+/* ---- 运行态（play mode）：换色整个节点材质。---- */
+.status-running  { --ne-node-shape-fill: var(--ne-status-running-fill); --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-glow: var(--ne-status-running-glow); --ne-node-shape-outline-width: 2; }
+.status-success  { --ne-node-shape-fill: var(--ne-status-success-fill); --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-glow: var(--ne-status-success-glow); --ne-node-shape-outline-width: 2; }
+.status-failure  { --ne-node-shape-fill: var(--ne-status-failure-fill); --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-glow: var(--ne-status-failure-glow); --ne-node-shape-outline-width: 2; }
 .node-base.status-running:hover { --ne-node-shape-fill: var(--ne-status-running-fill); --ne-node-shape-outline: var(--ne-status-running); --ne-node-shape-glow: var(--ne-status-running-glow); }
 .node-base.status-success:hover { --ne-node-shape-fill: var(--ne-status-success-fill); --ne-node-shape-outline: var(--ne-status-success); --ne-node-shape-glow: var(--ne-status-success-glow); }
 .node-base.status-failure:hover { --ne-node-shape-fill: var(--ne-status-failure-fill); --ne-node-shape-outline: var(--ne-status-failure); --ne-node-shape-glow: var(--ne-status-failure-glow); }
@@ -463,54 +441,70 @@
 .validation-error { --ne-node-validation-outline: var(--ne-validation-error); }
 .validation-warn { --ne-node-validation-outline: var(--ne-validation-warn); }
 
-/* ---- 端口（垂直方向：上下端口）---- */
+/* ---- 端口（行内小圆点）---- */
 .port {
-    height: 20px;
+    height: 18px;
     font-size: var(--ne-font-sm);
-    margin: 2px 3px;
-    padding: 0 6px;
-    border-radius: var(--ne-radius-control);
-    background-color: var(--ne-bg-node-port);
-    border-width: 1px;
-    border-color: var(--ne-border-muted);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
+    margin: 1px 2px;
+    padding: 0 4px;
+    background-color: var(--ne-transparent);
+    border-width: 0;
 }
 .port #type { color: var(--ne-text); }
 .port:hover {
-    background-color: var(--ne-bg-row-hover);
-    border-color: var(--ne-hover-border);
+    background-color: var(--ne-transparent);
 }
 .port:hover > #connector { border-color: var(--ne-accent); }
 
 /* ---- 端口容量区分：单连线(只能一条) vs 多连线(可多条) ----
    容量由 PortView.Create 依 arity 推导并挂类（ne-port-single / ne-port-multi）。
-   形状在此用 USS 控制：多连线 = 方形连接点（border-radius 1 + 粗描边），单连线 = 圆形连接点。
-   颜色不能用 USS——Unity 的 Port 在 C# 里用 portColor 直接写连接点 border-color，会盖过 USS，
-   故颜色在 PortView.Create 里设 portColor（多=强调蓝、单=中性灰）。
-   选择器叠上 .port 提高优先级（2 类 + 1 id），压过 GraphView 内置 .port #connector（1 类 + 1 id）的形状默认。 */
-.port.ne-port-multi > #connector {
-    border-radius: 8px;
+   形状在此用 USS 控制：多连线 = 方形连接点，单连线 = 圆形连接点。
+   颜色在 PortView.Create 里设 portColor。 */
+.port #connector {
+    width: 11px;
+    height: 11px;
+    border-radius: 6px;
     border-width: 2px;
 }
+.port #connector > #cap {
+    width: 5px;
+    height: 5px;
+    border-radius: 3px;
+}
+.port.ne-port-multi > #connector {
+    border-radius: 2px;
+}
 .port.ne-port-multi > #connector > #cap {
-    border-radius: 8px;
+    border-radius: 2px;
 }
 .port.ne-port-single > #connector {
-    border-radius: 8px;
+    border-radius: 6px;
 }
 .port.ne-port-single > #connector > #cap {
-    border-radius: 8px;
+    border-radius: 3px;
 }
 
-/* ---- 连线（Edge 读这几个自定义属性）---- */
+/* ---- 连线 ---- */
 .edge {
     --edge-width: 2;
-    --edge-color: rgb(151, 143, 129);
-    --selected-edge-color: var(--ne-accent);
+    --edge-color: var(--ne-wire);
+    --selected-edge-color: var(--ne-wire-selected);
     --ghost-edge-color: var(--ne-accent-soft);
 }
-.edge:hover { --edge-color: var(--ne-accent-strong); }
+.edge:hover { --edge-color: var(--ne-wire-selected); }
+
+/* ---- 朝向差异 ---- */
+/* 横向（左进右出）= GraphView 原生 #top 横排 */
+.ne-orient-horizontal #contents > #top { flex-direction: row; }
+
+/* 纵向（上进下出）：输入行钉在顶、输出行钉在底，端口横排居中 */
+.node-base.ne-orient-vertical #contents > #top { flex-direction: column; }
+.node-base.ne-orient-vertical #contents > #top > #input,
+.node-base.ne-orient-vertical #contents > #top > #output {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
 
 /* ---- group / hover-bar / breadcrumb（现有类名）---- */
 .node-group {
@@ -525,8 +519,6 @@
     border-radius: var(--ne-radius);
     border-width: 1px;
     border-color: var(--ne-border-soft);
-    border-top-color: var(--ne-metal-highlight);
-    border-bottom-color: var(--ne-metal-shadow);
     padding: 2px;
 }
 .hover-bar Button {
@@ -537,13 +529,11 @@
     background-color: var(--ne-button-bg);
     border-width: 1px;
     border-color: var(--ne-button-border);
-    border-top-color: var(--ne-button-highlight);
-    border-bottom-color: var(--ne-button-shadow);
     border-radius: 5px;
     color: var(--ne-text-secondary);
 }
 .hover-bar Button:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); color: var(--ne-text-strong); }
-.hover-bar Button:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+.hover-bar Button:active { background-color: var(--ne-button-bg-active); }
 /* 面包屑 = 扁平路径条（导航 chrome，非按钮）：crumb 平贴条上，「›」分隔，
    当前（末位）crumb 提成浅底 chip。按钮质感只留给真正的命令按钮。 */
 .breadcrumb {
@@ -578,7 +568,7 @@
 .breadcrumb-crumb--current {
     background-color: var(--ne-bg-panel);
     border-color: var(--ne-border-soft);
-    border-top-color: var(--ne-control-highlight);
+    
     color: var(--ne-text-strong);
     -unity-font-style: bold;
 }
@@ -597,8 +587,6 @@ MiniMap {
     background-color: var(--ne-bg-minimap);
     border-color: var(--ne-border-soft);
     border-width: 1px;
-    border-top-color: var(--ne-metal-highlight);
-    border-bottom-color: var(--ne-metal-shadow);
     border-radius: var(--ne-radius);
 }
 MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
@@ -623,16 +611,15 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .inspector-header {
     font-size: var(--ne-font-md); -unity-font-style: bold; color: var(--ne-text-strong);
     background-color: var(--ne-bg-header); padding: 6px 10px;
-    border-top-width: 1px; border-top-color: var(--ne-metal-highlight);
-    border-bottom-width: 1px; border-bottom-color: var(--ne-metal-shadow);
+    border-top-width: 1px; 
+    border-bottom-width: 1px; 
 }
 .inspector-body, .variable-list { padding: var(--ne-pad-panel); }
 .inspector-body { flex-grow: 1; min-height: 0; }
 .inspector-section {
-    background-color: var(--ne-bg-panel-raised); border-radius: var(--ne-radius);
-    border-width: 1px; border-color: var(--ne-border-soft);
-    border-top-color: var(--ne-metal-highlight);
-    border-bottom-color: var(--ne-metal-shadow);
+    background-color: var(--ne-transparent); border-radius: var(--ne-radius);
+    border-width: 0;
+    border-bottom-width: 1px; border-bottom-color: var(--ne-divider);
     padding: 7px 9px; margin-bottom: var(--ne-gap-md); flex-shrink: 0;
 }
 /* 节标题 = 小号淡色分节抬头（商业编辑器惯例），不再靠彩色竖条抢眼。 */
@@ -650,8 +637,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .inspector-body .unity-base-field__input {
     background-color: var(--ne-bg-control); border-radius: var(--ne-radius-control);
     border-width: 1px; border-color: var(--ne-border);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
 }
 .inspector-body .unity-base-field__input:hover { background-color: var(--ne-bg-control-hover); border-color: var(--ne-hover-border); }
 .inspector-body .unity-base-field__input:focus { background-color: var(--ne-bg-control-focus); border-color: var(--ne-focus); }
@@ -664,8 +649,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     flex-grow: 1; flex-direction: row; align-items: center; justify-content: space-between;
     background-color: var(--ne-bg-control); border-radius: var(--ne-radius-control);
     border-width: 1px; border-color: var(--ne-border);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
     color: var(--ne-text); font-size: var(--ne-font-sm);
     min-height: var(--ne-row-h); padding: 0 var(--ne-gap-sm); margin: 0;
 }
@@ -686,8 +669,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .enum-dropdown .unity-base-field__input {
     background-color: var(--ne-bg-control); border-radius: var(--ne-radius-control);
     border-width: 1px; border-color: var(--ne-border); min-height: 24px;
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
 }
 .enum-dropdown .unity-base-field__input:hover { background-color: var(--ne-bg-control-hover); border-color: var(--ne-hover-border); }
 .enum-dropdown .unity-base-field__input:focus { background-color: var(--ne-bg-control-focus); border-color: var(--ne-focus); }
@@ -698,8 +679,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     background-color: var(--ne-bg-control);
     border-width: 1px;
     border-color: var(--ne-border);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
 }
 .choice-text .unity-base-field__input:hover {
     background-color: var(--ne-bg-control-hover);
@@ -713,19 +692,15 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     width: 26px; min-height: var(--ne-row-h); margin: 0 0 0 var(--ne-gap-sm);
     background-color: var(--ne-button-bg); border-radius: 5px;
     border-width: 1px; border-color: var(--ne-button-border);
-    border-top-color: var(--ne-button-highlight);
-    border-bottom-color: var(--ne-button-shadow);
     color: var(--ne-text-secondary);
     font-size: 12px;
 }
 .choice-arrow:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); color: var(--ne-text-strong); }
-.choice-arrow:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+.choice-arrow:active { background-color: var(--ne-button-bg-active); }
 .field-note   { font-size: var(--ne-font-sm); color: var(--ne-text-dim); -unity-font-style: italic; }
 .variable-row {
     min-height: 24px; margin: 2px 0; border-radius: var(--ne-radius-control);
     background-color: var(--ne-bg-row); border-width: 1px; border-color: var(--ne-border-soft);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
 }
 .variable-row:hover { background-color: var(--ne-bg-row-hover); border-color: var(--ne-hover-border); }
 /* 变量行三列：键名（可省略号）| 值编辑器（撑满）| 作用域标签（不压缩）*/
@@ -740,8 +715,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .variable-value .unity-base-field__input {
     background-color: var(--ne-bg-control); border-radius: var(--ne-radius-control);
     border-width: 1px; border-color: var(--ne-border);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
 }
 .variable-value .unity-base-field__input:hover { background-color: var(--ne-bg-control-hover); border-color: var(--ne-hover-border); }
 .variable-value .unity-base-field__input:focus { background-color: var(--ne-bg-control-focus); border-color: var(--ne-focus); }
@@ -760,18 +733,14 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     min-height: 24px; margin: var(--ne-pad-panel); align-self: flex-start; font-size: var(--ne-font-md);
     background-color: var(--ne-button-bg); border-radius: 5px;
     border-width: 1px; border-color: var(--ne-button-border);
-    border-top-color: var(--ne-button-highlight);
-    border-bottom-color: var(--ne-button-shadow);
     color: var(--ne-text-secondary); padding: 2px 11px;
     -unity-text-align: middle-center;
 }
 .add-button:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); color: var(--ne-text-strong); }
-.add-button:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+.add-button:active { background-color: var(--ne-button-bg-active); }
 .add-button.is-selected {
     background-color: var(--ne-button-bg-active);
     border-color: var(--ne-accent);
-    border-top-color: var(--ne-button-shadow);
-    border-bottom-color: var(--ne-button-highlight);
     color: var(--ne-text-strong);
 }
 
@@ -819,8 +788,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .ne-seg-btn.is-selected {
     background-color: var(--ne-bg-node);
     border-color: var(--ne-border);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
     color: var(--ne-text-strong);
 }
 
@@ -902,10 +869,9 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 
 /* ---- Data window: one card per content entry (reuses inspector-section tokens) ---- */
 .entry-card {
-    background-color: var(--ne-bg-panel-alt); border-radius: var(--ne-radius);
-    border-width: 1px; border-color: var(--ne-border-soft);
-    border-top-color: var(--ne-metal-highlight);
-    border-bottom-color: var(--ne-border);
+    background-color: var(--ne-transparent); border-radius: var(--ne-radius);
+    border-width: 0;
+    border-bottom-width: 1px; border-bottom-color: var(--ne-divider);
     padding: 6px 8px; margin-bottom: var(--ne-gap-md);
 }
 
@@ -950,18 +916,15 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
    ============================================================ */
 .ne-toolbar {
     height: 28px; background-color: var(--ne-bg-toolbar);
-    border-top-width: 1px; border-top-color: var(--ne-metal-highlight);
-    border-bottom-width: 1px; border-bottom-color: var(--ne-metal-shadow); align-items: center;
+    border-bottom-width: 1px; border-bottom-color: var(--ne-border); align-items: center;
 }
 .toolbar-iconbtn {
     width: 28px; height: 24px; -unity-text-align: middle-center; padding: 0; margin: 0 2px;
     background-color: var(--ne-button-bg); border-width: 1px; border-color: var(--ne-button-border);
-    border-top-color: var(--ne-button-highlight);
-    border-bottom-color: var(--ne-button-shadow);
     border-radius: 5px;
 }
 .toolbar-iconbtn:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); }
-.toolbar-iconbtn:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+.toolbar-iconbtn:active { background-color: var(--ne-button-bg-active); }
 .toolbar-icon {
     width: 16px; height: 16px; align-self: center;
     --unity-image-tint-color: var(--ne-text-dim);
@@ -1138,10 +1101,9 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     margin: 2px 6px;
     border-radius: var(--ne-radius-control);
     background-color: var(--ne-bg-row);
-    border-width: 1px;
-    border-color: var(--ne-border-soft);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-divider);
     flex-direction: column;
     align-items: stretch;
     -unity-text-align: middle-left;
@@ -1186,9 +1148,9 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     border-left-width: 3px;
     border-left-color: var(--ne-accent);
     border-top-width: 1px;
-    border-top-color: var(--ne-control-highlight);
+    
     border-bottom-width: 1px;
-    border-bottom-color: var(--ne-control-shadow);
+    
     border-radius: var(--ne-radius-control);
     padding: 3px 7px;
     margin-top: 4px;
@@ -1264,8 +1226,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     background-color: var(--ne-button-bg);
     border-width: 1px;
     border-color: var(--ne-button-border);
-    border-top-color: var(--ne-button-highlight);
-    border-bottom-color: var(--ne-button-shadow);
     border-radius: 5px;
     color: var(--ne-text-secondary);
     padding-left: 8px;
@@ -1281,8 +1241,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 
 .toolbar-command:active {
     background-color: var(--ne-button-bg-active);
-    border-top-color: var(--ne-button-shadow);
-    border-bottom-color: var(--ne-button-highlight);
 }
 
 .toolbar-command:disabled {
@@ -1311,8 +1269,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     background-color: var(--ne-button-bg);
     border-width: 1px;
     border-color: var(--ne-button-border);
-    border-top-color: var(--ne-button-highlight);
-    border-bottom-color: var(--ne-button-shadow);
     border-radius: 5px;
     color: var(--ne-text-secondary);
 }
@@ -1343,8 +1299,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     font-size: var(--ne-font-sm);
     border-width: 1px;
     border-color: var(--ne-border);
-    border-top-color: var(--ne-metal-highlight);
-    border-bottom-color: var(--ne-metal-shadow);
     border-left-width: 3px;
     border-left-color: var(--ne-accent-gold);
     border-radius: var(--ne-radius-control);
@@ -1358,8 +1312,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     border-radius: var(--ne-radius);
     border-width: 1px;
     border-color: var(--ne-border-soft);
-    border-top-color: var(--ne-metal-highlight);
-    border-bottom-color: var(--ne-metal-shadow);
     border-left-width: 4px;
     border-left-color: var(--ne-accent-gold);
     padding: 8px 10px;
@@ -1449,18 +1401,14 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .ne-node-ports {
     padding-top: 2px;
     padding-bottom: 2px;
-    background-color: var(--ne-bg-node-port-row);
-    border-width: 1px;
-    border-color: var(--ne-border-muted);
-    border-radius: var(--ne-radius-control);
+    background-color: var(--ne-transparent);
+    border-width: 0;
 }
 
 .string-search-popup {
     background-color: var(--ne-bg-panel-raised);
     border-width: 1px;
     border-color: var(--ne-border);
-    border-top-color: var(--ne-metal-highlight);
-    border-bottom-color: var(--ne-metal-shadow);
     padding: 6px;
 }
 
@@ -1475,7 +1423,7 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     color: var(--ne-text-strong);
     background-color: var(--ne-bg-header);
     border-bottom-width: 1px;
-    border-bottom-color: var(--ne-metal-shadow);
+    
     border-radius: var(--ne-radius-control);
     -unity-font-style: bold;
 }
@@ -1491,7 +1439,7 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     color: var(--ne-text-dim);
     background-color: var(--ne-bg-row-striped);
     border-top-width: 1px;
-    border-top-color: var(--ne-control-highlight);
+    
     border-radius: var(--ne-radius-control);
     -unity-font-style: bold;
 }
@@ -1504,8 +1452,6 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     background-color: var(--ne-bg-row);
     border-width: 1px;
     border-color: var(--ne-border-soft);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
     border-radius: var(--ne-radius-control);
     -unity-text-align: middle-left;
 }
@@ -1550,10 +1496,9 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     flex-shrink: 0;
     background-color: var(--ne-bg-row);
     border-radius: var(--ne-radius-control);
-    border-width: 1px;
-    border-color: var(--ne-border-soft);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-divider);
 }
 .unit-slot > .unity-foldout__content { margin-left: 10px; }
 .unit-body { margin-top: 2px; }
@@ -1569,15 +1514,13 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     background-color: var(--ne-button-bg);
     border-width: 1px;
     border-color: var(--ne-button-border);
-    border-top-color: var(--ne-button-highlight);
-    border-bottom-color: var(--ne-button-shadow);
     border-radius: 5px;
     color: var(--ne-text-secondary);
     font-size: var(--ne-font-sm);
     -unity-text-align: middle-center;
 }
 .unit-list-del:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); color: var(--ne-text-strong); }
-.unit-list-del:active { background-color: var(--ne-button-bg-active); border-top-color: var(--ne-button-shadow); border-bottom-color: var(--ne-button-highlight); }
+.unit-list-del:active { background-color: var(--ne-button-bg-active); }
 
 /* ============================================================
    NATIVE CONTROL RE-SKIN — Unity 暗皮肤在浅色编辑器里的残留
@@ -1667,8 +1610,6 @@ Label { color: var(--ne-text); }
 .unity-object-field__input {
     background-color: var(--ne-bg-control);
     border-color: var(--ne-border);
-    border-top-color: var(--ne-control-highlight);
-    border-bottom-color: var(--ne-control-shadow);
 }
 .unity-base-popup-field__text {
     color: var(--ne-text);
@@ -1688,7 +1629,7 @@ Label { color: var(--ne-text); }
 /* 内建选择器是 #contents > #top > #input（三层 ID），必须以 ≥3 ID + 类 的优先级压制 */
 .node-base #contents #top #input,
 .node-base #contents #top #output {
-    background-color: var(--ne-bg-node-port-row);
+    background-color: var(--ne-transparent);
 }
 .node-base #contents #top #divider,
 .node-base #node-border #contents #divider {
@@ -1696,7 +1637,7 @@ Label { color: var(--ne-text); }
     border-color: rgba(0, 0, 0, 0);
 }
 .node-base #title-label {
-    color: var(--ne-text-strong);
+    color: var(--ne-node-title-text);
 }
 .node-base .port #type {
     color: var(--ne-text);

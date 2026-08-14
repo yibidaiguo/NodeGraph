@@ -45,6 +45,7 @@ namespace Dialogue.EditorUI
             if (start == null || end == null) return false;   // 定义资产还没生成（未跑 Setup）→ 不动
 
             g.graphType = GraphType.ControlFlow;
+            g.orientation = GraphOrientation.Horizontal;
             g.module = "dialogue";                             // 归入左侧"对话"分组 / 对话编辑器的模块过滤
             g.instances.Add(start);
             g.entryInstanceIds.Add(start.instanceId);          // Start 是控制流入口

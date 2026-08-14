@@ -1,3 +1,4 @@
+using NodeEditor;
 using NodeEditor.EditorUI;
 using UnityEditor;
 using UnityEngine;
@@ -24,7 +25,8 @@ namespace StateMachine.EditorUI
                     new NodeGraphModuleAction("open", "Open Editor", StateMachineEditorLauncher.Open),
                     new NodeGraphModuleAction("setup", "Setup Assets", StateMachineSetup.Run),
                     new NodeGraphModuleAction("asset-paths", "Open Asset Paths", StateMachineAssetPathsLocator.OpenAssetPaths),
-                });
+                },
+                GraphOrientation.Vertical);
 
             if (!NodeGraphModules.Registry.TryRegister(descriptor, out var error))
                 Debug.LogError(error);

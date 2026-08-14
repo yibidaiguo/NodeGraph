@@ -257,6 +257,10 @@ namespace NodeEditor
     // Wire-graph 资产报告为 WireGraph；声明式资产（6a 的 DeclarativeAsset）报告为 Declarative。
     public enum AuthoringFamily { WireGraph, Declarative }
 
+    // 画布朝向：框架只认这个枚举，不认任何领域语义（与 NodeGraphAsset.module 同样的机制/策略分层）。
+    // Inherit = 本图没有显式声明，由框架回退到所属模块注册时声明的默认朝向。
+    public enum GraphOrientation { Inherit = 0, Vertical, Horizontal }
+
     public interface IAuthoringAsset { AuthoringFamily AuthoringFamily { get; } }
 
     // NodeGraphAsset（ScriptableObject）存放在 NodeGraphAsset.cs 中——参见上面"每类一文件"的说明。

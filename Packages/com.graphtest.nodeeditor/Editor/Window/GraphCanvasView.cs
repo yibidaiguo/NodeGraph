@@ -83,6 +83,21 @@ namespace NodeEditor.EditorUI
             RegisterCallback<DetachFromPanelEvent>(_ => Undo.undoRedoPerformed -= OnUndoRedoPerformed);
         }
 
+        public static GraphOrientation ResolveOrientation(NodeGraphAsset asset)
+        {
+            if (asset == null) return GraphOrientation.Vertical;
+            if (asset.orientation != GraphOrientation.Inherit) return asset.orientation;
+            if (NodeGraphModules.Registry.TryGet(asset.module, out var d)) return d.DefaultOrientation;
+            // 短模块名（如 "dialogue"）可能未被直接注册为 key；
+            // 遍历已注册模块按 Id 后缀匹配（如 "com.graphtest.dialogue"）。
+            foreach (var m in NodeGraphModules.Registry.Modules)
+            {
+                if (m.Id.EndsWith("." + asset.module, System.StringComparison.Ordinal))
+                    return m.DefaultOrientation;
+            }
+            return GraphOrientation.Vertical;
+        }
+
         void OnUndoRedoPerformed()
         {
             if (Asset == null) return;
@@ -141,7 +156,7 @@ namespace NodeEditor.EditorUI
                     var def = registry.Find(inst.definitionId);
                     if (def == null) continue;
                     if (!NodeAdmission.Evaluate(asset, def).allowed) continue;
-                    var view = new NodeView(inst, def);
+                    var view = new NodeView(inst, def, ResolveOrientation(asset));
                     view.OnSelectedCallback = () => OnNodeSelected?.Invoke(view);
                     view.SetPosition(new Rect(inst.position, Vector2.zero));
                     AddElement(view);
@@ -363,7 +378,7 @@ namespace NodeEditor.EditorUI
             Undo.RegisterCompleteObjectUndo(Asset, "Add Node");
             var inst = new NodeInstance { definitionId = def.Id, position = graphPos };
             Asset.instances.Add(inst);
-            var view = new NodeView(inst, def);
+            var view = new NodeView(inst, def, ResolveOrientation(Asset));
             view.OnSelectedCallback = () => OnNodeSelected?.Invoke(view);
             view.SetPosition(new Rect(graphPos, Vector2.zero));
             AddElement(view);
@@ -401,7 +416,7 @@ namespace NodeEditor.EditorUI
             foreach (var inst in pasted)
             {
                 Asset.instances.Add(inst);
-                var view = new NodeView(inst, Registry.Find(inst.definitionId));
+                var view = new NodeView(inst, Registry.Find(inst.definitionId), ResolveOrientation(Asset));
                 view.OnSelectedCallback = () => OnNodeSelected?.Invoke(view);
                 view.SetPosition(new Rect(inst.position, Vector2.zero));
                 AddElement(view);
@@ -429,20 +444,18 @@ namespace NodeEditor.EditorUI
             new("--ne-node-shape-outline");
         static readonly CustomStyleProperty<float> s_ShapeOutlineWidth =
             new("--ne-node-shape-outline-width");
-        static readonly CustomStyleProperty<Color> s_ShapeHighlight =
-            new("--ne-node-shape-highlight");
-        static readonly CustomStyleProperty<Color> s_ShapeShadow =
-            new("--ne-node-shape-shadow");
         static readonly CustomStyleProperty<Color> s_ShapeGlow =
             new("--ne-node-shape-glow");
         static readonly CustomStyleProperty<Color> s_SelectionOutline =
             new("--ne-node-selection-outline");
         static readonly CustomStyleProperty<Color> s_ValidationOutline =
             new("--ne-node-validation-outline");
-        [System.ThreadStatic] static List<Vector2> s_RolePolygonScratch;
-        [System.ThreadStatic] static List<Vector2> s_RoundedSampleScratch;
-        [System.ThreadStatic] static List<Vector2> s_GradientUpperScratch;
-        [System.ThreadStatic] static List<Vector2> s_GradientLowerScratch;
+        static readonly CustomStyleProperty<Color> s_TitleFill =
+            new("--ne-node-title-fill");
+        static readonly CustomStyleProperty<float> s_TitleHeight =
+            new("--ne-node-title-height");
+        static readonly CustomStyleProperty<float> s_CornerRadius =
+            new("--ne-node-corner-radius");
 
         public NodeInstance Instance { get; }
         public NodeDefinition Definition { get; }
@@ -454,17 +467,20 @@ namespace NodeEditor.EditorUI
         IVisualElementScheduledItem m_HoverSchedule;   // 悬停满 1 秒后弹出 tooltip 的计划任务（离开/移除时取消）
         Color m_ShapeFill;
         Color m_ShapeOutline;
-        Color m_ShapeHighlight;
-        Color m_ShapeShadow;
         Color m_ShapeGlow;
         Color m_SelectionOutline;
         Color m_ValidationOutline;
+        Color m_TitleFill;
+        float m_TitleHeight = 26f;
+        float m_CornerRadius = 6f;
         readonly NodeRole m_VisualRole;
         float m_ShapeOutlineWidth = 1f;
+        GraphOrientation m_Orientation;
 
-        public NodeView(NodeInstance inst, NodeDefinition def)
+        public NodeView(NodeInstance inst, NodeDefinition def, GraphOrientation orientation = GraphOrientation.Vertical)
         {
             Instance = inst; Definition = def;
+            m_Orientation = orientation;
             // 标题优先级：备注 > 自定义名 > 定义的本地化名称（统一走 NodeInspectorEdits.ResolveTitle）。
             var resolvedTitle = NodeInspectorEdits.ResolveTitle(inst, def);
             title = resolvedTitle;
@@ -476,7 +492,12 @@ namespace NodeEditor.EditorUI
             var visualRoleKey = m_VisualRole.ToString().ToLowerInvariant();
             AddToClassList("node-base");
             AddToClassList($"node-role-{visualRoleKey}");
-            generateVisualContent += DrawRoleSilhouette;
+            AddToClassList($"node-kind-{iconKind.ToString().ToLowerInvariant()}");
+            if (m_Orientation == GraphOrientation.Horizontal)
+                AddToClassList("ne-orient-horizontal");
+            else
+                AddToClassList("ne-orient-vertical");
+            generateVisualContent += DrawNodeSurface;
             RegisterCallback<CustomStyleResolvedEvent>(OnShapeStyleResolved);
             if (def.Purity == NodePurity.Domain) AddToClassList("node-purity-domain");
             titleContainer.AddToClassList("ne-node-title");
@@ -519,13 +540,13 @@ namespace NodeEditor.EditorUI
         {
             foreach (var pd in Definition.InputPorts)
             {
-                var p = PortView.Create(pd, Direction.Input);
+                var p = PortView.Create(pd, Direction.Input, m_Orientation == GraphOrientation.Horizontal ? Orientation.Horizontal : Orientation.Vertical);
                 m_In[pd.name] = p;
                 inputContainer.Add(p);
             }
             foreach (var pd in Definition.OutputPorts)
             {
-                var p = PortView.Create(pd, Direction.Output);
+                var p = PortView.Create(pd, Direction.Output, m_Orientation == GraphOrientation.Horizontal ? Orientation.Horizontal : Orientation.Vertical);
                 m_Out[pd.name] = p;
                 outputContainer.Add(p);
             }
@@ -541,17 +562,36 @@ namespace NodeEditor.EditorUI
             evt.customStyle.TryGetValue(s_ShapeFill, out m_ShapeFill);
             evt.customStyle.TryGetValue(s_ShapeOutline, out m_ShapeOutline);
             evt.customStyle.TryGetValue(s_ShapeOutlineWidth, out m_ShapeOutlineWidth);
-            evt.customStyle.TryGetValue(s_ShapeHighlight, out m_ShapeHighlight);
-            evt.customStyle.TryGetValue(s_ShapeShadow, out m_ShapeShadow);
             evt.customStyle.TryGetValue(s_ShapeGlow, out m_ShapeGlow);
             evt.customStyle.TryGetValue(s_SelectionOutline, out m_SelectionOutline);
             evt.customStyle.TryGetValue(s_ValidationOutline, out m_ValidationOutline);
+            evt.customStyle.TryGetValue(s_TitleFill, out m_TitleFill);
+            evt.customStyle.TryGetValue(s_TitleHeight, out m_TitleHeight);
+            evt.customStyle.TryGetValue(s_CornerRadius, out m_CornerRadius);
             ResolveRunningFlowStyle(evt);
             MarkDirtyRepaint();
         }
 
         public override bool ContainsPoint(Vector2 localPoint)
-            => ContainsRoleSilhouettePoint(m_VisualRole, RoleSilhouetteBounds(contentRect), localPoint);
+        {
+            var bounds = NodeSurfaceBounds(contentRect);
+            if (localPoint.x < bounds.xMin || localPoint.x > bounds.xMax
+                || localPoint.y < bounds.yMin || localPoint.y > bounds.yMax) return false;
+
+            float r = m_CornerRadius;
+            if (r <= 0f) return true;
+
+            // 四个角落用圆心距判定
+            float x0 = bounds.xMin, x1 = bounds.xMax, y0 = bounds.yMin, y1 = bounds.yMax;
+            if (localPoint.x >= x0 + r && localPoint.x <= x1 - r) return true;
+            if (localPoint.y >= y0 + r && localPoint.y <= y1 - r) return true;
+
+            float cx = localPoint.x < x0 + r ? x0 + r : x1 - r;
+            float cy = localPoint.y < y0 + r ? y0 + r : y1 - r;
+            float dx = (localPoint.x - cx) / r;
+            float dy = (localPoint.y - cy) / r;
+            return dx * dx + dy * dy <= 1f;
+        }
 
         static NodeRole ResolveVisualRole(NodeIconKind iconKind, NodeRole fallback)
         {
@@ -639,7 +679,7 @@ namespace NodeEditor.EditorUI
 
         protected PortView(Orientation o, Direction d, Capacity c, System.Type t) : base(o, d, c, t) { }
 
-        public static PortView Create(PortDef pd, Direction dir)
+        public static PortView Create(PortDef pd, Direction dir, Orientation orientation)
         {
             // 只要 arity 允许多于一条连线（Many/AtLeast，或上界大于 1 的
             // Range/Exactly），就用 Multi 容量 —— 否则用 Single。像 2..5 的 Range 或 Exactly 3 必须
@@ -649,7 +689,7 @@ namespace NodeEditor.EditorUI
                       || (pd.arity.kind == ArityKind.Range && pd.arity.max > 1)
                       || (pd.arity.kind == ArityKind.Exactly && pd.arity.min > 1);
             var cap = multi ? Capacity.Multi : Capacity.Single;
-            var p = new PortView(Orientation.Vertical, dir, cap, typeof(object))
+            var p = new PortView(orientation, dir, cap, typeof(object))
             {
                 PortType = pd.type,
                 PortName = pd.name,

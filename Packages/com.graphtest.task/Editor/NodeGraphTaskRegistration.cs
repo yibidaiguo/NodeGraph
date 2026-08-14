@@ -1,3 +1,4 @@
+using NodeEditor;
 using NodeEditor.EditorUI;
 using UnityEditor;
 using UnityEngine;
@@ -29,7 +30,8 @@ namespace TaskEditor.EditorUI
                     new NodeGraphModuleAction("open", "Open Editor", TaskEditorLauncher.Open),
                     new NodeGraphModuleAction("setup", "Setup Assets", TaskSetup.Run),
                     new NodeGraphModuleAction("asset-paths", "Open Asset Paths", TaskAssetPathsLocator.OpenAssetPaths),
-                });
+                },
+                GraphOrientation.Horizontal);
 
             if (!NodeGraphModules.Registry.TryRegister(descriptor, out var error))
                 Debug.LogError(error);

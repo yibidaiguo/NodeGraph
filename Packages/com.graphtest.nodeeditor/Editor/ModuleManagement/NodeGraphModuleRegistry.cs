@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NodeEditor;
 using UnityEngine;
 
 namespace NodeEditor.EditorUI
@@ -104,21 +105,24 @@ namespace NodeEditor.EditorUI
             string id,
             string displayName,
             int order,
-            IEnumerable<NodeGraphModuleAction> actions)
+            IEnumerable<NodeGraphModuleAction> actions,
+            GraphOrientation defaultOrientation = GraphOrientation.Vertical)
         {
             Id = id;
             DisplayName = displayName;
             Order = order;
+            DefaultOrientation = defaultOrientation;
             m_Actions = (actions ?? Array.Empty<NodeGraphModuleAction>()).ToArray();
         }
 
         public string Id { get; }
         public string DisplayName { get; }
         public int Order { get; }
+        public GraphOrientation DefaultOrientation { get; }
         public IReadOnlyList<NodeGraphModuleAction> Actions => m_Actions;
 
         internal NodeGraphModuleDescriptor WithActions(IEnumerable<NodeGraphModuleAction> actions) =>
-            new NodeGraphModuleDescriptor(Id, DisplayName, Order, actions);
+            new NodeGraphModuleDescriptor(Id, DisplayName, Order, actions, DefaultOrientation);
     }
 
     public sealed class NodeGraphModuleRegistry

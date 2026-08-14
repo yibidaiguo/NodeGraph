@@ -21,6 +21,7 @@ namespace NodeEditor
         // 空串=不属于任何组（只继承 全局+模块 两档）。框架只认这个字符串、不认领域语义。
         public string group = "";
         public GraphType graphType;                  // 第 1 层的决策，记录在此
+        public GraphOrientation orientation = GraphOrientation.Inherit;
         public List<NodeInstance> instances = new();
         public List<string> entryInstanceIds = new();   // 入口侧列表（控制流 / tick-tree）
     }
