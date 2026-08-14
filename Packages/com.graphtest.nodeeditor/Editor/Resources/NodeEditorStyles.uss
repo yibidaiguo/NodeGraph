@@ -414,6 +414,9 @@
     min-width: 16px;
     margin-right: 6px;
     flex-shrink: 0;
+    /* 标题行比图标高，默认 align-self:auto 会把图标顶在上沿（#title-label 自带居中，
+       图标不加就成了唯一没对齐的元素）。 */
+    align-self: center;
     border-width: 0;
     background-color: var(--ne-transparent);
     --ne-node-icon-color: var(--ne-node-title-text);
