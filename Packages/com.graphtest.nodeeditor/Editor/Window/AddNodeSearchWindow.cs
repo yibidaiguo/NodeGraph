@@ -14,7 +14,9 @@ namespace NodeEditor.EditorUI
     {
         public static void Open(Vector2 screenPos, EditorWindow window, GraphCanvas canvas)
         {
-            var entries = NodeCatalog.Query(canvas.Asset)
+            // 候选集按"图的模块 ⊕ 外壳锁定的模块"裁剪：模块模式下即使一张图都还没有，
+            // 也只列本模块的节点（canvas.Asset 为 null 时 ModuleScope 是唯一的约束来源）。
+            var entries = NodeCatalog.Query(canvas.Asset, canvas.ModuleScope)
                 .ToDictionary(entry => entry.DefinitionType.AssemblyQualifiedName);
 
             StringSearchWindow.Open(screenPos, 300f, entries.Keys,

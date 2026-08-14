@@ -205,6 +205,10 @@ namespace NodeEditor.EditorUI
 
             m_Variables = new LayeredVariablePane();
             m_Canvas = new GraphCanvas();
+            // 模块模式把锁定的模块交给画布：图还没建出来时（空壳）它是节点准入的唯一作用域，
+            // 否则"添加节点"会列出全部模块的节点。m_ModuleFilter 变化一律走 RebuildAndReload → CreateGUI，
+            // 所以在这里赋一次即可。
+            m_Canvas.ModuleScope = m_ModuleFilter;
             m_Debugger = new GraphDebugger(m_Canvas);
             m_Inspector = new InspectorPane();
 

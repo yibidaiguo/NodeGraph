@@ -33,6 +33,10 @@ namespace NodeEditor.EditorUI
         // 面板坐标→屏幕坐标换算：画布只知道面板坐标，窗口的屏幕原点在窗口手里，故由窗口注入。
         public System.Func<Vector2, Vector2> PanelToScreen;
         public NodeGraphAsset Asset { get; private set; }
+
+        // 外壳锁定的模块（由 NodeEditorWindow 的模块模式注入；自由模式为 null）。Asset 为 null 时
+        // 它是节点准入的唯一作用域来源 —— 少了它，模块模式空壳的"添加节点"会列出全部模块的节点。
+        public string ModuleScope { get; set; }
         public NodeRegistry Registry { get; private set; }
 
         readonly Dictionary<string, NodeView> m_Views = new();   // instanceId -> view 视图
@@ -234,7 +238,7 @@ namespace NodeEditor.EditorUI
             var sv = start as PortView;
             if (sv == null) return new List<Port>();
             var startDef = (start.node as NodeView)?.Definition;
-            if (!NodeAdmission.Evaluate(Asset, startDef).allowed)
+            if (!NodeAdmission.Evaluate(Asset, ModuleScope, startDef).allowed)
                 return new List<Port>();
             bool startIsOutput = start.direction == Direction.Output;
             return ports.ToList().Where(p =>
@@ -244,7 +248,7 @@ namespace NodeEditor.EditorUI
                 if (!TypeRefCompat.Compatible(sv.PortType, pv.PortType)) return false;
                 // 边永远 output->input：按 start 的方向定出 from/to 两端，再问连接规则。
                 var otherDef = (pv.node as NodeView)?.Definition;
-                if (!NodeAdmission.Evaluate(Asset, otherDef).allowed) return false;
+                if (!NodeAdmission.Evaluate(Asset, ModuleScope, otherDef).allowed) return false;
                 var fromDef  = startIsOutput ? startDef : otherDef;
                 var fromPort = startIsOutput ? sv.PortName : pv.PortName;
                 var toDef    = startIsOutput ? otherDef : startDef;
@@ -390,7 +394,7 @@ namespace NodeEditor.EditorUI
         public NodeView CreateNode(NodeDefinition def, Vector2 graphPos)
         {
             if (Asset == null) return null;   // 未加载任何图（例如在打开图之前通过菜单打开了窗口）—— 无处可添加
-            var availability = NodeAdmission.Evaluate(Asset, def);
+            var availability = NodeAdmission.Evaluate(Asset, ModuleScope, def);
             if (!availability.allowed)
             {
                 Debug.LogWarning(availability.reason);
