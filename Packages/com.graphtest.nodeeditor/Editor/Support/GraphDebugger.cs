@@ -20,6 +20,12 @@ namespace NodeEditor.EditorUI
         BlackboardSet m_Blackboard;       // 这张图的有效黑板（全局⊕模块⊕组），用于 blackboard-key 校验；由 5d 在加载时设置
         bool m_Hooked;
 
+        // 本次校验的问题计数，供工具栏状态条显示。
+        public int ErrorCount { get; private set; }
+        public int WarnCount { get; private set; }
+        // 每次重新校验完成后广播，让工具栏刷新状态条。
+        public System.Action OnValidated;
+
         public GraphDebugger(GraphCanvas canvas) => m_Canvas = canvas;
 
         // 5d 调用此方法，使 blackboard-key 校验（4c CheckBlackboardKeys）真正运行起来。
@@ -38,10 +44,13 @@ namespace NodeEditor.EditorUI
             // 节点）会标记到正确的视图上——而不仅仅是加载时捕获的那一组。
             IndexViews(m_Canvas.nodes.ToList().ConvertAll(n => (NodeView)n));
             foreach (var v in m_ByInstance.Values) v.ClearValidationMarks();
-            if (m_Canvas.Asset == null || m_Canvas.Registry == null) { m_Canvas.SetBanner(null); return; }
+            ErrorCount = 0; WarnCount = 0;
+            if (m_Canvas.Asset == null || m_Canvas.Registry == null) { m_Canvas.SetBanner(null); OnValidated?.Invoke(); return; }
             var graphLevel = new List<string>();
             foreach (var issue in GraphValidator.ValidateAll(m_Canvas.Asset, m_Canvas.Registry, m_Blackboard))
             {
+                if (issue.severity == ValidationIssue.Sev.Error) ErrorCount++;
+                else WarnCount++;
                 if (issue.target == GraphValidator.GraphIssueTarget)
                 {
                     // 图级别的问题（例如没有入口）：没有节点可标记——把它收集到画布内的 banner 里，
@@ -54,6 +63,7 @@ namespace NodeEditor.EditorUI
                         ? ValidationSeverity.Error : ValidationSeverity.Warn);   // 把 4c 的 Sev 映射为 5a 本地枚举
             }
             m_Canvas.SetBanner(graphLevel);
+            OnValidated?.Invoke();
         }
 
         // --- 为 #1-#5 接入 play 模式 ---

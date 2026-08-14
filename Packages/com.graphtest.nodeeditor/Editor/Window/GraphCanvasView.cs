@@ -18,6 +18,15 @@ namespace NodeEditor.EditorUI
     public class GraphCanvas : GraphView
     {
         public System.Action<NodeView> OnNodeSelected;
+        public System.Action<NodeView> OnNodeDeselected;
+        public System.Action OnSelectionCleared;
+
+        // 每个新建的 NodeView 都要挂满选中/取消选中回调 —— 集中一处，避免新增建视图的路径时漏挂。
+        void WireSelection(NodeView view)
+        {
+            view.OnSelectedCallback = () => OnNodeSelected?.Invoke(view);
+            view.OnUnselectedCallback = () => OnNodeDeselected?.Invoke(view);
+        }
         public System.Action OnGraphChanged;   // 在任何结构性编辑（连接/移除/添加）后触发，以便 5d 重新校验
         // 右键空白画布请求"添加节点"：入参为屏幕坐标，由窗口接到 AddNodeSearchWindow.Open（与空格键同一入口）。
         public System.Action<Vector2> OnRequestAddNode;
@@ -145,6 +154,8 @@ namespace NodeEditor.EditorUI
             // 重建期间先摘掉回调，结束再装回，让 DeleteElements/AddElement 不会改动 Asset 数据。
             var savedHandler = graphViewChanged;
             graphViewChanged = null;
+            // 整图重建 → 选中集必然作废。必须赶在 DeleteElements 之前通知，让检视面板先松开对旧节点的引用。
+            OnSelectionCleared?.Invoke();
             try
             {
                 DeleteElements(graphElements.ToList());
@@ -157,7 +168,7 @@ namespace NodeEditor.EditorUI
                     if (def == null) continue;
                     if (!NodeAdmission.Evaluate(asset, def).allowed) continue;
                     var view = new NodeView(inst, def, ResolveOrientation(asset));
-                    view.OnSelectedCallback = () => OnNodeSelected?.Invoke(view);
+                    WireSelection(view);
                     view.SetPosition(new Rect(inst.position, Vector2.zero));
                     AddElement(view);
                     m_Views[inst.instanceId] = view;
@@ -168,6 +179,18 @@ namespace NodeEditor.EditorUI
                         CreateEdgeView(inst, c);
             }
             finally { graphViewChanged = savedHandler; }
+            FrameAllSoon();
+        }
+
+        // 载入后把全部节点框选居中：否则打开一张图看到的是左上角一小撮节点加一大片空网格。
+        // 必须延后一帧 —— 此刻各 NodeView 的 layout 还没算出来，立刻 FrameAll 会按 0 尺寸算错。
+        void FrameAllSoon()
+        {
+            schedule.Execute(() =>
+            {
+                if (Asset == null || nodes.ToList().Count == 0) return;
+                FrameAll();
+            }).ExecuteLater(0);
         }
 
         void CreateEdgeView(NodeInstance from, Connection c)
@@ -379,7 +402,7 @@ namespace NodeEditor.EditorUI
             var inst = new NodeInstance { definitionId = def.Id, position = graphPos };
             Asset.instances.Add(inst);
             var view = new NodeView(inst, def, ResolveOrientation(Asset));
-            view.OnSelectedCallback = () => OnNodeSelected?.Invoke(view);
+            WireSelection(view);
             view.SetPosition(new Rect(graphPos, Vector2.zero));
             AddElement(view);
             m_Views[inst.instanceId] = view;
@@ -417,7 +440,7 @@ namespace NodeEditor.EditorUI
             {
                 Asset.instances.Add(inst);
                 var view = new NodeView(inst, Registry.Find(inst.definitionId), ResolveOrientation(Asset));
-                view.OnSelectedCallback = () => OnNodeSelected?.Invoke(view);
+                WireSelection(view);
                 view.SetPosition(new Rect(inst.position, Vector2.zero));
                 AddElement(view);
                 m_Views[inst.instanceId] = view;
@@ -460,6 +483,7 @@ namespace NodeEditor.EditorUI
         public NodeInstance Instance { get; }
         public NodeDefinition Definition { get; }
         public System.Action OnSelectedCallback;
+        public System.Action OnUnselectedCallback;
 
         readonly Dictionary<string, PortView> m_In = new();
         readonly Dictionary<string, PortView> m_Out = new();
@@ -481,7 +505,7 @@ namespace NodeEditor.EditorUI
         {
             Instance = inst; Definition = def;
             m_Orientation = orientation;
-            // 标题优先级：备注 > 自定义名 > 定义的本地化名称（统一走 NodeInspectorEdits.ResolveTitle）。
+            // 标题优先级：自定义名 > 备注 > 定义的本地化名称（统一走 NodeInspectorEdits.ResolveTitle）。
             var resolvedTitle = NodeInspectorEdits.ResolveTitle(inst, def);
             title = resolvedTitle;
 
@@ -648,6 +672,7 @@ namespace NodeEditor.EditorUI
         {
             base.OnUnselected();
             MarkDirtyRepaint();
+            OnUnselectedCallback?.Invoke();
         }
 
         // --- 调试 / 校验挂钩（debug-mode.md、styling.md） ---

@@ -597,15 +597,15 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .inspector-root  {
     min-width: 280px;
     background-color: var(--ne-bg-panel);
-    border-right-width: 1px;
-    border-right-color: var(--ne-border);
+    border-left-width: 1px;
+    border-left-color: var(--ne-border);
     flex-grow: 1;
 }
 .variable-root   {
     min-width: 200px;
     background-color: var(--ne-bg-panel);
-    border-left-width: 1px;
-    border-left-color: var(--ne-border);
+    border-right-width: 1px;
+    border-right-color: var(--ne-border);
     flex-grow: 1;
 }
 .inspector-header {
@@ -614,8 +614,28 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     border-top-width: 1px; 
     border-bottom-width: 1px; 
 }
+.inspector-header-row {
+    flex-direction: row;
+    align-items: center;
+}
+.inspector-header-title {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--ne-font-md);
+    -unity-font-style: bold;
+    color: var(--ne-text-strong);
+    -unity-text-align: middle-left;
+}
+.inspector-header-row .node-icon {
+    --ne-node-icon-color: var(--ne-text-strong);
+    margin-right: 6px;
+}
 .inspector-body, .variable-list { padding: var(--ne-pad-panel); }
-.inspector-body { flex-grow: 1; min-height: 0; }
+.inspector-body { flex-grow: 1; min-height: 0; --ne-label-w: 92px; }
 .inspector-section {
     background-color: var(--ne-transparent); border-radius: var(--ne-radius);
     border-width: 0;
@@ -633,6 +653,9 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .inspector-body .unity-base-field__label {
     min-width: var(--ne-label-w); width: var(--ne-label-w);
     -unity-text-align: middle-left; color: var(--ne-text); font-size: var(--ne-font-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .inspector-body .unity-base-field__input {
     background-color: var(--ne-bg-control); border-radius: var(--ne-radius-control);
@@ -866,6 +889,27 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     margin: 0 2px;
     align-self: stretch;
 }
+.graphlist-actions .graphlist-delete {
+    flex-grow: 0;
+    flex-basis: auto;
+    min-width: 56px;
+    background-color: var(--ne-transparent);
+    border-color: var(--ne-border-soft);
+    color: var(--ne-text-dim);
+}
+.graphlist-actions .graphlist-delete:hover {
+    background-color: var(--ne-button-bg-hover);
+    border-color: var(--ne-accent-coral);
+    color: var(--ne-accent-coral);
+}
+.graphlist-actions .graphlist-delete:disabled {
+    opacity: 0.48;
+    border-color: var(--ne-border-muted);
+    color: var(--ne-text-disabled);
+}
+.graphlist-group .collapsible-header:hover {
+    background-color: var(--ne-bg-row-hover);
+}
 
 /* ---- Data window: one card per content entry (reuses inspector-section tokens) ---- */
 .entry-card {
@@ -932,6 +976,34 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .toolbar-iconbtn:hover .toolbar-icon { --unity-image-tint-color: var(--ne-text-strong); }
 .toolbar-graphfield { min-width: 220px; margin: 0 6px; }
 .toolbar-sep        { width: 1px; height: 18px; margin: 0 7px; background-color: var(--ne-border-soft); }
+.toolbar-lang { min-width: 96px; max-width: 132px; margin: 0 6px; }
+.toolbar-cmd-text { margin-left: 5px; -unity-text-align: middle-left; }
+.toolbar-spacer { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.ne-toolbar-status {
+    -unity-text-align: middle-right;
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-dim);
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+.ne-toolbar-status.ne-status-has-warn { color: var(--ne-status-running); }
+.ne-toolbar-status.ne-status-has-error { color: var(--ne-validation-error); -unity-font-style: bold; }
+.ne-toolbar .breadcrumb {
+    height: auto;
+    padding: 0 2px;
+    background-color: var(--ne-transparent);
+    border-bottom-width: 0;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+.ne-toolbar .breadcrumb-crumb {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 /* ============================================================
    DATA EDITOR WINDOW — 通用数据编辑窗口（左列按作用域分组的源列表 ｜ 右列编辑面板）
@@ -1221,6 +1293,9 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 }
 
 .toolbar-command {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
     min-height: 24px;
     margin: 0 3px;
     background-color: var(--ne-button-bg);

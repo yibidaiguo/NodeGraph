@@ -18,6 +18,8 @@ namespace NodeEditor.EditorUI
     public class InspectorPane : VisualElement
     {
         readonly ScrollView m_Body;
+        readonly VisualElement m_Header;      // 抬头行：图标 + 当前节点类型名
+        readonly Label m_HeaderTitle;
         NodeView m_Current;
         NodeRegistry m_Registry;
         BlackboardSet m_Blackboard;   // 这张图的有效黑板（全局⊕模块⊕组合并视图），供「键」下拉与类型推断
@@ -28,9 +30,14 @@ namespace NodeEditor.EditorUI
         public InspectorPane()
         {
             AddToClassList("inspector-root");
-            var header = new Label(Localizer.UI("ui.inspector", "Inspector"));
-            header.AddToClassList("inspector-header");
-            Add(header);
+            m_Header = new VisualElement();
+            m_Header.AddToClassList("inspector-header");
+            m_Header.AddToClassList("inspector-header-row");
+            m_HeaderTitle = new Label();
+            m_HeaderTitle.AddToClassList("inspector-header-title");
+            m_Header.Add(m_HeaderTitle);
+            Add(m_Header);
+            SetHeader(null);
             m_Body = new ScrollView(ScrollViewMode.Vertical)
             {
                 horizontalScrollerVisibility = ScrollerVisibility.Hidden,
@@ -44,17 +51,20 @@ namespace NodeEditor.EditorUI
         {
             m_Current = node; m_Registry = registry; m_Blackboard = blackboard; m_Asset = asset;
             m_Body.Clear();
-            if (node == null) return;
+            SetHeader(node);
+            if (node == null)
+            {
+                // 没选中节点时给一条提示，而不是留一片空白。
+                m_Body.Add(EditorUi.EmptyState(Localizer.UI("ui.noNodeSelected", "Select a node to edit it.")));
+                return;
+            }
 
             // 重命名 + 注释（对齐 Behavior Designer）
-            var general = new VisualElement();
-            general.AddToClassList("inspector-section");
-            var generalTitle = new Label(Localizer.UI("ui.general", "GENERAL"));
-            generalTitle.AddToClassList("inspector-section-title");
-            general.Add(generalTitle);
+            var generalCard = NewSection(Localizer.UI("ui.general", "GENERAL"));
+            var general = generalCard.Content;
 
             // 名称（自定义名）：写入 displayName；非空时作为标题（次于备注）。
-            var nameField = new TextField(Localizer.UI("ui.name", "Name")) { value = node.Instance.displayName };
+            var nameField = new TextField(Localizer.UI("ui.name", "Name")) { value = node.Instance.displayName, isDelayed = true };
             nameField.RegisterValueChangedCallback(e =>
             {
                 NodeInspectorEdits.Rename(m_Asset, node.Instance, node.Definition, e.newValue);
@@ -63,24 +73,63 @@ namespace NodeEditor.EditorUI
             general.Add(nameField);
 
             // 备注：写入 note；非空时优先作为节点标题显示。
-            var noteField = new TextField(Localizer.UI("ui.note", "Note")) { value = node.Instance.note };
+            var noteField = new TextField(Localizer.UI("ui.note", "Note")) { value = node.Instance.note, isDelayed = true };
             noteField.RegisterValueChangedCallback(e =>
             {
                 NodeInspectorEdits.WriteNote(m_Asset, node.Instance, e.newValue);
                 node.title = NodeInspectorEdits.ResolveTitle(node.Instance, node.Definition);
             });
             general.Add(noteField);
-            m_Body.Add(general);
+            m_Body.Add(generalCard);
 
-            var parameters = new VisualElement();
-            parameters.AddToClassList("inspector-section");
-            var parametersTitle = new Label(Localizer.UI("ui.parameters", "PARAMETERS"));
-            parametersTitle.AddToClassList("inspector-section-title");
-            parameters.Add(parametersTitle);
+            var parametersCard = NewSection(Localizer.UI("ui.parameters", "PARAMETERS"));
+            var parameters = parametersCard.Content;
 
             foreach (var pd in node.Definition.Parameters)
                 parameters.Add(EditorFor(pd, node));
-            m_Body.Add(parameters);
+            m_Body.Add(parametersCard);
+        }
+
+        // 统一的「分区」工厂：标题进折叠卡头部，内容往 Content 填。
+        // 保留 inspector-section / inspector-section-title 视觉（对齐原手写 section）。
+        CollapsibleCard NewSection(string title)
+        {
+            var card = new CollapsibleCard(true);
+            card.HeaderTogglesExpanded = true;   // 分区头里只有一个纯标题，点整行开合
+            card.AddToClassList("inspector-section");
+            var t = new Label(title);
+            t.AddToClassList("inspector-section-title");
+            card.HeaderMid.Add(t);
+            return card;
+        }
+
+        // 抬头告诉用户「现在在编辑哪个节点」：语义图标 + 节点类型的本地化名。
+        // 无选中时退回通用标题「检视面板」，不带图标。
+        void SetHeader(NodeView node)
+        {
+            var icon = m_Header.Q<NodeIconControl>();
+            if (icon != null) m_Header.Remove(icon);
+
+            var def = node?.Definition;
+            if (def == null)
+            {
+                m_HeaderTitle.text = Localizer.UI("ui.inspector", "Inspector");
+                return;
+            }
+            m_Header.Insert(0, new NodeIconControl(NodeIconRegistry.Resolve(def.GetType(), def.Role)));
+            m_HeaderTitle.text = Localizer.NodeName(def);
+        }
+
+        // 松开当前节点，回到空态。asset 也传 null —— 面板不该继续攥着一张已经不在编辑的图。
+        public void Clear() => Show(null, m_Registry, m_Blackboard, null);
+
+        // 只在「正在显示的就是这个节点」时才清。
+        // 关键：GraphView 换选中的事件顺序不保证。如果先 select 新节点、再 unselect 旧节点，
+        // 无条件 Clear 会把刚显示出来的新节点又清掉，所以必须按身份判断。
+        public void ClearIfShowing(NodeView node)
+        {
+            if (node != null && !ReferenceEquals(node, m_Current)) return;
+            Clear();
         }
 
         VisualElement EditorFor(ParamDef pd, NodeView node)
@@ -213,7 +262,7 @@ namespace NodeEditor.EditorUI
                     row.AddToClassList("field-row");
                     row.tooltip = tip;
                     var s = new Slider(label, pd.boundsMin, pd.boundsMax) { value = CurrentFloat(node, pd.name) };
-                    var nf = new FloatField { value = s.value };
+                    var nf = new FloatField { value = s.value, isDelayed = true };
                     nf.AddToClassList("field-num");
                     s.RegisterValueChangedCallback(e => { nf.SetValueWithoutNotify(e.newValue); WriteOverride(node, pd.name, e.newValue.ToString()); });
                     nf.RegisterValueChangedCallback(e => { s.SetValueWithoutNotify(e.newValue); WriteOverride(node, pd.name, e.newValue.ToString()); });
@@ -229,19 +278,19 @@ namespace NodeEditor.EditorUI
                 }
                 case TypeKind.Primitive when pd.type.primitive == PrimitiveType.Int:
                 {
-                    var f = new IntegerField(label) { value = ParseIntInv(CurrentString(node, pd.name, "0")), tooltip = tip };
+                    var f = new IntegerField(label) { value = ParseIntInv(CurrentString(node, pd.name, "0")), tooltip = tip, isDelayed = true };
                     f.RegisterValueChangedCallback(e => WriteOverride(node, pd.name, e.newValue.ToString(CultureInfo.InvariantCulture)));
                     return f;
                 }
                 case TypeKind.Primitive when pd.type.primitive == PrimitiveType.Float:
                 {
-                    var f = new FloatField(label) { value = ParseFloatInv(CurrentString(node, pd.name, "0")), tooltip = tip };
+                    var f = new FloatField(label) { value = ParseFloatInv(CurrentString(node, pd.name, "0")), tooltip = tip, isDelayed = true };
                     f.RegisterValueChangedCallback(e => WriteOverride(node, pd.name, e.newValue.ToString(CultureInfo.InvariantCulture)));
                     return f;
                 }
                 default:
                 {
-                    var tf = new TextField(label) { value = CurrentString(node, pd.name, ""), tooltip = tip };
+                    var tf = new TextField(label) { value = CurrentString(node, pd.name, ""), tooltip = tip, isDelayed = true };
                     tf.RegisterValueChangedCallback(e => WriteOverride(node, pd.name, e.newValue));
                     return tf;
                 }
@@ -287,20 +336,20 @@ namespace NodeEditor.EditorUI
                     }
                     case PrimitiveType.Int:
                     {
-                        var f = new IntegerField(label) { value = ParseIntInv(CurrentString(node, pd.name, "0")), tooltip = tip };
+                        var f = new IntegerField(label) { value = ParseIntInv(CurrentString(node, pd.name, "0")), tooltip = tip, isDelayed = true };
                         f.RegisterValueChangedCallback(e => WriteOverride(node, pd.name, e.newValue.ToString(CultureInfo.InvariantCulture)));
                         return f;
                     }
                     case PrimitiveType.Float:
                     {
-                        var f = new FloatField(label) { value = ParseFloatInv(CurrentString(node, pd.name, "0")), tooltip = tip };
+                        var f = new FloatField(label) { value = ParseFloatInv(CurrentString(node, pd.name, "0")), tooltip = tip, isDelayed = true };
                         f.RegisterValueChangedCallback(e => WriteOverride(node, pd.name, e.newValue.ToString(CultureInfo.InvariantCulture)));
                         return f;
                     }
                 }
             }
             // String / 未设置键 / 非基元（Vector/Color/…）：回退为自由文本，无法约束为有限集合。
-            var tf = new TextField(label) { value = CurrentString(node, pd.name, ""), tooltip = tip };
+            var tf = new TextField(label) { value = CurrentString(node, pd.name, ""), tooltip = tip, isDelayed = true };
             tf.RegisterValueChangedCallback(e => WriteOverride(node, pd.name, e.newValue));
             return tf;
         }
@@ -372,10 +421,11 @@ namespace NodeEditor.EditorUI
             Dirty(asset);
         }
 
-        // 解析节点视图标题：备注 note（非空）> 自定义名 displayName（非空）> 定义的本地化名称。
+        // 解析节点视图标题：自定义名 displayName（非空）> 备注 note（非空）> 定义的本地化名称。
+        // 「名称」这个字段存在的意义就是命名——填了却被「备注」压过去是反直觉的。
         public static string ResolveTitle(NodeInstance inst, NodeDefinition def) =>
-            !string.IsNullOrEmpty(inst.note) ? inst.note
-          : !string.IsNullOrEmpty(inst.displayName) ? inst.displayName
+            !string.IsNullOrEmpty(inst.displayName) ? inst.displayName
+          : !string.IsNullOrEmpty(inst.note) ? inst.note
           : Localizer.NodeName(def);
 
         // 修改某节点实例的可组合单元树（unitOverrides 及其内部嵌套字段，由 UnitInspector 经反射改写）。
