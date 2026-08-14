@@ -56,7 +56,6 @@ namespace Dialogue.EditorUI
             Undo.RegisterCompleteObjectUndo(table, "Seed Dialogue Localization");
             // 领域 chrome：模块窗口标题 / 图列表的对话措辞（ui.*.dialogue 模块覆盖 key）/ 模块分组名。
             EnsureUI(table, "ui.dialogueEditor", "对话编辑器");
-            EnsureUI(table, "ui.graphs.dialogue", "对话组");
             EnsureUI(table, "ui.noGraphs.dialogue", "项目中暂无对话组");
             EnsureUI(table, "ui.newDialogueGraph", "新建对话");
             EnsureUI(table, "ui.newGraphPrompt.dialogue", "创建一个新的对话组");

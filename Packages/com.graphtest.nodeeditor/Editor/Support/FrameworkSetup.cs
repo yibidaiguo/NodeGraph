@@ -160,7 +160,6 @@ namespace NodeEditor.EditorUI
             EnsureUI(table, "ui.addVariable", "+ 变量");
             EnsureUI(table, "ui.noVariables", "暂无变量——点下方按钮添加。");
             // 图列表面板（领域措辞种 ui.*.<module> 覆盖 key，由各领域 Setup 掌管）。
-            EnsureUI(table, "ui.graphs", "图列表");
             EnsureUI(table, "ui.refresh", "刷新");
             EnsureUI(table, "ui.noGraphs", "项目中暂无图");
             EnsureUI(table, "ui.newGraph", "新建");
@@ -171,15 +170,42 @@ namespace NodeEditor.EditorUI
             EnsureUI(table, "ui.delete", "删除");
             EnsureUI(table, "ui.cancel", "取消");
             EnsureUI(table, "module.none", "其他");
-            // 工具栏 / 导航。
+            // 顶栏 / 导航。
             EnsureUI(table, "ui.find", "查找");
+            EnsureUI(table, "ui.findTip", "在本图中查找节点");
             EnsureUI(table, "ui.findNode", "查找节点");
             EnsureUI(table, "ui.back", "后退");
             EnsureUI(table, "ui.forward", "前进");
+            EnsureUI(table, "ui.more", "更多");
+            EnsureUI(table, "ui.recent", "最近");
             EnsureUI(table, "ui.minimap", "缩略图");
             EnsureUI(table, "ui.minimapTip", "显示/隐藏缩略图");
             EnsureUI(table, "ui.darkTheme", "深色");
             EnsureUI(table, "ui.darkThemeTip", "切换深色主题");
+            // 图切换器（顶栏胶囊 + 弹层）。
+            EnsureUI(table, "ui.graphPickerTip", "切换图");
+            EnsureUI(table, "ui.noGraphOpen", "未打开图");
+            EnsureUI(table, "ui.nodeCount", "{0} 个节点");
+            EnsureUI(table, "ui.pingGraph", "定位");
+            EnsureUI(table, "ui.pingGraphTip", "在 Project 窗口中定位这张图");
+            // 浮层（变量 / 检视）与画布坞。
+            EnsureUI(table, "ui.overlayDragTip", "拖动可移动");
+            EnsureUI(table, "ui.close", "关闭");
+            EnsureUI(table, "ui.expand", "展开");
+            EnsureUI(table, "ui.collapse", "收起");
+            EnsureUI(table, "ui.variablesTip", "显示/隐藏变量浮层");
+            EnsureUI(table, "ui.inspectorPaneTip", "检视浮层——选中节点时自动出现");
+            EnsureUI(table, "ui.dataWindowTip", "打开本模块的数据窗口");
+            EnsureUI(table, "ui.zoomTip", "当前画布缩放");
+            EnsureUI(table, "ui.frameAll", "全览");
+            EnsureUI(table, "ui.frameAllTip", "把所有节点框进视野");
+            EnsureUI(table, "ui.tidy", "整理");
+            EnsureUI(table, "ui.tidyTip", "按连接方向重排全图");
+            EnsureUI(table, "ui.addNodeTip", "添加节点（空格键，或右键画布）");
+            // 校验状态 chip。
+            EnsureUI(table, "ui.noIssues", "无问题");
+            EnsureUI(table, "ui.issueCount", "{0} 错误 · {1} 警告");
+            EnsureUI(table, "ui.issueJumpTip", "点击跳到下一个有问题的节点");
             EnsureUI(table, "ui.nodeIconConflict", "节点“{0}”的图标已注册为 {1}；已忽略冲突的 {2}。");
             EnsureUI(table, "ui.nodeEditor", "节点编辑器");
             EnsureUI(table, "ui.language", "语言");
@@ -199,6 +225,7 @@ namespace NodeEditor.EditorUI
             EnsureUI(table, "ui.port.multi", "多连线：可连接多条");
             // 数据编辑窗口（通用 · 三作用域）的界面文案。
             EnsureUI(table, "ui.dataWindow", "数据");
+            EnsureUI(table, "ui.refreshTip", "重新扫描数据源");
             EnsureUI(table, "ui.dataProject", "项目");
             EnsureUI(table, "ui.dataDomain", "领域");
             EnsureUI(table, "ui.dataGraph", "单图");
@@ -214,6 +241,10 @@ namespace NodeEditor.EditorUI
             EnsureUI(table, "ui.globalVariables", "全局变量");
             EnsureUI(table, "ui.moduleVariables", "模块变量");
             EnsureUI(table, "ui.groupVariables", "组变量");
+            // 变量浮层的档位页签：窄浮层里只写"哪一档"，完整措辞留在 tooltip（上面三条）。
+            EnsureUI(table, "ui.tierGlobal", "全局");
+            EnsureUI(table, "ui.tierModule", "模块");
+            EnsureUI(table, "ui.tierGroup", "本图");
             EnsureUI(table, "ui.noTierBlackboard", "该作用域尚无黑板。");
             EnsureUI(table, "ui.createBlackboard", "+ 新建该作用域黑板");
             EnsureUI(table, "ui.nodeDefs", "节点定义（只读）");

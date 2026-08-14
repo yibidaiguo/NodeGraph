@@ -47,7 +47,6 @@ namespace NodeEditor.EditorUI
         public const string DetailRowClass = "ne-ui-detail-row";
         public const string DetailLabelClass = "ne-ui-detail-label";
         public const string DetailFieldClass = "ne-ui-detail-field";
-        public const string ToolbarClass = "ne-toolbar";
         public const string ToolbarCommandClass = "toolbar-command";
         public const string ToolbarIconButtonClass = "toolbar-iconbtn";
         public const string ToolbarTextButtonClass = "toolbar-textbtn";

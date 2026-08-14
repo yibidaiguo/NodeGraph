@@ -555,8 +555,14 @@
 }
 .hover-bar Button:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); color: var(--ne-text-strong); }
 .hover-bar Button:active { background-color: var(--ne-button-bg-active); }
-/* 面包屑 = 扁平路径条（导航 chrome，非按钮）：crumb 平贴条上，「›」分隔，
-   当前（末位）crumb 提成浅底 chip。按钮质感只留给真正的命令按钮。 */
+/* 「最近去过哪」历史条 = 扁平路径条（导航 chrome，非按钮）：crumb 平贴条上，「·」分隔。
+   当前那张图不在这条里（顶栏胶囊已经写着它），所以也没有"当前 crumb"的高亮态。 */
+.breadcrumb-lead {
+    margin-right: 4px;
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-disabled);
+    -unity-text-align: middle-left;
+}
 .breadcrumb {
     flex-direction: row;
     align-items: center;
@@ -586,13 +592,6 @@
     color: var(--ne-text-dim);
     -unity-text-align: middle-center;
 }
-.breadcrumb-crumb--current {
-    background-color: var(--ne-bg-panel);
-    border-color: var(--ne-border-soft);
-    
-    color: var(--ne-text-strong);
-    -unity-font-style: bold;
-}
 
 /* ============================================================
    CANVAS — GridBackground / GraphView / MiniMap
@@ -615,18 +614,16 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 /* ============================================================
    INSPECTOR / VARIABLE PANES
    ============================================================ */
+/* 两块面板都只活在画布浮层里（OverlayPanel 给框和底色），所以它们自己不画边框、不铺底色、
+   也不要最小宽度 —— 那是它们当固定栏时的装备。撑满宿主即可。 */
 .inspector-root  {
-    min-width: 280px;
-    background-color: var(--ne-bg-panel);
-    border-left-width: 1px;
-    border-left-color: var(--ne-border);
+    min-width: 0;
+    background-color: var(--ne-transparent);
     flex-grow: 1;
 }
 .variable-root   {
-    min-width: 200px;
-    background-color: var(--ne-bg-panel);
-    border-right-width: 1px;
-    border-right-color: var(--ne-border);
+    min-width: 0;
+    background-color: var(--ne-transparent);
     flex-grow: 1;
 }
 .inspector-header {
@@ -650,6 +647,18 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     -unity-font-style: bold;
     color: var(--ne-text-strong);
     -unity-text-align: middle-left;
+}
+/* 身份行右侧的类型 id：淡一档的注脚，长 id 收成省略号，不与节点名抢位。 */
+.inspector-header-sub {
+    flex-shrink: 1;
+    min-width: 0;
+    margin-left: var(--ne-gap-md);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-dim);
+    -unity-text-align: middle-right;
 }
 .inspector-header-row .node-icon {
     --ne-node-icon-color: var(--ne-text-strong);
@@ -801,135 +810,148 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     -unity-text-align: middle-center;
 }
 
-/* ---- 分段选择器（segmented control）：变量作用域档位（全局/模块/组）等互斥切换用。
-   槽底一体、段为透明片、选中段浮起 —— 取代一排散落的独立按钮。常驻 1px 透明描边，选中只换色不换尺寸。 ---- */
-.ne-seg-bar {
+/* ---- 页签（tabs）：互斥的"看哪一档"切换，变量作用域（全局/模块/本图）用它。
+   导航 chrome，所以是扁平的：透明底 + 底部一条下划线表示当前档。下划线常驻透明占位，
+   选中只换色，行不因选中而位移（§2.2 规则 1/2）。 ---- */
+.ne-tabs {
     flex-direction: row;
-    margin: 6px 8px;
-    padding: 2px;
-    background-color: var(--ne-bg-panel-alt);
-    border-width: 1px;
-    border-color: var(--ne-border-soft);
-    border-radius: var(--ne-radius);
+    padding: 0 4px;
+    background-color: var(--ne-bg-header);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-border-soft);
+    flex-shrink: 0;
 }
-.ne-seg-btn {
-    flex-grow: 1;
-    flex-basis: 0;
-    min-height: 22px;
+.ne-tab {
     margin: 0;
-    padding: 1px 6px;
-    background-color: rgba(0, 0, 0, 0);
-    border-width: 1px;
-    border-color: rgba(0, 0, 0, 0);
-    border-radius: var(--ne-radius-control);
+    padding: 3px 8px 2px 8px;
+    background-color: var(--ne-transparent);
+    border-width: 0;
+    border-bottom-width: 2px;
+    border-bottom-color: var(--ne-transparent);
+    border-radius: 0;
     color: var(--ne-text-dim);
     font-size: var(--ne-font-sm);
+    min-height: 22px;
     -unity-text-align: middle-center;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.ne-seg-btn:hover { color: var(--ne-text-strong); background-color: var(--ne-bg-row-hover); }
-.ne-seg-btn.is-selected {
-    background-color: var(--ne-bg-node);
-    border-color: var(--ne-border);
-    color: var(--ne-text-strong);
+.ne-tab:hover { color: var(--ne-text-strong); background-color: var(--ne-bg-row-hover); }
+.ne-tab.is-selected {
+    color: var(--ne-accent-strong);
+    border-bottom-color: var(--ne-accent);
+    -unity-font-style: bold;
 }
 
 /* ============================================================
-   GRAPH LIST PANE — 左侧"图/对话组"可滚动列表
+   GRAPH PICKER — 顶栏胶囊点开的"切换图"弹层内容（搜索 + 列表 + 底部操作）
    ============================================================ */
-.graphlist-root {
-    min-width: 180px; min-height: 80px; flex-grow: 1;
-    background-color: var(--ne-bg-panel);
-    border-right-width: 1px;
-    border-right-color: var(--ne-border);
+.ne-picker-root {
+    min-width: 0;
+    background-color: var(--ne-transparent);   /* 底色由承载它的 .ne-popover 给 */
 }
-.graphlist-search {
-    margin: 6px 8px;
+.ne-picker-search {
+    margin: 6px;
     width: auto;
     min-width: 0;
     align-self: stretch;
 }
-.graphlist-search .unity-search-field-base__text-field {
+.ne-picker-search .unity-search-field-base__text-field {
     min-width: 0;
     flex-shrink: 1;
 }
-.graphlist-search .unity-base-field__input {
+.ne-picker-search .unity-base-field__input {
     min-width: 0;
     flex-shrink: 1;
 }
-/* 全部分组竖排其中，整体可滚动 */
-.graphlist-scroll { flex-grow: 1; background-color: var(--ne-bg-panel); }
-/* 模块分组：复用折叠卡片，去掉卡片自带的留白 / 底色，让分组贴合面板 */
-.graphlist-group { background-color: rgba(0, 0, 0, 0); margin: 0; padding: 0; }
-/* 分组头压成树形抬头条：浅一档底 + 细分隔线，箭头/标题同行等高。 */
-.graphlist-group .collapsible-header {
-    min-height: 24px;
-    padding: 0 4px 0 6px;
-    background-color: var(--ne-bg-panel-alt);
-    border-bottom-width: 1px;
-    border-bottom-color: var(--ne-border-muted);
+.ne-picker-list { max-height: 320px; flex-shrink: 1; }
+/* 组标题只在真的有多个模块时出（自由模式），是扁平小节抬头，不是可开合的卡片头。 */
+.ne-picker-group {
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-dim);
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+    padding: 6px 10px 3px 10px;
 }
-.graphlist-group-title {
-    font-size: var(--ne-font-sm); color: var(--ne-text); -unity-font-style: bold;
-    -unity-text-align: middle-left; flex-grow: 1;
-}
-/* 一行 = 一张图。组内行整体左缩进，区分于组标题。
+/* 一行 = 一张图。行是 Button（默认居中）→ 必须显式左对齐，读作列表不是按钮。
    选中脊线用「常驻透明左边框」占位，选中只换色 → 行文本不因选中而位移。 */
-.graphlist-row {
-    flex-direction: row; align-items: center; height: 24px; padding-left: 20px;
-    background-color: rgba(0, 0, 0, 0);
+.ne-picker-row {
+    flex-direction: row;
+    align-items: center;
+    height: 26px;
+    margin: 0;
+    padding: 0 10px;
+    background-color: var(--ne-transparent);
+    border-width: 0;
     border-left-width: 3px;
-    border-left-color: rgba(0, 0, 0, 0);
+    border-left-color: var(--ne-transparent);
+    border-radius: 0;
+    -unity-text-align: middle-left;
 }
-.graphlist-row:hover { background-color: var(--ne-bg-row-hover); }
-.graphlist-row.is-selected {
+.ne-picker-row:hover { background-color: var(--ne-bg-row-hover); }
+.ne-picker-row.is-selected {
     background-color: var(--ne-bg-row-selected);
     border-left-color: var(--ne-accent);
 }
-.graphlist-row.is-selected .graphlist-row-label { color: var(--ne-text-strong); }
-.graphlist-row-label {
-    font-size: var(--ne-font-sm); color: var(--ne-text); -unity-text-align: middle-left;
-    overflow: hidden; text-overflow: ellipsis; flex-grow: 1;
+.ne-picker-row.is-selected .ne-picker-row-name { color: var(--ne-text-strong); -unity-font-style: bold; }
+.ne-picker-row.is-selected .ne-picker-row-dot { background-color: var(--ne-accent); }
+/* 行首色点：当前图点亮，其余是一枚安静的灰点，替代整行加粗的粗暴做法。 */
+.ne-picker-row-dot {
+    width: 6px; height: 6px;
+    margin-right: 8px;
+    flex-shrink: 0;
+    border-radius: var(--ne-chip-radius);
+    background-color: var(--ne-text-disabled);
 }
-.graphlist-empty {
+.ne-picker-row-name {
+    font-size: var(--ne-font-sm); color: var(--ne-text); -unity-text-align: middle-left;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1; flex-shrink: 1; min-width: 0;
+}
+.ne-picker-row-meta {
+    font-size: var(--ne-font-sm); color: var(--ne-text-dim); -unity-text-align: middle-right;
+    flex-shrink: 0; margin-left: var(--ne-gap-md);
+}
+.ne-picker-empty {
     font-size: var(--ne-font-sm); color: var(--ne-text-dim); -unity-font-style: italic;
     padding: var(--ne-pad-panel); white-space: normal;
 }
-/* 底部操作栏：钉在面板底部的整宽条（浅底 + 上分隔线），按钮均分整行。 */
-.graphlist-actions {
+/* 底部操作栏：整宽条（浅底 + 上分隔线），主操作「新建」均分，次级操作不抢宽度。 */
+.ne-picker-footer {
     flex-direction: row;
-    padding: 4px 6px;
+    padding: 6px;
     background-color: var(--ne-bg-panel-alt);
     border-top-width: 1px;
-    border-top-color: var(--ne-border);
+    border-top-color: var(--ne-border-soft);
 }
-.graphlist-actions .add-button {
+.ne-picker-footer .add-button {
     flex-grow: 1;
     flex-basis: 0;
     margin: 0 2px;
     align-self: stretch;
 }
-.graphlist-actions .graphlist-delete {
+/* 定位 / 删除是次级操作：不参与均分，做成弱一档的幽灵按钮。 */
+.ne-picker-footer .ne-picker-footer-ghost {
     flex-grow: 0;
     flex-basis: auto;
-    min-width: 56px;
+    min-width: 52px;
     background-color: var(--ne-transparent);
     border-color: var(--ne-border-soft);
     color: var(--ne-text-dim);
 }
-.graphlist-actions .graphlist-delete:hover {
+.ne-picker-footer .ne-picker-footer-ghost:hover {
     background-color: var(--ne-button-bg-hover);
+    border-color: var(--ne-button-border-hover);
+    color: var(--ne-text-strong);
+}
+/* 删图不可逆：hover 才亮出警示色，静态时不制造红色噪音。 */
+.ne-picker-footer .ne-picker-footer-danger:hover {
     border-color: var(--ne-accent-coral);
     color: var(--ne-accent-coral);
 }
-.graphlist-actions .graphlist-delete:disabled {
+.ne-picker-footer .ne-picker-footer-ghost:disabled {
     opacity: 0.48;
     border-color: var(--ne-border-muted);
     color: var(--ne-text-disabled);
-}
-.graphlist-group .collapsible-header:hover {
-    background-color: var(--ne-bg-row-hover);
 }
 
 /* ---- Data window: one card per content entry (reuses inspector-section tokens) ---- */
@@ -977,12 +999,9 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 }
 
 /* ============================================================
-   TOOLBAR
+   TOOLBAR BUTTONS — 次级窗口（模块管理器 / 本地化面板）里的命令钮皮肤。
+   窗口顶栏本身一律用下面的 APP BAR，不再有独立的 toolbar 容器皮。
    ============================================================ */
-.ne-toolbar {
-    height: 28px; background-color: var(--ne-bg-toolbar);
-    border-bottom-width: 1px; border-bottom-color: var(--ne-border); align-items: center;
-}
 .toolbar-iconbtn {
     width: 28px; height: 24px; -unity-text-align: middle-center; padding: 0; margin: 0 2px;
     background-color: var(--ne-button-bg); border-width: 1px; border-color: var(--ne-button-border);
@@ -997,34 +1016,302 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 .toolbar-iconbtn:hover .toolbar-icon { --unity-image-tint-color: var(--ne-text-strong); }
 .toolbar-graphfield { min-width: 220px; margin: 0 6px; }
 .toolbar-sep        { width: 1px; height: 18px; margin: 0 7px; background-color: var(--ne-border-soft); }
-.toolbar-lang { min-width: 96px; max-width: 132px; margin: 0 6px; }
-.toolbar-cmd-text { margin-left: 5px; -unity-text-align: middle-left; }
-.toolbar-spacer { flex-grow: 1; flex-shrink: 1; min-width: 0; }
-.ne-toolbar-status {
-    -unity-text-align: middle-right;
-    font-size: var(--ne-font-sm);
-    color: var(--ne-text-dim);
-    margin-right: 8px;
+
+/* ============================================================
+   APP BAR — 窗口顶栏：左「在哪张图 / 怎么走」｜ 留白 ｜ 右「看什么 / 有没有问题」
+   ============================================================ */
+.ne-appbar {
+    flex-direction: row;
+    align-items: center;
+    height: 34px;
     flex-shrink: 0;
+    padding: 0 6px;
+    background-color: var(--ne-bg-toolbar);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-border);
 }
-.ne-toolbar-status.ne-status-has-warn { color: var(--ne-status-running); }
-.ne-toolbar-status.ne-status-has-error { color: var(--ne-validation-error); -unity-font-style: bold; }
-.ne-toolbar .breadcrumb {
+.ne-appbar-spacer { flex-grow: 1; flex-shrink: 1; min-width: 8px; }
+/* 后退/前进 = 导航 chrome：扁平字形钮，不给按钮质感（§2.3）。 */
+.ne-appbar-nav {
+    width: 22px; height: 22px; min-height: 22px;
+    margin: 0 1px; padding: 0;
+    background-color: var(--ne-transparent);
+    border-width: 0;
+    border-radius: var(--ne-radius-control);
+    color: var(--ne-text-dim);
+    font-size: 14px;
+    -unity-text-align: middle-center;
+}
+.ne-appbar-nav:hover { background-color: var(--ne-bg-row-hover); color: var(--ne-text-strong); }
+.ne-appbar-nav:disabled { opacity: 0.35; background-color: var(--ne-transparent); }
+/* 命令钮（⋯ 溢出等）= 会执行动作 → premium button tokens。 */
+.ne-appbar-cmd {
+    flex-direction: row;
+    align-items: center;
+    height: 22px; min-height: 22px;
+    margin: 0 3px; padding: 0 7px;
+    background-color: var(--ne-button-bg);
+    border-width: 1px; border-color: var(--ne-button-border);
+    border-radius: 5px;
+    color: var(--ne-text);
+    font-size: var(--ne-font-sm);
+}
+.ne-appbar-cmd:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); }
+.ne-appbar-cmd:active { background-color: var(--ne-button-bg-active); }
+.ne-appbar-cmd-glyph { font-size: 12px; color: var(--ne-text-dim); }
+.ne-appbar-cmd:hover .ne-appbar-cmd-glyph { color: var(--ne-text-strong); }
+/* 顶栏里的历史条：贴条平铺，不带独立行的 chrome。 */
+.ne-appbar .breadcrumb {
     height: auto;
     padding: 0 2px;
+    margin-left: var(--ne-gap-md);
     background-color: var(--ne-transparent);
     border-bottom-width: 0;
     flex-shrink: 1;
     min-width: 0;
     overflow: hidden;
 }
-.ne-toolbar .breadcrumb-crumb {
+.ne-appbar .breadcrumb-crumb {
     flex-shrink: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* ---- 图切换器胶囊：顶栏的主控件。它替掉了左栏列表 + 对象框，所以要看得见、点得着，
+   按命令按钮处理（点了会弹出切换器）。 ---- */
+.ne-picker-pill {
+    flex-direction: row;
+    align-items: center;
+    height: 24px; min-height: 24px;
+    max-width: 300px;
+    margin: 0 2px 0 4px;
+    padding: 0 8px 0 7px;
+    background-color: var(--ne-button-bg);
+    border-width: 1px; border-color: var(--ne-button-border);
+    border-radius: 5px;
+    -unity-text-align: middle-left;
+}
+.ne-picker-pill:hover { background-color: var(--ne-button-bg-hover); border-color: var(--ne-button-border-hover); }
+.ne-picker-pill.is-open {
+    background-color: var(--ne-accent-soft);
+    border-color: var(--ne-accent);
+}
+.ne-picker-pill-dot {
+    width: 7px; height: 7px;
+    flex-shrink: 0;
+    margin-right: 7px;
+    border-radius: var(--ne-chip-radius);
+    background-color: var(--ne-accent);
+}
+.ne-picker-pill-name {
+    flex-shrink: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: var(--ne-font-md); -unity-font-style: bold; color: var(--ne-text-strong);
+    -unity-text-align: middle-left;
+}
+.ne-picker-pill-caret {
+    flex-shrink: 0; margin-left: 6px;
+    font-size: 10px; color: var(--ne-text-dim);
+}
+
+/* ---- 面板开关组：一段连体的扁平钮（导航 chrome），各开关互不排斥。 ---- */
+.ne-panel-seg {
+    flex-direction: row;
+    height: 24px;
+    margin: 0 3px;
+    background-color: var(--ne-bg-panel-alt);
+    border-width: 1px; border-color: var(--ne-border-soft);
+    border-radius: var(--ne-radius);
+    overflow: hidden;
+}
+.ne-panel-seg-btn {
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+    padding: 0 8px;
+    min-height: 22px;
+    background-color: var(--ne-transparent);
+    border-width: 0;
+    border-right-width: 1px;
+    border-right-color: var(--ne-border-muted);
+    border-radius: 0;
+    color: var(--ne-text-dim);
+    font-size: var(--ne-font-sm);
+    -unity-text-align: middle-center;
+}
+.ne-panel-seg-btn:hover { background-color: var(--ne-bg-row-hover); color: var(--ne-text-strong); }
+.ne-panel-seg-btn.is-selected {
+    background-color: var(--ne-accent-soft);
+    color: var(--ne-accent-strong);
+    -unity-font-style: bold;
+}
+
+/* ---- 状态 chip：无问题=静默绿点；有问题=可点，逐个巡回到出问题的节点。
+   底色透明：语义全交给圆点和文字（绿/橙/红），底色再染一层会和它们打架；
+   hover 才浮出软底，提示"这个能点"。---- */
+.ne-status-chip {
+    flex-direction: row;
+    align-items: center;
+    height: 22px; min-height: 22px;
+    margin: 0 2px 0 5px;
+    padding: 0 10px 0 8px;
+    background-color: var(--ne-transparent);
+    border-width: 0;
+    border-radius: var(--ne-chip-radius);
+    color: var(--ne-status-success);
+    font-size: var(--ne-font-sm);
+}
+.ne-status-chip:hover { background-color: var(--ne-accent-soft); }
+/* 无问题时按钮是禁用的（无处可跳），但读数必须照常可读——不许被禁用态压暗。 */
+.ne-status-chip:disabled { opacity: 1; }
+.ne-status-chip-pip {
+    width: 6px; height: 6px;
+    margin-right: 6px;
+    border-radius: var(--ne-chip-radius);
+    background-color: var(--ne-status-success);
+}
+.ne-status-chip-text { color: var(--ne-status-success); font-size: var(--ne-font-sm); -unity-text-align: middle-left; }
+.ne-status-chip--warn .ne-status-chip-pip { background-color: var(--ne-validation-warn); }
+.ne-status-chip--warn .ne-status-chip-text { color: var(--ne-validation-warn); }
+.ne-status-chip--error .ne-status-chip-pip { background-color: var(--ne-validation-error); }
+.ne-status-chip--error .ne-status-chip-text { color: var(--ne-validation-error); -unity-font-style: bold; }
+
+/* ============================================================
+   OVERLAY PANEL — 画布上的贴角浮层（变量 / 检视）
+   UI Toolkit 没有 box-shadow：层次靠"比面板更实的描边 + 抬高一档的底色"立，不靠阴影。
+   ============================================================ */
+.ne-overlay {
+    background-color: var(--ne-bg-panel);
+    border-width: 1px;
+    border-color: var(--ne-border-strong);
+    border-radius: 6px;
+    overflow: hidden;
+    min-height: 28px;
+}
+.ne-overlay-head {
+    flex-direction: row;
+    align-items: center;
+    height: 26px;
+    flex-shrink: 0;
+    padding: 0 3px 0 7px;
+    background-color: var(--ne-bg-header);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ne-border-soft);
+}
+.ne-overlay--collapsed .ne-overlay-head { border-bottom-width: 0; }
+.ne-overlay-title {
+    flex-grow: 1; flex-shrink: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: var(--ne-font-sm);
+    -unity-font-style: bold;
+    color: var(--ne-text-dim);
+    -unity-text-align: middle-left;
+}
+.ne-overlay-headbtn {
+    width: 18px; height: 18px; min-height: 18px;
+    margin: 0 1px; padding: 0;
+    background-color: var(--ne-transparent);
+    border-width: 0;
+    border-radius: var(--ne-radius-control);
+    color: var(--ne-text-dim);
+    font-size: 10px;
+    -unity-text-align: middle-center;
+}
+.ne-overlay-headbtn:hover { background-color: var(--ne-bg-row-hover); color: var(--ne-text-strong); }
+.ne-overlay-body { min-height: 0; flex-shrink: 1; overflow: hidden; }
+
+/* 节点身份行紧贴浮层标题条：去掉自己的上边框，免得两条线并排。 */
+.ne-overlay .inspector-header { border-top-width: 0; }
+
+/* ============================================================
+   POPOVER — 自绘弹出层（图切换器 / ⋯ 溢出菜单）
+   ============================================================ */
+.ne-popover {
+    background-color: var(--ne-bg-panel);
+    border-width: 1px;
+    border-color: var(--ne-border-strong);
+    border-radius: 6px;
+    padding: 0;
+    overflow: hidden;
+}
+.ne-popover-section {
+    font-size: var(--ne-font-sm);
+    color: var(--ne-text-dim);
+    -unity-font-style: bold;
+    padding: 6px 10px 3px 10px;
+}
+.ne-popover-row {
+    flex-direction: row;
+    align-items: center;
+    height: 24px; min-height: 24px;
+    margin: 1px 4px;
+    padding: 0 6px;
+    background-color: var(--ne-transparent);
+    border-width: 0;
+    border-radius: var(--ne-radius-control);
+    color: var(--ne-text);
+    font-size: var(--ne-font-sm);
+    -unity-text-align: middle-left;
+}
+.ne-popover-row:hover { background-color: var(--ne-bg-row-hover); color: var(--ne-text-strong); }
+/* 勾选位常驻占位：选中只换字形，行内其它元素不因勾选而位移（§2.2 规则 1）。 */
+.ne-popover-row-check {
+    width: 13px; flex-shrink: 0;
+    color: var(--ne-accent);
+    font-size: var(--ne-font-sm);
+    -unity-text-align: middle-left;
+}
+.ne-popover-row-label {
+    flex-grow: 1; flex-shrink: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    -unity-text-align: middle-left;
+}
+.ne-popover-row-shortcut {
+    color: var(--ne-text-disabled);
+    font-size: var(--ne-font-sm);
+    flex-shrink: 0;
+    margin-left: var(--ne-gap-md);
+}
+.ne-popover-sep { height: 1px; margin: 4px 6px; background-color: var(--ne-divider); }
+
+/* ============================================================
+   CANVAS DOCK — 画布左下的小坞：缩放 / 全览 / 整理 / 缩略图 / 加节点
+   ============================================================ */
+.ne-canvas-dock {
+    flex-direction: row;
+    align-items: center;
+    height: 26px;
+    padding: 0 3px;
+    background-color: var(--ne-bg-panel);
+    border-width: 1px;
+    border-color: var(--ne-border-strong);
+    border-radius: var(--ne-chip-radius);
+}
+.ne-canvas-dock-btn {
+    flex-direction: row;
+    align-items: center;
+    height: 20px; min-height: 20px;
+    margin: 0 1px; padding: 0 8px;
+    background-color: var(--ne-transparent);
+    border-width: 0;
+    border-radius: var(--ne-chip-radius);
+    color: var(--ne-text-dim);
+    font-size: var(--ne-font-sm);
+    -unity-text-align: middle-center;
+}
+.ne-canvas-dock-btn:hover { background-color: var(--ne-bg-row-hover); color: var(--ne-text-strong); }
+.ne-canvas-dock-btn.is-selected { background-color: var(--ne-accent-soft); color: var(--ne-accent-strong); }
+.ne-canvas-dock-glyph { margin-right: 5px; font-size: 12px; }
+.ne-canvas-dock-zoom {
+    min-width: 44px;
+    padding: 0 6px;
+    color: var(--ne-text);
+    font-size: var(--ne-font-sm);
+    -unity-text-align: middle-center;
+}
+.ne-canvas-dock-sep { width: 1px; height: 14px; margin: 0 3px; background-color: var(--ne-divider); }
 
 /* ============================================================
    DATA EDITOR WINDOW — 通用数据编辑窗口（左列按作用域分组的源列表 ｜ 右列编辑面板）
@@ -1591,7 +1878,7 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 /* ============================================================
    UNIT INSPECTOR — 可组合单元槽（UnitInspector：Foldout 槽 + 字段区 + 单元列表）
    ============================================================ */
-/* 结构原语：CollapsibleCard 根（视觉由调用方叠加 entry-card / graphlist-group 等），只管节奏。 */
+/* 结构原语：CollapsibleCard 根（视觉由调用方叠加 entry-card / inspector-section 等），只管节奏。 */
 .collapsible-card { margin: 1px 0; }
 /* 单元槽 = 软卡片化的 Foldout：与 entry-card 同语言，嵌套时层级靠缩进而非更深的底色。 */
 .unit-slot {

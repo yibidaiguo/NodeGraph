@@ -26,10 +26,19 @@ namespace NodeEditor.EditorUI
         public void SetPath(IEnumerable<string> titles)
         {
             Clear();
-            // 访问历史条：crumb 间插中点分隔（并列关系，不暗示层级），
-            // 末位（当前图）挂 --current 提亮成 chip。
+            // 访问历史条：crumb 间插中点分隔（并列关系，不暗示层级）。
             var list = titles?.ToList() ?? new List<string>();
-            for (int i = 0; i < list.Count; i++)
+            // 末位是当前图 —— 顶栏胶囊上已经写着它了，这里再列一遍就是同一行出现两次同名。
+            // 只列"之前去过哪"；一个都没有（刚打开、只到过一张图）就整条隐藏，不在顶栏留半截空 chrome。
+            int shown = list.Count - 1;
+            style.display = shown <= 0 ? DisplayStyle.None : DisplayStyle.Flex;
+            if (shown <= 0) return;
+
+            var lead = new Label(Localizer.UI("ui.recent", "Recent"));
+            lead.AddToClassList("breadcrumb-lead");
+            Add(lead);
+
+            for (int i = 0; i < shown; i++)
             {
                 if (i > 0)
                 {
@@ -40,7 +49,6 @@ namespace NodeEditor.EditorUI
                 int captured = i;
                 var crumb = new Button(() => m_OnClick(captured)) { text = list[i] };
                 crumb.AddToClassList("breadcrumb-crumb");
-                if (i == list.Count - 1) crumb.AddToClassList("breadcrumb-crumb--current");
                 Add(crumb);
             }
         }

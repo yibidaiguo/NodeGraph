@@ -1,11 +1,19 @@
 // NodeEditorWindow.cs — 第 5 层（连线图编辑器），模板层。
-// 四面板 EditorWindow（画布 + 检视器 + 变量面板 + 工具栏），
-// 布局借鉴自 Behavior Designer。Unity 6。Editor/ 程序集。
+// 画布优先的编辑器外壳（顶栏 + 满窗画布 + 贴角浮层），Unity 6，Editor/ 程序集。
+//
+// 布局取向（0.1.x 重构）：**画布铺满窗口，chrome 按需出现**。
+// 旧外壳是固定三栏（图列表 | 画布 | 检视），实测两个对话就要为左栏付出 260px 恒定宽度，
+// 其中 80% 是空白；右栏 320px 常驻，未选中节点时只写着一句"选中一个节点即可在此编辑"。
+// 现在：
+//   · 图列表 → 顶栏那颗胶囊点开的切换器弹层（PickerPill + GraphListPane），左栏整条删除；
+//   · 变量 / 检视 → 画布上的贴角浮层（OverlayPanel），可拖可折可关，检视只在选中节点时出现；
+//   · 缩放 / 全览 / 整理 / 缩略图 / 加节点 → 画布左下的坞（CanvasDock），手不用离开工作区；
+//   · 长尾开关（深色、语言、整理、全览）→ 顶栏「⋯」溢出菜单，不再和主命令平铺同权重。
+// 顶栏因此只剩三区：左「在哪张图 / 怎么走」，中留白，右「看什么 / 有没有问题」。
 
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using NodeEditor;          // 第 4 层数据/运行时类型（NodeDefinition、NodeGraphAsset 等）
@@ -22,25 +30,30 @@ namespace NodeEditor.EditorUI
         List<NodeGraphAsset> m_RuntimeGraphCandidates;
         string m_RuntimeGraphCandidatesModule;
         InspectorPane m_Inspector;
-        LayeredVariablePane m_Variables;   // 分层变量面板：按当前图显示 全局/模块/组 三档（取代单档 VariablePane）
-        GraphListPane m_GraphList;     // 左侧"图/对话组"可滚动列表
-        ObjectField m_GraphField;      // 工具栏的对象选择框（与左侧列表双向同步）
+        LayeredVariablePane m_Variables;   // 分层变量面板：按当前图显示 全局/模块/组 三档
+        PickerPill m_Picker;               // 顶栏「当前在编辑哪张图」的胶囊（点开=切换器弹层）
+        PanelToggleBar m_Panels;           // 顶栏右侧「看什么」开关组
+        OverlayPanel m_VariablesOverlay;   // 画布左上：变量
+        OverlayPanel m_InspectorOverlay;   // 画布右上：检视（跟随选中）
+        CanvasDock m_Dock;                 // 画布左下：缩放 / 全览 / 整理 / 缩略图 / 加节点
+        StatusChip m_Status;               // 顶栏最右：校验状态，可点着巡回问题节点
         Breadcrumb m_Breadcrumb;
         NavigationHistory m_Nav = new();
-        ToolbarButton m_BackButton;
-        ToolbarButton m_ForwardButton;
-        TwoPaneSplitView m_Outer;      // [ 左栏+画布 ] | 检视面板
-        TwoPaneSplitView m_Inner;      // 左栏 | 画布
-        Label m_StatusLabel;           // 工具栏右侧：本图的校验状态
-        const string LeftPaneHiddenPref = "NodeEditor.LeftPaneHidden";
-        const string InspectorHiddenPref = "NodeEditor.InspectorHidden";
+        Button m_BackButton;
+        Button m_ForwardButton;
+        NodeView m_SelectedNode;           // 当前选中的节点（决定检视浮层是否露面）
+        int m_ProblemCursor;               // 状态 chip 巡回到第几个问题节点
+        bool m_InspectorEnabled = true;    // 用户是否启用检视浮层（是否真的露面还要看有没有选中节点）
+        const string PanelVariables = "variables";
+        const string PanelInspector = "inspector";
+        const string MiniMapPref = "NodeEditor.MiniMap";
+        const string InspectorEnabledPref = "NodeEditor.InspectorEnabled";
 
         [SerializeField] NodeGraphAsset m_Asset;   // [SerializeField] 使已打开的 graph 能在 domain reload（进入播放模式）后保留
-        // 模块模式：从某个领域入口（如 Tools/NodeGraph/Dialogue）打开时非空 —— 左侧图列表只列该模块的图、
-        // 隐藏工具栏对象选择框（避免跨模块乱切）。领域内仍可在本模块的多张图间切换（列表 + 导航/面包屑保留）。
-        // 从 NodeGraph Manager 的 Open Node Editor 打开则为空（自由模式：列出全部模块、保留对象框）。[SerializeField] 使其扛过
-        // domain reload，避免重载后悄悄回到自由模式。框架只认这个字符串、不认任何领域语义；"锁哪个模块 / 叫
-        // 什么名"由领域入口决定（机制/策略分层，见 OpenModule）。
+        // 模块模式：从某个领域入口（如 Tools/NodeGraph/Dialogue）打开时非空 —— 切换器只列该模块的图。
+        // 从 NodeGraph Manager 的 Open Node Editor 打开则为空（自由模式：列出全部模块的图）。[SerializeField]
+        // 使其扛过 domain reload，避免重载后悄悄回到自由模式。框架只认这个字符串、不认任何领域语义；
+        // "锁哪个模块 / 叫什么名"由领域入口决定（机制/策略分层，见 OpenModule）。
         [SerializeField] string m_ModuleFilter;
         NodeRegistry m_Registry;
         BlackboardSet m_Blackboard;            // 当前图的有效黑板（全局⊕模块⊕组）：检视面板「键」下拉 + 调试器校验都读它
@@ -49,24 +62,23 @@ namespace NodeEditor.EditorUI
         {
             var w = GetWindow<NodeEditorWindow>();
             w.UpdateWindowTitle();
-            w.minSize = new Vector2(900, 500);
-        // 从 NodeGraph Manager 的 Open Node Editor 入口打开 = 自由模式：若此前被某个领域入口锁到某模块，这里清掉过滤并按自由布局重建。
+            w.minSize = new Vector2(720, 460);
+            // 从 NodeGraph Manager 的 Open Node Editor 入口打开 = 自由模式：若此前被某个领域入口锁到某模块，这里清掉过滤并按自由布局重建。
             if (!string.IsNullOrEmpty(w.m_ModuleFilter)) { w.m_ModuleFilter = null; w.RebuildAndReload(); }
         }
 
         // 领域入口用的"模块模式打开"机制（框架层，领域无关）。领域层（如对话）在自己的 Editor 程序集里调它，
-        // 把窗口锁到自己的模块上并给一个本地化标题 —— 左侧只列该模块的图、隐藏工具栏对象框，但本模块内仍可
-        // 多图切换。"锁哪个模块 / 初始打开哪张图 / 叫什么名"是领域策略，本方法只负责"按模块过滤布局重建并加载"。
-        // 框架只提供按模块打开的机制，具体模块、标题与初始资产由领域层传入。
+        // 把窗口锁到自己的模块上并给一个本地化标题 —— 切换器只列该模块的图，但本模块内仍可多图切换。
+        // "锁哪个模块 / 初始打开哪张图 / 叫什么名"是领域策略，本方法只负责"按模块过滤布局重建并加载"。
         public static void OpenModule(string module, string title = null, NodeGraphAsset initial = null)
         {
             if (string.IsNullOrEmpty(module)) return;
             var w = GetWindow<NodeEditorWindow>();
             w.titleContent = new GUIContent(string.IsNullOrEmpty(title) ? ModuleEditorTitle(module) : title);
-            w.minSize = new Vector2(900, 500);
+            w.minSize = new Vector2(720, 460);
             w.m_ModuleFilter = module;
             w.m_Asset = RuntimeGraphLocator.FindActiveGraph(module, initial);
-            w.RebuildAndReload();  // 按模块过滤布局重建（图列表只列本模块、无对象选择框）
+            w.RebuildAndReload();  // 按模块过滤布局重建
         }
 
         // 在 Project 中双击某个 NodeGraphAsset 即可在此打开它。
@@ -87,6 +99,7 @@ namespace NodeEditor.EditorUI
         void OnDisable()
         {
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
+            Popover.CloseAll();   // 弹层挂在本窗口根上，窗口没了它的静态"当前打开"引用也得清掉
             StopRuntimePoll();
             DetachRuntimeBinding();   // 若窗口在仍处于播放模式时被关闭，则解除对 EditorApplication.update 的挂接
         }
@@ -188,20 +201,13 @@ namespace NodeEditor.EditorUI
             m_RuntimeGraphCandidates = null;
             m_RuntimeGraphCandidatesModule = null;
             // 字段初始化器不会在 domain-reload 反序列化路径（例如进入播放模式）上执行，
-            // 这会将这个普通的非序列化字段置空；在工具栏接入用到它的回调之前重新初始化。
+            // 这会将这个普通的非序列化字段置空；在顶栏接入用到它的回调之前重新初始化。
             m_Nav ??= new NavigationHistory();
+            m_SelectedNode = null;
             var root = rootVisualElement;
 
-            // 「最近访问过的图」这条要嵌进工具栏同一行、紧挨后退/前进，所以必须先于工具栏创建。
+            // 「最近访问过的图」这条要嵌进顶栏同一行、紧挨后退/前进，所以必须先于顶栏创建。
             m_Breadcrumb = new Breadcrumb(OnCrumbClicked);
-            root.Add(BuildToolbar());
-
-            // outer：[ inner ] | inspector（右）
-            var outer = new TwoPaneSplitView(1, 320, TwoPaneSplitViewOrientation.Horizontal);
-            m_Outer = outer;
-            // inner：leftColumn（左） | canvas。leftColumn 内再上下竖切：图列表 / 变量。
-            var inner = new TwoPaneSplitView(0, 260, TwoPaneSplitViewOrientation.Horizontal);
-            m_Inner = inner;
 
             m_Variables = new LayeredVariablePane();
             m_Canvas = new GraphCanvas();
@@ -212,38 +218,39 @@ namespace NodeEditor.EditorUI
             m_Debugger = new GraphDebugger(m_Canvas);
             m_Inspector = new InspectorPane();
 
-            // 左列上下竖切 —— 图/对话组列表（可切换） + 变量面板。模块模式下列表只列该模块的图（传入过滤），
-            // 自由模式列出全部模块；两种模式都能在（本模块的）多张图间切换。
-            // 固定的是下面的变量面板，上面的图列表吃掉剩余空间 —— 列表会随对话增多而变长，
-            // 多出来的空间给它才是「能长」；变量面板固定一条就够，不然空面板独占大半屏。
-            var leftColumn = new TwoPaneSplitView(1, VariablePaneHeight(), TwoPaneSplitViewOrientation.Vertical);
-            m_GraphList = new GraphListPane(m_ModuleFilter);
-            // 在列表里点选一个图/对话组 → 入栈导航历史并加载（与工具栏选择框走同一条路径）。
-            m_GraphList.OnSelected = a => { if (a != m_Asset) { m_Nav.Push(a); LoadGraphFromUserSelection(a); } };
-            // 列表里删除了一张图 → 若删的正是当前打开的图，换载替补（同模块的下一张；replacement 为 null=已无图则清空画布）。
-            // 删别的图不影响当前画布。判据：DeleteAsset 会销毁内存对象，被删的正是当前图时 m_Asset 经 Unity 重载的 ==
-            // 比较即为 null；删的是别的图则 m_Asset 仍存活 → 不动画布。换载走 LoadGraph（不入导航历史，属"被动替补"非主动跳转）。
-            m_GraphList.OnDeleted = replacement => { if (m_Asset == null) LoadGraph(replacement); };
-            leftColumn.Add(m_GraphList);
-            leftColumn.Add(m_Variables);
-            inner.Add(leftColumn);
+            root.Add(BuildAppBar());
+            m_Canvas.style.flexGrow = 1;
+            root.Add(m_Canvas);
+            BuildOverlays();
 
-            m_Canvas.OnNodeSelected = node => m_Inspector.Show(node, m_Registry, m_Blackboard, m_Asset);
-            m_Canvas.OnNodeDeselected   = node => m_Inspector.ClearIfShowing(node);
-            m_Canvas.OnSelectionCleared = () => m_Inspector.Clear();
+            // 选中即出检视、取消即收 —— 未选中时不为一句"请选中节点"占着画布的一角。
+            m_Canvas.OnNodeSelected = node =>
+            {
+                m_SelectedNode = node;
+                m_Inspector.Show(node, m_Registry, m_Blackboard, m_Asset);
+                SyncInspectorVisibility();
+            };
+            m_Canvas.OnNodeDeselected = node =>
+            {
+                m_Inspector.ClearIfShowing(node);
+                if (m_SelectedNode == node) m_SelectedNode = null;
+                SyncInspectorVisibility();
+            };
+            m_Canvas.OnSelectionCleared = () =>
+            {
+                m_Inspector.Clear();
+                m_SelectedNode = null;
+                SyncInspectorVisibility();
+            };
             m_Canvas.OnGraphChanged += () => m_Debugger.RevalidateAndPaint();   // 每次编辑都重新校验（RevalidateAndPaint 会处理 asset 为 null 的情况）
-            m_Debugger.OnValidated = RefreshStatus;   // 校验一跑完就刷新工具栏状态条
-            // 右键空白画布 → 在光标处打开"添加节点"搜索框（与空格键同一入口）。
+            m_Debugger.OnValidated = RefreshStatus;   // 校验一跑完就刷新状态 chip
+            // 右键空白画布 → 在光标处打开"添加节点"搜索框（与空格键、画布坞的「＋」同一入口）。
             // 画布只知道面板坐标，窗口的屏幕原点（position.position）在窗口手里，故由窗口注入面板→屏幕换算。
             m_Canvas.OnRequestAddNode = screenPos => AddNodeSearchWindow.Open(screenPos, this, m_Canvas);
             m_Canvas.PanelToScreen = panelPos => position.position + panelPos;
+            m_Canvas.OnZoomChanged = scale => m_Dock?.SetZoom(scale);
             // Inspector 的可搜索下拉同样要把字段（面板坐标）换成屏幕坐标来弹 SearchWindow。
             m_Inspector.PanelToScreen = panelPos => position.position + panelPos;
-
-            inner.Add(m_Canvas);
-            outer.Add(inner);
-            outer.Add(m_Inspector);
-            root.Add(outer);
 
             // 在面板空间内跟踪光标——KeyDownEvent 不携带鼠标位置，
             // 因此空格键处理器改为读取最近一次的指针位置。
@@ -254,17 +261,15 @@ namespace NodeEditor.EditorUI
             {
                 if (e.keyCode == KeyCode.Space)
                 {
-                    // 面板空间鼠标位置 + 窗口的屏幕原点 = 弹窗的屏幕位置。
-                    var screenPos = position.position + m_LastPanelMouse;
-                    AddNodeSearchWindow.Open(screenPos, this, m_Canvas);
+                    AddNodeAtCursor();
                     e.StopPropagation();
                 }
             });
 
             // 在 domain reload 之后 m_Asset 会保留（[SerializeField]），但 m_Registry/m_Blackboard 不会——
             // 走 LoadGraph 重新解析它们，而非 ReloadCanvas（后者会使用为 null 的 locator）。
-            ApplyPaneVisibility();   // 还原上次会话里左栏/检视面板的折叠状态
             if (m_Asset != null) LoadGraph(m_Asset, null);
+            else RefreshStatus();
 
             // 如果窗口是在已处于播放模式时被（重新）构建的——例如在进入播放的 domain reload 期间，
             // EnteredPlayMode 时机点先于本次 CreateGUI 触发——则补做运行时挂接。
@@ -332,165 +337,222 @@ namespace NodeEditor.EditorUI
             m_Debugger.RevalidateAndPaint();
             m_Breadcrumb.SetPath(m_Nav.PathTitles());
             UpdateNavigationButtons();
-            // 把"当前打开的图"同步到工具栏选择框与左侧列表高亮（不触发各自回调，避免重入加载）。
-            m_GraphField?.SetValueWithoutNotify(m_Asset);
-            m_GraphList?.SetCurrent(m_Asset);
+            // 换图 = 旧选中作废：收起检视，别把上一张图的节点参数留在屏幕上。
+            m_SelectedNode = null;
+            SyncInspectorVisibility();
+            m_ProblemCursor = 0;
+            SyncPickerLabel();
         }
 
-        VisualElement BuildToolbar()
+        // ---- 顶栏 ------------------------------------------------------------
+
+        VisualElement BuildAppBar()
         {
-            var bar = new Toolbar();
-            bar.AddToClassList(EditorUi.ToolbarClass);
+            var bar = new AppBar();
 
-            // 导航组（后退/前进）：两种模式都保留——模块模式也能在本模块的多张图间切换并回溯历史。
-            var back = new ToolbarButton(() => { if (m_Nav.CanBack) LoadGraph(m_Nav.Back()); });
-            ApplyIconButton(back, "d_tab_prev", Localizer.UI("ui.back", "Back"), "<");
-            var fwd  = new ToolbarButton(() => { if (m_Nav.CanForward) LoadGraph(m_Nav.Forward()); });
-            ApplyIconButton(fwd, "d_tab_next", Localizer.UI("ui.forward", "Forward"), ">");
-            m_BackButton = back;
-            m_ForwardButton = fwd;
+            // 左区：怎么走 + 在哪张图。
+            m_BackButton = AppBar.NavButton("‹", Localizer.UI("ui.back", "Back"),
+                () => { if (m_Nav.CanBack) LoadGraph(m_Nav.Back()); });
+            m_ForwardButton = AppBar.NavButton("›", Localizer.UI("ui.forward", "Forward"),
+                () => { if (m_Nav.CanForward) LoadGraph(m_Nav.Forward()); });
+            bar.Add(m_BackButton);
+            bar.Add(m_ForwardButton);
             UpdateNavigationButtons();
-            bar.Add(back); bar.Add(fwd);
-            // 「最近访问过的图」紧跟后退/前进，同一行读作导航区。
+
+            m_Picker = new PickerPill(OpenGraphPicker) { tooltip = Localizer.UI("ui.graphPickerTip", "Switch graph") };
+            bar.Add(m_Picker);
+            SyncPickerLabel();
+
+            // 「最近访问过的图」紧跟胶囊，同一行读作导航区。
             if (m_Breadcrumb != null) bar.Add(m_Breadcrumb);
-            bar.Add(MakeSep());
 
-            m_GraphField = null;   // 模块模式不建对象框；显式清掉上一次自由布局缓存的引用，避免 ReloadCanvas 戳到已脱树的旧控件
-            // 工具栏对象框（可切到项目里任意图，含别的模块）只在自由模式出现；模块模式靠左侧本模块列表切换，不给跨模块乱切的入口。
-            if (string.IsNullOrEmpty(m_ModuleFilter))
-            {
-                // Asset 组
-                m_GraphField = new ObjectField { objectType = typeof(NodeGraphAsset), value = m_Asset };
-                m_GraphField.AddToClassList("toolbar-graphfield");
-                m_GraphField.RegisterValueChangedCallback(e =>
-                {
-                    if (e.newValue is NodeGraphAsset a) { m_Nav.Push(a); LoadGraph(a); }
-                });
-                bar.Add(m_GraphField);
+            bar.AddSpacer();
 
-                bar.Add(MakeSep());
-            }
+            // 右区：看什么。浮层开关与"去别处看"的命令同权重，摆在同一段里。
+            m_Panels = new PanelToggleBar();
+            m_Panels.Add(PanelVariables, Localizer.UI("ui.variables", "Variables"),
+                Localizer.UI("ui.variablesTip", "Show or hide the variables overlay"),
+                false, on => SetVariablesVisible(on));
+            m_Panels.Add(PanelInspector, Localizer.UI("ui.inspector", "Inspector"),
+                Localizer.UI("ui.inspectorPaneTip", "Inspector overlay — appears while a node is selected"),
+                false, on => SetInspectorEnabled(on));
+            m_Panels.Add("data", Localizer.UI("ui.dataWindow", "Data"),
+                Localizer.UI("ui.dataWindowTip", "Open the data window for this module"),
+                false, _ => DataEditorWindow.Open(
+                    string.IsNullOrEmpty(m_ModuleFilter) ? m_Asset?.module : m_ModuleFilter, m_Asset));
+            m_Panels.Add("find", Localizer.UI("ui.find", "Find"),
+                Localizer.UI("ui.findTip", "Find a node in this graph"),
+                false, _ => FindDialog.Open(m_Canvas));
+            bar.Add(m_Panels);
 
-            // Tools 组
-            var find = new ToolbarButton(() => FindDialog.Open(m_Canvas));
-            ApplyIconButton(find, "Search Icon", Localizer.UI("ui.find", "Find"), Localizer.UI("ui.find", "Find"), showText: true);
-            bar.Add(find);
+            // 三个句点而不是 U+22EF：编辑器字体没有那个码位，真机上是个空方框。
+            var more = AppBar.CommandButton("···", null, Localizer.UI("ui.more", "More"), null);
+            more.clicked += () => OpenOverflowMenu(more);
+            bar.Add(more);
 
-            // 数据按钮：打开通用数据编辑窗口，绑定当前图、过滤到当前模块（+ 项目级数据）。
-            // 模块来源是领域无关的：模块模式用已锁定的 m_ModuleFilter，自由模式用当前图的 module
-            // 标签（皆为空则传 null = 总数据中心）。框架 shell 不得出现任何领域字符串字面量（B5/§2）。
-            var data = new ToolbarButton(() => DataEditorWindow.Open(
-                string.IsNullOrEmpty(m_ModuleFilter) ? m_Asset?.module : m_ModuleFilter, m_Asset));
-            ApplyIconButton(data, "d_SceneViewTools", Localizer.UI("ui.dataWindow", "Data"), Localizer.UI("ui.dataWindow", "Data"), showText: true);
-            bar.Add(data);
-            // 命令组（查找/数据）与视图开关组（缩略图/深色）之间分一刀。
-            bar.Add(MakeSep());
-
-            // 缩略图开关：默认关（缩略图默认隐藏）。回调在点击时才读 m_Canvas（此时 CreateGUI 已建好它，
-            // 工具栏是在 m_Canvas 之前构建的，故不能在构建期引用），勾选即显、取消即隐。
-            var miniMapToggle = new ToolbarToggle { text = Localizer.UI("ui.minimap", "MiniMap"), tooltip = Localizer.UI("ui.minimapTip", "Toggle minimap") };
-            EditorUi.ApplyToolbarToggle(miniMapToggle);
-            miniMapToggle.SetValueWithoutNotify(false);
-            miniMapToggle.RegisterValueChangedCallback(e => m_Canvas?.SetMiniMapVisible(e.newValue));
-            bar.Add(miniMapToggle);
-
-            // 所有窗口复用同一主题设置与同步控件。
-            bar.Add(EditorUi.CreateThemeToggle());
-
-            // 面板显隐：折叠的一侧把空间整个让给画布。状态存 EditorPrefs，跨会话保留。
-            var leftToggle = new ToolbarToggle
-            {
-                text = Localizer.UI("ui.leftPane", "Sidebar"),
-                tooltip = Localizer.UI("ui.leftPaneTip", "Show or hide the left sidebar")
-            };
-            EditorUi.ApplyToolbarToggle(leftToggle);
-            leftToggle.SetValueWithoutNotify(!EditorPrefs.GetBool(LeftPaneHiddenPref, false));
-            leftToggle.RegisterValueChangedCallback(e =>
-            {
-                EditorPrefs.SetBool(LeftPaneHiddenPref, !e.newValue);
-                ApplyPaneVisibility();
-            });
-            bar.Add(leftToggle);
-
-            var inspectorToggle = new ToolbarToggle
-            {
-                text = Localizer.UI("ui.inspector", "Inspector"),
-                tooltip = Localizer.UI("ui.inspectorPaneTip", "Show or hide the inspector")
-            };
-            EditorUi.ApplyToolbarToggle(inspectorToggle);
-            inspectorToggle.SetValueWithoutNotify(!EditorPrefs.GetBool(InspectorHiddenPref, false));
-            inspectorToggle.RegisterValueChangedCallback(e =>
-            {
-                EditorPrefs.SetBool(InspectorHiddenPref, !e.newValue);
-                ApplyPaneVisibility();
-            });
-            bar.Add(inspectorToggle);
-
-            bar.Add(MakeSep());
-
-            // 语言下拉：切换编辑器显示语言，写回 EditorLocalizationConfig 并重建窗口以即时本地化全部 UI。
-            var cfg = EditorLocalizationLocator.Config();
-            var langNames = new System.Collections.Generic.List<string> { "English", "中文" };
-            int curIdx = (cfg != null && cfg.language == Language.Chinese) ? 1 : 0;
-            // 有限固定值 → 走共享 EnumDropdownField（原生枚举下拉，规范 §1）。
-            var langPopup = new EnumDropdownField(null, langNames, langNames[curIdx], v =>
-            {
-                var c = EditorLocalizationLocator.Config();
-                if (c == null) return;
-                var language = v == "中文" ? Language.Chinese : Language.English;
-                if (c.language == language) return;
-                Undo.RegisterCompleteObjectUndo(c, "Change Editor Language");
-                c.language = language;
-                EditorUtility.SetDirty(c); AssetDatabase.SaveAssets();
-                EditorLocalizationLocator.Invalidate();
-                RebuildAndReload();
-            }, tooltip: Localizer.UI("ui.language", "Language"));
-            langPopup.AddToClassList("toolbar-lang");
-            bar.Add(langPopup);
-
-            // 弹性占位把状态条推到工具栏最右缘 —— 那片空白原本什么也不承载。
-            var spacer = new VisualElement();
-            spacer.AddToClassList("toolbar-spacer");
-            bar.Add(spacer);
-
-            m_StatusLabel = new Label();
-            m_StatusLabel.AddToClassList("ne-toolbar-status");
-            bar.Add(m_StatusLabel);
+            m_Status = new StatusChip(JumpToNextProblem);
+            bar.Add(m_Status);
             RefreshStatus();
 
             return bar;
         }
 
-        // 变量面板的固定高度：抬头 + 档位条 + 几行变量 + 底部按钮，够用即可。
-        static float VariablePaneHeight() => 208f;
-
-        // 左栏 / 检视面板的显隐。折叠的那一侧把空间整个让给画布，状态存 EditorPrefs 跨会话保留。
-        void ApplyPaneVisibility()
+        // 切换器弹层：搜索 + 本模块的图 + 新建/定位/删除。整条左栏的职责都收在这里。
+        Popover OpenGraphPicker(VisualElement anchor)
         {
-            if (m_Inner != null)
+            return Popover.Open(anchor, 292f, popover =>
             {
-                if (EditorPrefs.GetBool(LeftPaneHiddenPref, false)) m_Inner.CollapseChild(0);
-                else m_Inner.UnCollapse();
-            }
-            if (m_Outer != null)
+                var list = new GraphListPane(m_ModuleFilter);
+                // 在列表里点选一个图/对话组 → 入栈导航历史并加载。
+                list.OnSelected = a => { if (a != m_Asset) { m_Nav.Push(a); LoadGraphFromUserSelection(a); } };
+                // 列表里删除了一张图 → 若删的正是当前打开的图，换载替补（同模块的下一张；replacement 为 null=已无图则清空画布）。
+                // 删别的图不影响当前画布。判据：DeleteAsset 会销毁内存对象，被删的正是当前图时 m_Asset 经 Unity 重载的 ==
+                // 比较即为 null；删的是别的图则 m_Asset 仍存活 → 不动画布。换载走 LoadGraph（不入导航历史，属"被动替补"非主动跳转）。
+                list.OnDeleted = replacement => { if (m_Asset == null) LoadGraph(replacement); };
+                list.OnRequestClose = Popover.CloseAll;
+                list.SetCurrent(m_Asset);
+                popover.Add(list);
+            });
+        }
+
+        // 「⋯」溢出菜单：一年动一次的全局设置（主题 / 语言）和低频画布命令，从主栏挪进来。
+        void OpenOverflowMenu(VisualElement anchor)
+        {
+            if (Popover.IsOpenFor(anchor)) { Popover.CloseAll(); return; }
+            Popover.Open(anchor, 200f, menu =>
             {
-                if (EditorPrefs.GetBool(InspectorHiddenPref, false)) m_Outer.CollapseChild(1);
-                else m_Outer.UnCollapse();
+                menu.Add(Popover.MenuRow(Localizer.UI("ui.darkTheme", "Dark"), EditorUi.DarkTheme,
+                    () => { EditorUi.DarkTheme = !EditorUi.DarkTheme; Popover.CloseAll(); }));
+                menu.Add(Popover.MenuRow(Localizer.UI("ui.minimap", "MiniMap"), MiniMapOn,
+                    () => { SetMiniMapVisible(!MiniMapOn); Popover.CloseAll(); }));
+                menu.Add(Popover.Separator());
+                menu.Add(Popover.MenuRow(Localizer.UI("ui.tidy", "Tidy"), false,
+                    () => { Popover.CloseAll(); m_Canvas?.TidyLayout(); }));
+                menu.Add(Popover.MenuRow(Localizer.UI("ui.frameAll", "Frame all"), false,
+                    () => { Popover.CloseAll(); m_Canvas?.FrameAll(); }));
+                menu.Add(Popover.Separator());
+                menu.Add(Popover.Section(Localizer.UI("ui.language", "Language")));
+                menu.Add(Popover.MenuRow("English", Localizer.Lang == Language.English,
+                    () => { Popover.CloseAll(); SetLanguage(Language.English); }));
+                menu.Add(Popover.MenuRow("中文", Localizer.Lang == Language.Chinese,
+                    () => { Popover.CloseAll(); SetLanguage(Language.Chinese); }));
+            });
+        }
+
+        void SetLanguage(Language language)
+        {
+            var config = EditorLocalizationLocator.Config();
+            if (config == null || config.language == language) return;
+            Undo.RegisterCompleteObjectUndo(config, "Change Editor Language");
+            config.language = language;
+            EditorUtility.SetDirty(config); AssetDatabase.SaveAssets();
+            EditorLocalizationLocator.Invalidate();
+            RebuildAndReload();   // 整窗重建，让全部文案即时换语言
+        }
+
+        // ---- 浮层 ------------------------------------------------------------
+
+        void BuildOverlays()
+        {
+            m_VariablesOverlay = new OverlayPanel("variables", Localizer.UI("ui.variables", "Variables"),
+                OverlayPanel.Corner.TopLeft, 244f);
+            m_VariablesOverlay.Body.Add(m_Variables);
+            m_VariablesOverlay.OnCloseRequested = () => SetVariablesVisible(false);
+            m_Canvas.AddOverlay(m_VariablesOverlay);
+
+            m_InspectorOverlay = new OverlayPanel("inspector", Localizer.UI("ui.inspector", "Inspector"),
+                OverlayPanel.Corner.TopRight, 288f);
+            m_InspectorOverlay.Body.Add(m_Inspector);
+            m_InspectorOverlay.OnCloseRequested = () => SetInspectorEnabled(false);
+            m_Canvas.AddOverlay(m_InspectorOverlay);
+
+            m_Dock = new CanvasDock(
+                () => m_Canvas?.FrameAll(),
+                () => m_Canvas?.TidyLayout(),
+                SetMiniMapVisible,
+                AddNodeAtCursor);
+            m_Canvas.AddOverlay(m_Dock);
+
+            // 还原上次会话的显隐。检视浮层的"开"只是启用意图（真正露面还要有选中节点），
+            // 因此它的状态存在窗口自己的 pref 里 —— 存进浮层的话，每次取消选中都会把意图冲成 false。
+            m_Panels.SetOn(PanelVariables, m_VariablesOverlay.RestoreVisible(true));
+            m_InspectorEnabled = EditorPrefs.GetBool(InspectorEnabledPref, true);
+            m_Panels.SetOn(PanelInspector, m_InspectorEnabled);
+            SyncInspectorVisibility();
+
+            var miniMap = EditorPrefs.GetBool(MiniMapPref, false);
+            m_Canvas.SetMiniMapVisible(miniMap);
+            m_Dock.SetMiniMapOn(miniMap);
+            m_Dock.SetZoom(m_Canvas.ZoomScale);
+        }
+
+        void SetVariablesVisible(bool visible)
+        {
+            if (m_VariablesOverlay != null) m_VariablesOverlay.Visible = visible;
+            m_Panels?.SetOn(PanelVariables, visible);
+        }
+
+        void SetInspectorEnabled(bool enabled)
+        {
+            m_InspectorEnabled = enabled;
+            EditorPrefs.SetBool(InspectorEnabledPref, enabled);
+            m_Panels?.SetOn(PanelInspector, enabled);
+            SyncInspectorVisibility();
+        }
+
+        // 检视浮层 = 启用 且 有选中节点。这条是本次重构的核心：旧外壳为一句"选中一个节点即可在此编辑"
+        // 常驻 320px；现在没选中就整块不在，画布拿回整幅宽度。
+        void SyncInspectorVisibility()
+        {
+            m_InspectorOverlay?.SetDisplayed(m_InspectorEnabled && m_SelectedNode != null);
+        }
+
+        bool MiniMapOn => m_Canvas != null && m_Canvas.MiniMapVisible;
+
+        void SetMiniMapVisible(bool visible)
+        {
+            m_Canvas?.SetMiniMapVisible(visible);
+            m_Dock?.SetMiniMapOn(visible);
+            EditorPrefs.SetBool(MiniMapPref, visible);
+        }
+
+        // 空格 / 右键 / 画布坞的「＋」共用同一个添加节点入口（面板坐标 + 窗口屏幕原点 = 弹窗屏幕位置）。
+        void AddNodeAtCursor()
+        {
+            if (m_Canvas == null) return;
+            AddNodeSearchWindow.Open(position.position + m_LastPanelMouse, this, m_Canvas);
+        }
+
+        // ---- 状态 ------------------------------------------------------------
+
+        // 状态 chip：本图有几个错误/警告。没有问题时说「无问题」，不留空。
+        void RefreshStatus()
+        {
+            if (m_Status == null) return;
+            int errors = m_Debugger != null ? m_Debugger.ErrorCount : 0;
+            int warnings = m_Debugger != null ? m_Debugger.WarnCount : 0;
+            m_Status.SetCounts(errors, warnings, m_Asset != null);
+            if (errors + warnings == 0) m_ProblemCursor = 0;
+        }
+
+        // 点状态 chip：逐个跳到出问题的节点（选中 + 框住）。只报数字不指路等于让人自己去找红边。
+        void JumpToNextProblem()
+        {
+            var problems = m_Debugger?.ProblemInstanceIds;
+            if (problems == null || problems.Count == 0 || m_Canvas == null) return;
+            for (int i = 0; i < problems.Count; i++)
+            {
+                var index = (m_ProblemCursor + i) % problems.Count;
+                if (!m_Canvas.FocusInstance(problems[index])) continue;
+                m_ProblemCursor = (index + 1) % problems.Count;
+                return;
             }
         }
 
-        // 工具栏右侧状态条：本图有几个错误/警告。没有问题时说「无问题」，不留空。
-        void RefreshStatus()
+        void SyncPickerLabel()
         {
-            if (m_StatusLabel == null) return;
-            if (m_Asset == null) { m_StatusLabel.text = ""; return; }
-            int e = m_Debugger != null ? m_Debugger.ErrorCount : 0;
-            int w = m_Debugger != null ? m_Debugger.WarnCount : 0;
-            m_StatusLabel.EnableInClassList("ne-status-has-error", e > 0);
-            m_StatusLabel.EnableInClassList("ne-status-has-warn", e == 0 && w > 0);
-            if (e == 0 && w == 0) { m_StatusLabel.text = Localizer.UI("ui.noIssues", "No issues"); return; }
-            m_StatusLabel.text = string.Format(
-                Localizer.UI("ui.issueCount", "{0} errors · {1} warnings"), e, w);
+            if (m_Picker == null) return;
+            m_Picker.Text = m_Asset != null ? m_Asset.name : Localizer.UI("ui.noGraphOpen", "No graph");
         }
 
         void UpdateNavigationButtons()
@@ -502,44 +564,9 @@ namespace NodeEditor.EditorUI
         // 重建整个窗口 UI（按当前语言重新本地化全部界面），并还原已打开的图。用于语言切换。
         void RebuildAndReload()
         {
+            Popover.CloseAll();
             rootVisualElement.Clear();
             CreateGUI();
-        }
-
-        // showText=false：纯图标（后退/前进这类通用导航符号，加字反而啰嗦）。
-        // showText=true ：图标 + 文字（查找/数据这类命令，光看图标猜不出来）。
-        // 图标解析不出来时一律退回纯文字，保证按钮永远有可读内容。
-        static void ApplyIconButton(ToolbarButton btn, string iconName, string tooltip,
-                                    string fallbackText, bool showText = false)
-        {
-            btn.tooltip = tooltip;
-            var content = EditorGUIUtility.IconContent(iconName);
-            if (content != null && content.image != null)
-            {
-                if (showText) EditorUi.ApplyToolbarTextButton(btn);
-                else EditorUi.ApplyToolbarIconButton(btn);
-                var img = new Image { image = content.image, scaleMode = ScaleMode.ScaleToFit };
-                img.AddToClassList(EditorUi.ToolbarIconClass);
-                btn.Add(img);
-                if (showText)
-                {
-                    var caption = new Label(fallbackText);
-                    caption.AddToClassList("toolbar-cmd-text");
-                    btn.Add(caption);
-                }
-            }
-            else
-            {
-                EditorUi.ApplyToolbarTextButton(btn);
-                btn.text = fallbackText;
-            }
-        }
-
-        static VisualElement MakeSep()
-        {
-            var sep = new VisualElement();
-            sep.AddToClassList("toolbar-sep");
-            return sep;
         }
 
         void OnCrumbClicked(int depth)

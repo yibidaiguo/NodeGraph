@@ -23,6 +23,10 @@ namespace NodeEditor.EditorUI
         // 本次校验的问题计数，供工具栏状态条显示。
         public int ErrorCount { get; private set; }
         public int WarnCount { get; private set; }
+        // 出问题的节点（错误在前、警告在后，同一节点只记一次）。顶栏状态 chip 靠它逐个跳过去 ——
+        // 只报"2 错误"而不说错在哪，等于让人自己在几十个节点里找红边。
+        readonly List<string> m_ProblemInstances = new();
+        public IReadOnlyList<string> ProblemInstanceIds => m_ProblemInstances;
         // 每次重新校验完成后广播，让工具栏刷新状态条。
         public System.Action OnValidated;
 
@@ -45,12 +49,20 @@ namespace NodeEditor.EditorUI
             IndexViews(m_Canvas.nodes.ToList().ConvertAll(n => (NodeView)n));
             foreach (var v in m_ByInstance.Values) v.ClearValidationMarks();
             ErrorCount = 0; WarnCount = 0;
+            m_ProblemInstances.Clear();
+            var problemWarns = new List<string>();
             if (m_Canvas.Asset == null || m_Canvas.Registry == null) { m_Canvas.SetBanner(null); OnValidated?.Invoke(); return; }
             var graphLevel = new List<string>();
             foreach (var issue in GraphValidator.ValidateAll(m_Canvas.Asset, m_Canvas.Registry, m_Blackboard))
             {
-                if (issue.severity == ValidationIssue.Sev.Error) ErrorCount++;
+                bool isError = issue.severity == ValidationIssue.Sev.Error;
+                if (isError) ErrorCount++;
                 else WarnCount++;
+                if (issue.target != GraphValidator.GraphIssueTarget)
+                {
+                    var bucket = isError ? m_ProblemInstances : problemWarns;
+                    if (!bucket.Contains(issue.target)) bucket.Add(issue.target);
+                }
                 if (issue.target == GraphValidator.GraphIssueTarget)
                 {
                     // 图级别的问题（例如没有入口）：没有节点可标记——把它收集到画布内的 banner 里，
@@ -62,6 +74,9 @@ namespace NodeEditor.EditorUI
                     view.MarkValidation(issue.severity == ValidationIssue.Sev.Error
                         ? ValidationSeverity.Error : ValidationSeverity.Warn);   // 把 4c 的 Sev 映射为 5a 本地枚举
             }
+            // 警告接在错误后面：巡回时先把挡住运行的错误走完，再看不致命的警告。
+            foreach (var warn in problemWarns)
+                if (!m_ProblemInstances.Contains(warn)) m_ProblemInstances.Add(warn);
             m_Canvas.SetBanner(graphLevel);
             OnValidated?.Invoke();
         }

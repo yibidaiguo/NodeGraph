@@ -18,8 +18,9 @@ namespace NodeEditor.EditorUI
     public class InspectorPane : VisualElement
     {
         readonly ScrollView m_Body;
-        readonly VisualElement m_Header;      // 抬头行：图标 + 当前节点类型名
+        readonly VisualElement m_Header;      // 抬头行：图标 + 当前节点类型名 + 类型 id
         readonly Label m_HeaderTitle;
+        readonly Label m_HeaderSub;
         NodeView m_Current;
         NodeRegistry m_Registry;
         BlackboardSet m_Blackboard;   // 这张图的有效黑板（全局⊕模块⊕组合并视图），供「键」下拉与类型推断
@@ -30,12 +31,18 @@ namespace NodeEditor.EditorUI
         public InspectorPane()
         {
             AddToClassList("inspector-root");
+            // 抬头 = 「正在编辑哪个节点」的身份行（图标 + 节点名 + 类型 id）。
+            // 面板现在住在浮层里，浮层标题条已经写着「检视」——这里再挂一条通用标题就是同屏两个标题，
+            // 所以没选中节点时整行隐藏，只留空态那一句。
             m_Header = new VisualElement();
             m_Header.AddToClassList("inspector-header");
             m_Header.AddToClassList("inspector-header-row");
             m_HeaderTitle = new Label();
             m_HeaderTitle.AddToClassList("inspector-header-title");
             m_Header.Add(m_HeaderTitle);
+            m_HeaderSub = new Label();
+            m_HeaderSub.AddToClassList("inspector-header-sub");
+            m_Header.Add(m_HeaderSub);
             Add(m_Header);
             SetHeader(null);
             m_Body = new ScrollView(ScrollViewMode.Vertical)
@@ -113,11 +120,15 @@ namespace NodeEditor.EditorUI
             var def = node?.Definition;
             if (def == null)
             {
-                m_HeaderTitle.text = Localizer.UI("ui.inspector", "Inspector");
+                m_Header.style.display = DisplayStyle.None;
+                m_HeaderTitle.text = "";
+                m_HeaderSub.text = "";
                 return;
             }
+            m_Header.style.display = DisplayStyle.Flex;
             m_Header.Insert(0, new NodeIconControl(NodeIconRegistry.Resolve(def.GetType(), def.Role)));
             m_HeaderTitle.text = Localizer.NodeName(def);
+            m_HeaderSub.text = def.Id ?? "";
         }
 
         // 松开当前节点，回到空态。asset 也传 null —— 面板不该继续攥着一张已经不在编辑的图。
@@ -610,11 +621,10 @@ namespace NodeEditor.EditorUI
         public LayeredVariablePane()
         {
             AddToClassList("variable-root");
-            var header = new Label(Localizer.UI("ui.variables", "Variables"));
-            header.AddToClassList("inspector-header");
-            Add(header);
+            // 面板住在浮层里，标题由浮层标题条给（旧版这里自带一条「变量」，与外面的面板标题叠成两层）。
+            // 档位从"一排挤在一起的按钮"改成页签：三档是"看哪一档"，属导航 chrome，不该长成主操作。
             m_TierBar = new VisualElement();
-            m_TierBar.AddToClassList("ne-seg-bar");
+            m_TierBar.AddToClassList("ne-tabs");
             Add(m_TierBar);
             m_Body = new VisualElement { style = { flexGrow = 1 } };
             Add(m_Body);
@@ -627,28 +637,32 @@ namespace NodeEditor.EditorUI
             m_TierBar.Clear();
             m_Body.Clear();
 
-            var tiers = new List<(string title, string module, string group)>
+            // 页签只写"哪一档"（全局 / 模块 / 本图），不再重复"变量"二字 —— 浮层标题已经说过了，
+            // 而窄浮层里三个「XX变量」会挤成折行。完整措辞留在 tooltip。
+            var tiers = new List<(string title, string tip, string module, string group)>
             {
-                (Localizer.UI("ui.globalVariables", "Global Variables"), "", ""),
+                (Localizer.UI("ui.tierGlobal", "Global"), Localizer.UI("ui.globalVariables", "Global Variables"), "", ""),
             };
             if (graph != null && !string.IsNullOrEmpty(graph.module))
             {
-                tiers.Add((Localizer.UI("ui.moduleVariables", "Module Variables"), graph.module, ""));
+                tiers.Add((Localizer.UI("ui.tierModule", "Module"),
+                           Localizer.UI("ui.moduleVariables", "Module Variables"), graph.module, ""));
                 if (!string.IsNullOrEmpty(graph.group))
-                    tiers.Add((Localizer.UI("ui.groupVariables", "Group Variables"), graph.module, graph.group));
+                    tiers.Add((Localizer.UI("ui.tierGroup", "This graph"),
+                               Localizer.UI("ui.groupVariables", "Group Variables"), graph.module, graph.group));
             }
 
             for (int i = 0; i < tiers.Count; i++)
             {
                 int idx = i;
-                var btn = new Button(() => Select(tiers, idx)) { text = tiers[i].title };
-                btn.AddToClassList("ne-seg-btn");
+                var btn = new Button(() => Select(tiers, idx)) { text = tiers[i].title, tooltip = tiers[i].tip };
+                btn.AddToClassList("ne-tab");
                 m_TierBar.Add(btn);
             }
             Select(tiers, tiers.Count - 1);   // 默认最专一档（组 > 模块 > 全局）
         }
 
-        void Select(List<(string title, string module, string group)> tiers, int idx)
+        void Select(List<(string title, string tip, string module, string group)> tiers, int idx)
         {
             for (int i = 0; i < m_TierBar.childCount; i++)
                 m_TierBar[i].EnableInClassList("is-selected", i == idx);

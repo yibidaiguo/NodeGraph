@@ -1,7 +1,8 @@
 // GraphListPane.cs — 第 5 层（连线图编辑器），模板层。
-// 左侧"图列表"面板：项目里全部 NodeGraphAsset，**按模块分组**展示——每个模块一张可开合（CollapsibleCard）、
-// 可滚动的分组（如"对话""任务"……日后新增领域自然多一组）。顶部搜索框跨组过滤，单击一行即加载该图。
-// 可选「模块过滤」：领域入口（如对话编辑器）把面板钉到自己的模块上，只列本模块的图（仍是分组+可开合的样式）。
+// 「图切换器」的内容体：顶栏那颗胶囊点开后弹出的这一层 —— 搜索框 + 图列表 + 底部操作（新建 / 定位 / 删除）。
+// 0.1.x 之前它是常驻左栏的一整块面板；实测两个对话就要吃掉 260×460 的空白，且面板标题与分组标题
+// 叠成两层（"对话组" / "对话 (2)"）。现在它按需弹出、只占内容高，画布因此拿回整块宽度。
+// 分组标题只在真的有多个模块时才出（自由模式）；模块模式下只有一组，标题是纯噪音。
 // 自身只负责"列出 + 选中后回调"，真正的加载由 NodeEditorWindow 经 OnSelected 完成。Editor/ 程序集。
 
 using System;
@@ -17,12 +18,27 @@ namespace NodeEditor.EditorUI
 {
     public class GraphListPane : VisualElement
     {
+        public const string RootClass = "ne-picker-root";
+        public const string SearchClass = "ne-picker-search";
+        public const string ListClass = "ne-picker-list";
+        public const string GroupTitleClass = "ne-picker-group";
+        public const string RowClass = "ne-picker-row";
+        public const string RowDotClass = "ne-picker-row-dot";
+        public const string RowNameClass = "ne-picker-row-name";
+        public const string RowMetaClass = "ne-picker-row-meta";
+        public const string EmptyClass = "ne-picker-empty";
+        public const string FooterClass = "ne-picker-footer";
+        public const string FooterGhostClass = "ne-picker-footer-ghost";
+
         // 用户在列表里点选了某个图 → 请求窗口加载它（窗口负责 Push 导航历史 + LoadGraph）。
         public Action<NodeGraphAsset> OnSelected;
 
         // 删除当前图后回调（窗口据此换载同模块的替补图或清空画布；replacement 为 null=该模块已无图）。
         // 删除发生在面板内（弹确认 + 删资产 + 刷新列表），但"删后画布加载什么"是窗口的导航职责，故回调出去。
         public Action<NodeGraphAsset> OnDeleted;
+
+        // 选完/建完/删完就该收起弹层 —— 面板不认识承载它的 Popover，由外壳接这个回调去关。
+        public Action OnRequestClose;
 
         public static void RegisterModuleInitializer(string module, Action<NodeGraphAsset> init)
         {
@@ -63,13 +79,13 @@ namespace NodeEditor.EditorUI
         }
 
         readonly ToolbarSearchField m_Search;
-        readonly ScrollView m_Scroll;        // 全部分组竖排其中，整体可滚动
+        readonly ScrollView m_Scroll;        // 列表本体；弹层整体高度由 Popover 钳在窗口内
         readonly Label m_Empty;
         readonly VisualElement m_Actions;
         readonly Button m_Delete;            // 删除当前选中图（无选中时置灰）
+        readonly Button m_Ping;              // 在 Project 里定位当前图（旧版靠双击行，弹层里无从发现）
         readonly List<NodeGraphAsset> m_All = new();          // 项目里全部图（未过滤）
         readonly Dictionary<NodeGraphAsset, VisualElement> m_Rows = new();  // 图→行视图（切换高亮用，避免整列表重建）
-        readonly HashSet<string> m_Collapsed = new();         // 被收起的模块 key（跨 Reload 保持开合）
         NodeGraphAsset m_Current;                             // 当前打开的图（用于高亮）
 
         // 模块过滤：null/空 = 自由模式（列出全部模块的图）；非空 = 只列该模块的图（领域入口锁定用）。
@@ -78,14 +94,10 @@ namespace NodeEditor.EditorUI
         public GraphListPane(string moduleFilter = null)
         {
             m_ModuleFilter = string.IsNullOrEmpty(moduleFilter) ? null : moduleFilter;
-            AddToClassList("graphlist-root");
-
-            var header = new Label(ModuleUI("ui.graphs", "Graphs"));
-            header.AddToClassList("inspector-header");
-            Add(header);
+            AddToClassList(RootClass);
 
             m_Search = new ToolbarSearchField { tooltip = Localizer.UI("ui.searchHint", "Type to filter…") };
-            m_Search.AddToClassList("graphlist-search");
+            m_Search.AddToClassList(SearchClass);
             // 空搜索框看不出用途，tooltip 要悬停才出来。取不到 textEdition 就算了，不能抛。
             var searchInput = m_Search.Q<TextField>();
             if (searchInput?.textEdition != null)
@@ -94,36 +106,49 @@ namespace NodeEditor.EditorUI
             Add(m_Search);
 
             m_Scroll = new ScrollView(ScrollViewMode.Vertical);
-            m_Scroll.AddToClassList("graphlist-scroll");
-            m_Scroll.style.flexGrow = 1;
+            m_Scroll.AddToClassList(ListClass);
             Add(m_Scroll);
 
             // 空状态提示（过滤后无图时显示）。
             m_Empty = new Label(ModuleUI("ui.noGraphs", "No graphs in project"));
-            m_Empty.AddToClassList("graphlist-empty");
+            m_Empty.AddToClassList(EmptyClass);
             m_Empty.style.display = DisplayStyle.None;
             Add(m_Empty);
 
-            // 底部操作行：新建（以当前选中图为种类、造同模块的同类图）+ 删除（删当前选中图）。
+            // 底部操作行：新建（以当前选中图为种类、造同模块的同类图）+ 定位 + 删除（删当前选中图）。
             // 不放"刷新"：项目资产变化已自动 Reload（见下方 projectChanged 订阅）。
             m_Actions = new VisualElement();
-            m_Actions.AddToClassList("graphlist-actions");
+            m_Actions.AddToClassList(FooterClass);
+
+            m_Ping = new Button(PingCurrent)
+            {
+                text = Localizer.UI("ui.pingGraph", "Reveal"),
+                tooltip = Localizer.UI("ui.pingGraphTip", "Reveal this graph in the Project window")
+            };
+            m_Ping.AddToClassList("add-button");
+            m_Ping.AddToClassList(FooterGhostClass);
 
             m_Delete = new Button(DeleteCurrent) { text = Localizer.UI("ui.deleteGraph", "Delete") };
             m_Delete.AddToClassList("add-button");
             // 删图不可逆，不该和「新建」等宽等权重 —— 降为次级按钮。
-            m_Delete.AddToClassList("graphlist-delete");
+            m_Delete.AddToClassList(FooterGhostClass);
+            m_Delete.AddToClassList("ne-picker-footer-danger");
             RebuildActions();
             Add(m_Actions);
 
             // 项目资产变化（新建/删除/重命名图）时自动刷新；面板脱离时取消订阅，避免泄漏。
-            RegisterCallback<AttachToPanelEvent>(_ => EditorApplication.projectChanged += Reload);
+            RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                EditorApplication.projectChanged += Reload;
+                // 弹层一开就能直接打字过滤 —— 弹层的生命只有几秒，多一次点击都嫌多。
+                m_Search.schedule.Execute(() => m_Search.Q<TextField>()?.Focus());
+            });
             RegisterCallback<DetachFromPanelEvent>(_ => EditorApplication.projectChanged -= Reload);
 
             Reload();
         }
 
-        // 重新扫描项目里全部 NodeGraphAsset，再按模块分组重建 UI。保留当前选中高亮、搜索词与各组开合状态。
+        // 重新扫描项目里全部 NodeGraphAsset，再按模块分组重建 UI。保留当前选中高亮与搜索词。
         public void Reload()
         {
             m_All.Clear();
@@ -137,7 +162,6 @@ namespace NodeEditor.EditorUI
             Rebuild();
         }
 
-        // 按模块分组重建分组卡片。每组一张 CollapsibleCard（头部=模块名+计数，内容=该组的行）。
         void Rebuild()
         {
             m_Scroll.Clear();
@@ -152,64 +176,60 @@ namespace NodeEditor.EditorUI
             // 按模块分组；组键排序时空模块（"其他"）永远垫底，其余按 key 字典序。
             var groups = shown.GroupBy(ModuleKey)
                 .OrderBy(g => string.IsNullOrEmpty(g.Key) ? 1 : 0)
-                .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase);
+                .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            // 只有一组时不写组标题：模块模式下永远只有一组，标题与胶囊上的模块名重复。
+            bool showGroupTitles = groups.Count > 1;
 
             int total = 0;
             foreach (var g in groups)
             {
-                total += g.Count();
-                m_Scroll.Add(BuildGroup(g.Key, g.ToList()));
+                var assets = g.ToList();
+                total += assets.Count;
+                if (showGroupTitles)
+                {
+                    var title = new Label($"{ModuleName(g.Key)}  ({assets.Count})");
+                    title.AddToClassList(GroupTitleClass);
+                    m_Scroll.Add(title);
+                }
+                foreach (var a in assets)
+                {
+                    var row = MakeRow(a);
+                    m_Scroll.Add(row);
+                    m_Rows[a] = row;
+                }
             }
 
             m_Empty.style.display = total == 0 ? DisplayStyle.Flex : DisplayStyle.None;
             SyncSelection();
         }
 
-        // 单个模块分组：CollapsibleCard，头部放模块名+计数，内容放各行。开合状态写回 m_Collapsed 以跨重建保持。
-        VisualElement BuildGroup(string moduleKey, List<NodeGraphAsset> assets)
-        {
-            bool expanded = !m_Collapsed.Contains(moduleKey);
-            var card = new CollapsibleCard(expanded);
-            // 分组头里只有一个纯标题，没有可编辑控件 —— 点整行开合是树形列表的通行做法。
-            card.HeaderTogglesExpanded = true;
-            card.AddToClassList("graphlist-group");
-
-            var title = new Label($"{ModuleName(moduleKey)}  ({assets.Count})");
-            title.AddToClassList("graphlist-group-title");
-            card.HeaderMid.Add(title);
-
-            string key = moduleKey ?? "";
-            card.OnExpandedChanged = open =>
-            {
-                if (open) m_Collapsed.Remove(key);
-                else m_Collapsed.Add(key);
-            };
-
-            foreach (var a in assets)
-            {
-                var row = MakeRow(a);
-                card.Content.Add(row);
-                m_Rows[a] = row;
-            }
-            return card;
-        }
-
-        // 一行 = 一张图。单击加载（OnSelected）；双击在 Project 里定位（PingObject）。
+        // 一行 = 一张图：色点（当前图点亮）+ 名字 + 节点数。单击即加载并收起弹层。
         VisualElement MakeRow(NodeGraphAsset asset)
         {
-            var row = new VisualElement();
-            row.AddToClassList("graphlist-row");
+            var row = new Button(() =>
+            {
+                if (asset != m_Current) OnSelected?.Invoke(asset);
+                OnRequestClose?.Invoke();
+            });
+            row.AddToClassList(RowClass);
+
+            var dot = new VisualElement();
+            dot.AddToClassList(RowDotClass);
+            row.Add(dot);
+
             var label = new Label(asset.name);
-            label.AddToClassList("graphlist-row-label");
+            label.AddToClassList(RowNameClass);
             row.Add(label);
+
+            var meta = new Label(string.Format(
+                Localizer.UI("ui.nodeCount", "{0} nodes"), asset.instances != null ? asset.instances.Count : 0));
+            meta.AddToClassList(RowMetaClass);
+            row.Add(meta);
+
             // 同名图很常见——把资产路径放进 tooltip，数量很多时便于区分/定位。
             row.tooltip = AssetDatabase.GetAssetPath(asset);
-
-            row.RegisterCallback<PointerDownEvent>(e =>
-            {
-                if (e.clickCount >= 2) { EditorGUIUtility.PingObject(asset); return; }   // 双击=定位
-                if (asset != m_Current) OnSelected?.Invoke(asset);                        // 单击=加载
-            });
             return row;
         }
 
@@ -250,6 +270,7 @@ namespace NodeEditor.EditorUI
                 foreach (var recipe in recipes)
                     AddCreateButton(recipe, recipe.labelKey, recipe.labelFallback);
             }
+            m_Actions.Add(m_Ping);
             m_Actions.Add(m_Delete);
         }
 
@@ -263,12 +284,13 @@ namespace NodeEditor.EditorUI
             m_Actions.Add(create);
         }
 
-        // 切换行高亮：只改 class，不重建（性能 + 不打断滚动位置）。无选中图时删除按钮置灰。
+        // 切换行高亮：只改 class，不重建（性能 + 不打断滚动位置）。无选中图时删除/定位置灰。
         void SyncSelection()
         {
             foreach (var kv in m_Rows)
                 kv.Value.EnableInClassList("is-selected", kv.Key == m_Current);
-            if (m_Delete != null) m_Delete.SetEnabled(m_Current != null);
+            m_Delete?.SetEnabled(m_Current != null);
+            m_Ping?.SetEnabled(m_Current != null);
         }
 
         // 取一张图的模块 key（null/空都归一为 ""，即"其他"组）。
@@ -287,6 +309,13 @@ namespace NodeEditor.EditorUI
 
             var value = Localizer.UI(key + "." + m_ModuleFilter, null);
             return string.IsNullOrEmpty(value) ? Localizer.UI(key, fallback) : value;
+        }
+
+        void PingCurrent()
+        {
+            if (m_Current == null) return;
+            EditorGUIUtility.PingObject(m_Current);
+            OnRequestClose?.Invoke();
         }
 
         void CreateGraph(GraphCreateRecipe recipe)
@@ -353,6 +382,7 @@ namespace NodeEditor.EditorUI
 
             Reload();                   // 让新资产进入列表
             OnSelected?.Invoke(asset);  // 立即在编辑器里打开它（走窗口的加载 / 导航历史路径）
+            OnRequestClose?.Invoke();
         }
 
         static void PersistCreatedGraph(NodeGraphAsset asset, string path)
@@ -405,6 +435,7 @@ namespace NodeEditor.EditorUI
             DestroyGraphWithUndo(m_Current);
             Reload();                       // 重扫列表（projectChanged 也会触发，但这里立即同步）
             OnDeleted?.Invoke(replacement); // 窗口据此换载替补 / 清空画布
+            OnRequestClose?.Invoke();
         }
 
         static void DestroyGraphWithUndo(NodeGraphAsset graph)

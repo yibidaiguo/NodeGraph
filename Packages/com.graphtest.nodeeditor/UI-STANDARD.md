@@ -33,15 +33,15 @@
 ### 2.2 状态样式三规则
 
 1. **状态不改尺寸**：hover/selected/focus/disabled 只换色，不改 width/height/padding/border-width。
-2. **选中脊线常驻占位**：需要左脊线的选中态，平时就画 `border-left: 3px 透明`，选中只换色（`graphlist-row`、`data-source-row` 即范本）。
-3. **状态类命名**：持续状态用 `.is-selected`；变体用 BEM 双横线（`data-source-row--selected`、`breadcrumb-crumb--current`）。
+2. **选中脊线常驻占位**：需要左脊线/下划线的选中态，平时就画 3px（或 2px）透明边，选中只换色（`ne-picker-row`、`data-source-row`、`ne-tab` 即范本）。
+3. **状态类命名**：持续状态用 `.is-selected`；变体用 BEM 双横线（`data-source-row--selected`、`ne-status-chip--warn`、`ne-overlay--collapsed`）。
 
 ### 2.3 命令按钮 vs 导航 chrome（本标准的核心二分）
 
 | | 命令按钮（点了会执行动作） | 导航 chrome（点了是"去哪/看哪"） |
 |---|---|---|
-| 质感 | premium button tokens：`--ne-button-*` 底色+高光顶边+阴影底边+5px 圆角 | 扁平：透明底，hover 软底（`--ne-bg-row-hover`），选中 `--ne-accent-soft` + 脊线 |
-| 成员 | toolbar 命令/图标钮、`add-button`（新建/删除/+变量/+添加）、`choice-arrow`、`unit-list-del`、hover-bar 钮 | `breadcrumb-*`、`collapsible-arrow`、`graphlist-row`、`data-scope-title`+`data-source-row`、`ne-seg-bar/-btn`、`ne-master-list-row`（卡片行例外：有软卡底） |
+| 质感 | premium button tokens：`--ne-button-*` 底色+高光顶边+阴影底边+5px 圆角 | 扁平：透明底，hover 软底（`--ne-bg-row-hover`），选中 `--ne-accent-soft` + 脊线/下划线 |
+| 成员 | `ne-appbar-cmd`、`ne-picker-pill`（点了会弹出切换器）、toolbar 命令/图标钮、`add-button`（新建/删除/+变量/+添加）、`choice-arrow`、`unit-list-del`、hover-bar 钮 | `ne-appbar-nav`、`ne-panel-seg-btn`、`ne-tabs/-tab`、`ne-canvas-dock-btn`、`ne-popover-row`、`breadcrumb-*`、`collapsible-arrow`、`ne-picker-row`、`data-scope-title`+`data-source-row`、`ne-master-list-row`（卡片行例外：有软卡底） |
 | 禁止 | 平面黑矩形、亮蓝皮肤 | 把导航行做回凸起按钮 |
 
 `Button` 控件默认**居中**继承给子元素——列表型行必须显式 `-unity-text-align: middle-left`。
@@ -56,21 +56,25 @@
 
 | 场景 | 用法 |
 |---|---|
-| 新 EditorWindow | `CreateGUI` 开头调用 `EditorUi.ConfigureWindow(rootVisualElement)`；工具栏 `Toolbar` + `EditorUi.ToolbarClass` |
-| 工具栏命令 | `EditorUi.ApplyToolbarTextButton/ApplyToolbarIconButton`（文本/图标）、开关 `ApplyToolbarToggle`；分隔 `toolbar-sep`；对象框 `toolbar-graphfield` |
+| 新 EditorWindow | `CreateGUI` 开头调用 `EditorUi.ConfigureWindow(rootVisualElement)`；顶栏一律 `AppBar` |
+| 窗口顶栏 | `AppBar`：一行三区 —— 左「在哪 / 怎么走」（`AppBar.NavButton` + `PickerPill`/对象框 + `Breadcrumb`），`AddSpacer()`，右「看什么 / 状态」（`PanelToggleBar` + `AppBar.CommandButton` + `StatusChip`）。**不要**把导航、命令、视图开关、全局设置平铺成同一权重 —— 长尾开关进「⋯」溢出 `Popover` |
+| 次级窗口里的命令钮 | `EditorUi.ApplyToolbarTextButton/ApplyToolbarIconButton`（文本/图标）、开关 `ApplyToolbarToggle`；分隔 `toolbar-sep`；对象框 `toolbar-graphfield` |
 | 多图路径条 | `Breadcrumb` 控件（自带 `breadcrumb-crumb/-sep/--current`） |
-| 分栏 | `TwoPaneSplitView` 嵌套；分栏底色/分隔线画在**滚动容器**上（`data-pane-scroll(--left)`），画在内容元素上会露底 |
+| 画布上的随需面板 | `OverlayPanel`（贴角、可拖、可折叠、位置/显隐进 EditorPrefs）。跟随选中出没的面板用 `SetDisplayed`（不写 pref），用户意图才走 `Visible` |
+| 画布命令 | `CanvasDock`（缩放读数 / 全览 / 整理 / 缩略图 / 加节点），钉在画布左下 |
+| 从顶栏长出来的临时面板 | `Popover.Open(anchor, width, build)` + `Popover.MenuRow/Section/Separator`。**禁用原生 `GenericMenu`/`SearchWindow`**（编辑器铬不可主题化） |
+| 分栏（数据窗口这类多列浏览） | `TwoPaneSplitView` 嵌套；分栏底色/分隔线画在**滚动容器**上（`data-pane-scroll(--left)`），画在内容元素上会露底。**编辑器主窗口不用分栏**：画布铺满，chrome 走浮层 |
 | Manager 窗口标题/分节标题 | `ne-manager-title` / `ne-manager-heading`（字号/字重在 USS；margin 属布局留内联） |
 
 ### 3.2 面板解剖（左右栏）
 
 | 部位 | 类/控件 |
 |---|---|
-| 面板根 | `inspector-root`（右检视）/ `variable-root`（左变量）/ `graphlist-root`（左列表） |
-| 面板标题条 | `inspector-header`（一个面板一条，嵌入的子面板**不再自带标题**——`VariablePane` 教训） |
+| 面板根 | `inspector-root`（检视）/ `variable-root`（变量）/ `ne-picker-root`（图切换器内容） |
+| 面板标题条 | 浮层里的面板**不自带标题**——标题条由 `OverlayPanel` 给。`inspector-header` 现在只承载「正在编辑哪个节点」的身份行（图标 + 名 + `inspector-header-sub` 类型 id），无选中时整行隐藏 |
 | 分节卡 | `inspector-section` + 小号淡色 `inspector-section-title`（不许彩色竖条/大字标题） |
-| 底部操作栏 | `graphlist-actions`（整宽条，内部 `add-button` 均分）|
-| 互斥档位切换 | `ne-seg-bar` + `ne-seg-btn`(+`.is-selected`)（不许一排散落按钮） |
+| 底部操作栏 | `ne-picker-footer`（整宽条，`add-button` 均分主操作，`ne-picker-footer-ghost` 次级不抢宽度，`--danger` 只在 hover 亮警示色）|
+| 互斥档位切换 | `ne-tabs` + `ne-tab`(+`.is-selected`)：扁平页签 + 常驻透明下划线，选中只换色（不许一排散落按钮，也不许把"看哪一档"做成主操作） |
 | 空态 | `EditorUi.EmptyState(Localizer.UI(...))`——列表/面板空时必须给空态，不留空白 |
 
 ### 3.3 表单与字段
@@ -89,7 +93,7 @@
 
 | 场景 | 用法 |
 |---|---|
-| 树状资产列表 | `graphlist-*` 系 + `CollapsibleCard` 分组（组头样式由 `.graphlist-group .collapsible-header` 提供） |
+| 图/资产切换 | `PickerPill`（顶栏胶囊）+ `Popover` 里的 `GraphListPane`（`ne-picker-*` 系）。分组标题**只在真有多个分组时**才出——只有一组时它与胶囊上的名字重复 |
 | 数据窗口左列 | `data-scope-group/-title` + `data-source-row(--selected)` |
 | 条目列表+详情 | `MasterDetailList`（`ne-master-list-*`；行=软卡片、文字左对齐、带搜索/分组/空态/选中同步） |
 | 弹出搜索选单 | `StringSearchWindow`（`string-search-*`；**禁用原生 SearchWindow**——编辑器铬不可主题化） |
@@ -121,7 +125,9 @@
 - 内联 style 只准：`flexGrow/Shrink/Basis/Direction`、`alignItems/Self`、`width/height/min*`、`margin*/padding*`、`display`、`position/left/top/right`、`whiteSpace`。出现颜色/字号/字重/对齐 → 挪进 USS。
 - 滚动区：列表放 `ScrollView` 内、外层 `flexGrow:1`；固定操作（`add-button`/操作栏）钉在 ScrollView **外**的面板底部。
 - 多档竖叠会嵌套滚动塌成 0 高——一次只挂一个可滚面板（`LayeredVariablePane` 教训）。
-- 双击/单击行为：列表行单击=选中/加载，双击=Ping 资产（`GraphListPane` 范本）。
+- **UI Toolkit 没有 `box-shadow`**：写了不报错、完全不生效。浮起感一律靠「更实的描边（`--ne-border-strong`）+ 底色阶梯」，别指望阴影。
+- 骑在画布上的元素（浮层 / 画布坞）必须 `StopPropagation` 掉 `PointerDownEvent` 与 `WheelEvent`——否则在浮层里点一下会顺手起框选、滚一下会把画布缩了。
+- 列表行单击=选中/加载。弹层里的列表**不用双击**（弹层只活几秒，双击发现不了）——「定位到 Project」这类操作放进弹层底部操作栏。
 
 ## 5. 扩展流程（照抄清单）
 

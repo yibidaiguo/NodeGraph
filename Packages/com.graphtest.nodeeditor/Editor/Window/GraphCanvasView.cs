@@ -76,6 +76,9 @@ namespace NodeEditor.EditorUI
 
             graphViewChanged = OnGraphViewChanged;
 
+            // 缩放读数给画布坞用。GraphView 只在这里报告视图变换，别处拿不到当前 scale。
+            viewTransformChanged = view => OnZoomChanged?.Invoke(view.viewTransform.scale.x);
+
             // Delete/Backspace 键删除选中（连线 + 非钉住节点）。GraphView 的删除"命令"只有在
             // deleteSelection 委托被赋值时才生效——不设它，按 Delete 键什么都不会发生（连线尤其明显，
             // 因为右键菜单的"删除"走的是 DeleteSelection() 方法，能删节点，让人误以为删除是通的）。
@@ -128,12 +131,46 @@ namespace NodeEditor.EditorUI
             m_Banner.style.display = DisplayStyle.Flex;
         }
 
-        // 显示/隐藏缩略图（由工具栏的 MiniMap 开关调用）。当前是否可见见 MiniMapVisible。
+        // 显示/隐藏缩略图（由画布坞的 MiniMap 开关调用）。当前是否可见见 MiniMapVisible。
         public void SetMiniMapVisible(bool show)
         {
             if (m_MiniMap != null) m_MiniMap.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
         }
         public bool MiniMapVisible => m_MiniMap != null && m_MiniMap.style.display != DisplayStyle.None;
+
+        // 画布缩放变化（供画布坞显示百分比）。
+        public System.Action<float> OnZoomChanged;
+        public float ZoomScale => viewTransform.scale.x;
+
+        // 浮层宿主：外壳把变量卡 / 检视卡 / 画布坞挂在画布之上（屏幕空间，不随内容平移缩放）——
+        // 与 banner、minimap 同一层，只是排在它们之后，保证浮层压得住缩略图。
+        public void AddOverlay(VisualElement overlay)
+        {
+            if (overlay == null) return;
+            Add(overlay);
+            overlay.BringToFront();
+        }
+
+        // 「整理」：按流向重排全图。尺寸取真实 NodeView 布局，宽窄不一的节点才不会互相压住；
+        // 重排后走 Load 重建视图并自动全览。
+        public void TidyLayout()
+        {
+            if (Asset == null || Registry == null) return;
+            GraphAutoLayout.Apply(Asset, ResolveOrientation(Asset), instance =>
+                m_Views.TryGetValue(instance.instanceId, out var view) ? view.layout.size : Vector2.zero);
+            Load(Asset, Registry);
+            OnGraphChanged?.Invoke();
+        }
+
+        // 选中并框住某个实例（顶栏状态 chip 巡回问题节点用）。找不到返回 false。
+        public bool FocusInstance(string instanceId)
+        {
+            if (string.IsNullOrEmpty(instanceId) || !m_Views.TryGetValue(instanceId, out var view)) return false;
+            ClearSelection();
+            AddToSelection(view);
+            FrameSelection();
+            return true;
+        }
 
         public VisualElement CreateGroup(string title, IEnumerable<NodeView> nodes)
         {

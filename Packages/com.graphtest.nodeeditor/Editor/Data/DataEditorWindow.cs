@@ -113,12 +113,12 @@ namespace NodeEditor.EditorUI
             RebuildLeft();
         }
 
-        // 顶部：当前图选择框（单图作用域据此取数据）+ 刷新。总中心可在此选任意图；
-        // 领域窗口预填传入的图，亦可改选。
+        // 顶栏：与节点编辑器同一条 AppBar（左「看哪张图」，右「命令」），两个窗口读起来是一套东西。
+        // 这里的图选择保留 ObjectField 而非节点编辑器那颗切换器胶囊：它同时是拖放靶子，
+        // 而且要能清空 —— 清空即回到「总数据中心」，切换器弹层给不了这个语义。
         VisualElement BuildHeader()
         {
-            var bar = new Toolbar();
-            bar.AddToClassList(EditorUi.ToolbarClass);
+            var bar = new AppBar();
 
             var graphField = new ObjectField(Localizer.UI("ui.dataGraphField", "Graph")) { objectType = typeof(NodeGraphAsset), value = m_Graph };
             graphField.AddToClassList("toolbar-graphfield");
@@ -129,9 +129,9 @@ namespace NodeEditor.EditorUI
             });
             bar.Add(graphField);
 
-            var refresh = new ToolbarButton(RebuildLeft) { text = Localizer.UI("ui.refresh", "Refresh") };
-            EditorUi.ApplyToolbarTextButton(refresh);
-            bar.Add(refresh);
+            bar.AddSpacer();
+            bar.Add(AppBar.CommandButton("⟳", Localizer.UI("ui.refresh", "Refresh"),
+                Localizer.UI("ui.refreshTip", "Rescan data sources"), RebuildLeft));
 
             return bar;
         }

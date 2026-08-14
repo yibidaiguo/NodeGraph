@@ -60,7 +60,6 @@ namespace TaskEditor.EditorUI
         {
             Undo.RegisterCompleteObjectUndo(table, "Seed Task Localization");
             EnsureUI(table, "ui.taskEditor", "任务编辑器");
-            EnsureUI(table, "ui.graphs.task", "任务");
             EnsureUI(table, "ui.noGraphs.task", "项目中暂无任务图");
             EnsureUI(table, "ui.newGraphPrompt.task", "创建一个新的任务图");
             EnsureUI(table, "ui.newTaskLine", "新建任务线");
