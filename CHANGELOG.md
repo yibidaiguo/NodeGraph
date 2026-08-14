@@ -1,5 +1,19 @@
 # 更新日志 / Changelog
 
+## [0.0.6] - 2026-08-14
+
+### 中文
+
+- 节点换成统一圆角矩形：角色由整宽实色标题色带和标题上的语义图标表达，不再使用四种异形轮廓。
+- 端口改为行内小圆点，连线改用冷色，整个编辑器去掉浮起金属质感，改为扁平分隔线。
+- 新增图朝向：对话与任务默认横向，状态机默认纵向。朝向存在图资产上、由领域播种，已有资产无需迁移。
+
+### English
+
+- Nodes are now one rounded rectangle. Role reads from a full-width solid title band and the semantic icon on it, replacing the four outline shapes.
+- Ports are inline dots, wires use the cool accent, and the editor drops its raised metal chrome for flat dividers.
+- New graph orientation: dialogue and task default to horizontal, state machine to vertical. It is stored on the graph asset and seeded by the domain, so existing assets need no migration.
+
 ## [0.0.5] - 2026-07-17
 
 ### 中文
