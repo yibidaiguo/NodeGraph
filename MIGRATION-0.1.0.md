@@ -12,7 +12,7 @@
 
 | 数据 | 是否需要迁移 |
 |---|---|
-| 节点位置 `position` | **不用**。`Vector2` 换成了纯 C# 的 `Vec2`，字段名与顺序一致，YAML 逐字节相同（`{x: .., y: ..}`）。 |
+| 节点位置 `position` | **不用**。`Vector2` 换成纯 C# 的 `Vec2`，字段名与顺序一致，**值**完全等价、双向读得通。注意文本形态会变：Unity 把 `Vector2` 写成内联 `{x: 20, y: 20}`，把自定义结构写成块状映射（`position:` 换行后 `x:` / `y:` 各一行）。首次保存图时这些行会重排，diff 上看着动了不少，但没有任何数据变化。 |
 | 端口/参数类型（`TypeRef`） | **不用**。纯层保留了 `NodeEditor.Runtime` 这个程序集名，已烘好的 `[SerializeReference]` 记录（`asm: NodeEditor.Runtime`）继续解析。 |
 | 节点定义 `.asset` | **不用**。`NodeDefinition` 仍是 ScriptableObject，`.cs.meta` 的 GUID 原样保留。 |
 | 黑板、本地化表、注册表 | **不用**。 |

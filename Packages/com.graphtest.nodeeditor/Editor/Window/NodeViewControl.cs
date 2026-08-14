@@ -37,7 +37,7 @@ namespace NodeEditor.EditorUI
 
         protected virtual long RefreshIntervalMs => DefaultRefreshMs;
         protected virtual string CueName => "node-cue";
-        protected virtual string UnsetText => Localizer.UI("ui.cue.unset", "(unset)");
+        protected virtual string UnsetText => Localizer.UI("ui.cue.unset", "not set");
 
         public override void OnAttach(NodeView view, VisualElement extraContent)
         {

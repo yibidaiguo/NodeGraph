@@ -50,22 +50,18 @@ namespace NodeEditor.EditorUI
 
             DrawRunningFlow(context, bounds);
 
-            // 4. 主描边
-            painter.strokeColor = m_ShapeOutline;
-            painter.lineWidth = Mathf.Max(1f, m_ShapeOutlineWidth);
+            // 4. 主描边。校验有问题时**染色主描边**，而不是另画一圈。
+            // 过去校验告警是在内缩 3px 处补一整圈 2px 的环，和节点外框构成双层边框——
+            // 一屏十几个节点时那层内环把画面切得很碎，而它想说的其实只有"这个节点有问题"。
+            // 运行态（running/success/failure）早就是靠改这条主描边表达的；校验走同一套，
+            // 节点始终只有一条边，状态由它的颜色和粗细承载。
+            bool flagged = m_ValidationOutline.a > 0f;
+            painter.strokeColor = flagged ? m_ValidationOutline : m_ShapeOutline;
+            painter.lineWidth = flagged
+                ? Mathf.Max(1.6f, m_ShapeOutlineWidth + 0.8f)   // 略加粗，弱视觉下也分得出
+                : Mathf.Max(1f, m_ShapeOutlineWidth);
             BeginRoundedRectPath(painter, bounds, m_CornerRadius);
             painter.Stroke();
-
-            // 5. 校验轮廓（内缩 3px）
-            if (m_ValidationOutline.a > 0f)
-            {
-                painter.strokeColor = m_ValidationOutline;
-                painter.lineWidth = 2f;
-                var vBounds = ValidationSilhouetteBounds(bounds);
-                var vRadius = Mathf.Max(0f, m_CornerRadius - 3f);
-                BeginRoundedRectPath(painter, vBounds, vRadius);
-                painter.Stroke();
-            }
 
             // 6. 选中轮廓（外扩 3px）
             if (selected && m_SelectionOutline.a > 0f)
@@ -153,10 +149,6 @@ namespace NodeEditor.EditorUI
         static Rect NodeSurfaceBounds(Rect contentBounds)
             => Rect.MinMaxRect(contentBounds.xMin + 1f, contentBounds.yMin + 1f,
                 contentBounds.xMax - 1f, contentBounds.yMax - 1f);
-
-        static Rect ValidationSilhouetteBounds(Rect shapeBounds)
-            => Rect.MinMaxRect(shapeBounds.xMin + 3f, shapeBounds.yMin + 3f,
-                shapeBounds.xMax - 3f, shapeBounds.yMax - 3f);
 
         static Rect SelectionSilhouetteBounds(Rect shapeBounds)
             => Rect.MinMaxRect(shapeBounds.xMin - 3f, shapeBounds.yMin - 3f,

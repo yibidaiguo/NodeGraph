@@ -76,7 +76,8 @@ namespace StateMachine.EditorUI
         protected override string Describe(NodeInstance inst, NodeDefinition def)
         {
             var sub = GraphRefs.Resolve(inst, "graph");
-            return "↳ " + (sub != null ? sub.name : Localizer.UI("ui.cue.unset", "(unset)"));
+            // 有目标才画「↳」——没有指向时那个箭头不指向任何东西，只是噪音。
+            return sub != null ? "↳ " + sub.name : Localizer.UI("ui.cue.unset", "not set");
         }
     }
 

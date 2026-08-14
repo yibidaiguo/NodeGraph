@@ -41,7 +41,8 @@
   程序集名——已发布资产里 90 条 `[SerializeReference]` 记录写死了 `asm: NodeEditor.Runtime`，
   换名会让每个节点定义的端口和参数静默变成 null。
 - 新增纯 C# 类型：`NodeSchema`（`NodeDefinition` 的数据投影）、`GraphData`、`Vec2`、
-  `BlackboardDecl`、`IGraphSource`、`IGraphLog`。
+  `BlackboardDecl`、`IGraphSource`、`IGraphLog`。`Vec2` 与 `Vector2` 值等价，但序列化文本形态不同
+  （内联 `{x, y}` → 块状映射），首次保存图会重排这几行，无数据变化。
 - 载体实现纯接口（`NodeRegistry : ISchemaSource`、`BlackboardAsset : IBlackboardDecl`、
   `DialogueDatabase : IDialogueTextSource`），因此**多数既有调用点无需修改**。
 - 子图引用由 `UnityEngine.Object` 直连改为稳定 `graphId`。附一次性迁移：

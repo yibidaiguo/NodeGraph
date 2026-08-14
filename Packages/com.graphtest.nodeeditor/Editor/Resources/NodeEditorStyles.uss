@@ -73,6 +73,8 @@
     --ne-accent-cyan:      rgb(95, 141, 135);
     --ne-accent-gold:      rgb(163, 126, 71);
     --ne-accent-coral:     rgb(175, 48, 41);
+    /* 告警红。比 coral（错误）浅且偏橙，两种严重程度并排时仍分得清。 */
+    --ne-accent-rust:      rgb(190, 88, 52);
     --ne-focus:            rgb(162, 92, 61);
     --ne-focus-soft:       rgba(162, 92, 61, 0.20);
     --ne-gold-soft:        rgba(163, 126, 71, 0.14);
@@ -104,7 +106,7 @@
     --ne-status-failure-fill: rgb(223, 162, 154);
     --ne-status-failure-glow: rgba(185, 65, 57, 0.57);
     --ne-validation-error: var(--ne-accent-coral);
-    --ne-validation-warn:  var(--ne-accent-gold);
+    --ne-validation-warn:  var(--ne-accent-rust);
 
     /* ---- 网格线 ---- */
     --ne-grid-line:        rgba(63, 55, 43, 0.08);
@@ -186,6 +188,8 @@
     --ne-accent-cyan:      rgb(95, 141, 135);
     --ne-accent-gold:      rgb(163, 126, 71);
     --ne-accent-coral:     rgb(175, 48, 41);
+    /* 告警红。比 coral（错误）浅且偏橙，两种严重程度并排时仍分得清。 */
+    --ne-accent-rust:      rgb(190, 88, 52);
     --ne-focus:            rgb(162, 92, 61);
     --ne-focus-soft:       rgba(162, 92, 61, 0.20);
     --ne-gold-soft:        rgba(163, 126, 71, 0.14);
@@ -205,7 +209,7 @@
     --ne-status-success:   rgb(98, 146, 112);
     --ne-status-failure:   var(--ne-accent-coral);
     --ne-validation-error: var(--ne-accent-coral);
-    --ne-validation-warn:  var(--ne-accent-gold);
+    --ne-validation-warn:  var(--ne-accent-rust);
 
     --ne-grid-line:        rgba(63, 55, 43, 0.08);
     --ne-grid-thick:       rgba(63, 55, 43, 0.145);
@@ -275,6 +279,8 @@
     --ne-accent-cyan:      rgb(108, 158, 150);
     --ne-accent-gold:      rgb(206, 164, 94);
     --ne-accent-coral:     rgb(206, 84, 66);
+    /* 暗色下整体提亮，保持与 coral 的可分辨差。 */
+    --ne-accent-rust:      rgb(222, 126, 86);
     --ne-focus:            rgb(216, 154, 98);
     --ne-focus-soft:       rgba(216, 154, 98, 0.22);
     --ne-gold-soft:        rgba(206, 164, 94, 0.15);
@@ -301,7 +307,7 @@
     --ne-status-failure-fill: rgb(108, 48, 45);
     --ne-status-failure-glow: rgba(185, 65, 57, 0.57);
     --ne-validation-error: var(--ne-accent-coral);
-    --ne-validation-warn:  var(--ne-accent-gold);
+    --ne-validation-warn:  var(--ne-accent-rust);
 
     --ne-grid-line:        rgba(255, 240, 220, 0.04);
     --ne-grid-thick:       rgba(255, 240, 220, 0.075);
@@ -384,6 +390,21 @@
 #extra-content {
     background-color: var(--ne-transparent);
     padding: 4px 8px 6px 8px;
+}
+
+/* GraphView 原生 Node 会在标题/端口/内容之间画 #divider 横线，我们从未覆盖过它，
+   所以那条线一直都在——只是过去被 cue 的内嵌卡片压住看不出来，卡片一拆就露出来了。
+   本套件的节点靠留白和字号分层，不用横线切块，这里把原生分隔线全部关掉。 */
+.node-base #divider,
+.node-base #node-border > #divider,
+.node-base #contents > #divider {
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+    min-height: 0;
+    height: 0;
 }
 
 /* ---- 角色色带 ---- */
@@ -1211,33 +1232,29 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
 /* ============================================================
    SHARED UI STANDARD CONTRACT
    ============================================================ */
+/* 节点卡片下方的摘要行。**不画框**：节点本身已经是「扁平圆角矩形 + 整宽标题色带」，
+   在它里面再嵌一张带底色、圆角和强调色左条的小卡片，等于两层边框互相打架，
+   一屏十几个节点时尤其吵。这里只保留一行小字，靠字号和弱化色与端口区分层次。 */
 .node-cue {
     font-size: var(--ne-font-sm);
     color: var(--ne-text-secondary);
     -unity-font-style: normal;
     white-space: normal;
-    background-color: var(--ne-bg-row);
-    border-left-width: 3px;
-    border-left-color: var(--ne-accent);
-    border-top-width: 1px;
-    
-    border-bottom-width: 1px;
-    
-    border-radius: var(--ne-radius-control);
-    padding: 3px 7px;
-    margin-top: 4px;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-radius: 0;
+    padding: 0;
+    margin-top: 5px;
 }
 
-/* 未填写的槽。有值时是「实心行 + 强调色左边框」，空槽反过来做成空心弱化：
-   去掉底色、左边框降到分隔线色、文字转斜体并压低对比。目的是让一个节点上
-   哪些槽还没填能被一眼扫出来，而不必逐条读文字——「尚未指定」四个字本身
-   和真实值同样醒目，正是它显得刺眼的原因。 */
+/* 未填写的槽：比有值的摘要再弱一档，斜体 + 压低对比，让空槽靠视觉重量就能被跳过。 */
 .node-cue--unset {
     color: var(--ne-text-disabled);
     -unity-font-style: italic;
-    background-color: rgba(0, 0, 0, 0);
-    border-left-color: var(--ne-border);
-    opacity: 0.75;
+    opacity: 0.6;
 }
 
 .ne-form-help {
