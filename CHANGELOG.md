@@ -1,5 +1,32 @@
 # 更新日志 / Changelog
 
+## [0.1.1] - 2026-08-15
+
+### 中文
+
+**修复 0.1.0 的打包缺陷。用 git URL 安装过 0.1.0 的请升到本版。**
+
+- 0.1.0 的包里有 12 个 `.cs` 缺少配套 `.meta`。这些文件是在一个 Unity 从未打开过的
+  工作树里新建的，因而没有生成 meta 就被发布了。从 git URL 安装的包对 Unity 是只读的，
+  它无法补写 meta——于是 GUID 每次导入重新生成，ScriptableObject 的 `m_Script` 绑不上，
+  表现为编辑器界面文案退回英文、菜单项错乱。本版补齐全部 meta。
+  （`Shim~/UnityShim.cs` 没有 meta 是正确的：Unity 忽略 `~` 目录。）
+- 修复模块作用域：`NodeAdmission` 过去只在"图已打开"时才按模块裁剪候选节点，
+  模块模式下还没建图时不做任何约束——这就是状态机编辑器里弹出对话节点的成因。
+  现在准入上下文携带 `moduleScope`，无图时用外壳锁定的模块。自由模式无图仍不裁剪，行为不变。
+
+### English
+
+**Packaging fix for 0.1.0. Upgrade if you installed 0.1.0 from a git URL.**
+
+- 0.1.0 shipped 12 `.cs` files without their `.meta` companions. They were created in a
+  worktree Unity never opened, so no meta was generated before publishing. A package
+  installed from a git URL is immutable, so Unity cannot write the missing metas: GUIDs get
+  regenerated per import and ScriptableObject `m_Script` bindings fail, which showed up as
+  editor chrome falling back to English and stray menu entries. All metas are now included.
+- Node admission is scoped to the shell's module even before a graph exists, which is what
+  let dialogue nodes appear in the state machine editor.
+
 ## [0.1.0] - 2026-08-15
 
 ### 中文

@@ -20,7 +20,7 @@ NodeGraph 提供可复用的节点图运行时、编辑器框架和模块管理�
 在 Unity 中打开 **Window > Package Management > Package Manager**，选择 **Install package from git URL**，然后输入：
 
 ```text
-https://github.com/yibidaiguo/NodeGraph.git?path=/Packages/com.graphtest.nodeeditor#v0.1.0
+https://github.com/yibidaiguo/NodeGraph.git?path=/Packages/com.graphtest.nodeeditor#v0.1.1
 ```
 
 安装后打开 **Tools > NodeGraph > Manager**，即可从同一仓库和版本安装可选模块。
@@ -55,7 +55,7 @@ NodeGraph provides a reusable graph runtime, editor framework, and module manage
 In Unity, open **Window > Package Management > Package Manager**, choose **Install package from git URL**, and enter:
 
 ```text
-https://github.com/yibidaiguo/NodeGraph.git?path=/Packages/com.graphtest.nodeeditor#v0.1.0
+https://github.com/yibidaiguo/NodeGraph.git?path=/Packages/com.graphtest.nodeeditor#v0.1.1
 ```
 
 After installation, open **Tools > NodeGraph > Manager** to install optional modules from the same repository and revision.
