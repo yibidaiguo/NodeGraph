@@ -1,5 +1,48 @@
 # 更新日志 / Changelog
 
+## [0.1.5] - 2026-08-15
+
+### 中文
+
+**编辑器外壳重构：固定三栏 → 画布优先 + 贴角浮层。** 界面动作有变，数据与运行时 API 不变。
+
+- 左栏（图列表 + 变量）整条删除。图列表收进顶栏胶囊点开的**切换器弹层**（搜索 / 新建 / 定位 / 删除都在里面）；
+  分组标题只在真有多个模块时才出——模块模式下只有一组，「对话组 / 对话 (2)」那两层标题是纯噪音。
+- 变量与检视变成画布上的**贴角浮层**（可拖、可折叠、位置与显隐跨会话保留）。**检视只在选中节点时出现**：
+  旧外壳为一句「选中一个节点即可在此编辑」常驻 320px。
+- 顶栏重排成三区：左「在哪张图 / 怎么走」，中留白，右「看什么 / 有没有问题」。深色、语言、整理、全览
+  这类长尾开关进「···」溢出菜单，不再和主命令平铺同权重。
+- 新增**画布坞**（画布左下）：缩放读数、全览、**整理**（按连接方向分层重排全图，新功能）、缩略图、加节点。
+- 校验状态由文字改成**可点的 chip**：点它逐个跳到出问题的节点，不再只报「2 错误」却不说错在哪。
+- 变量作用域档位从一排按钮改成页签；单档变量面板不再自带标题（标题由浮层给）。
+- 数据窗口顶栏换用同一条 AppBar（三栏浏览结构不变）。
+
+**给扩展作者**：`EditorUi.ToolbarClass`（`.ne-toolbar`）已移除，窗口顶栏一律用 `AppBar`；
+`ne-seg-bar/-btn` 由 `ne-tabs/-tab` 取代；`graphlist-*` 由 `ne-picker-*` 取代；`ui.graphs` 文案键已废弃。
+`GraphListPane` 的公开静态 API（`RegisterModuleInitializer` / `RegisterModuleAssetFolders` 等）不变。
+新组件（`AppBar` / `OverlayPanel` / `Popover` / `PickerPill` / `PanelToggleBar` / `StatusChip` / `CanvasDock`）
+的用法见 NodeEditor 包内的 UI-STANDARD.md。
+
+### English
+
+**Editor shell rebuilt: fixed three columns → canvas-first with corner overlays.** UI only; data and runtime APIs are unchanged.
+
+- The left column is gone. The graph list now lives in a picker popover behind the app-bar pill
+  (search / create / reveal / delete included); group headers only appear when more than one module is listed.
+- Variables and the inspector are draggable, collapsible canvas overlays whose position and visibility persist.
+  **The inspector only exists while a node is selected** — it no longer holds 320px to say "select a node".
+- The app bar is now three zones (where you are · spacer · what you are looking at + status). Theme, language,
+  tidy and frame-all moved into the "···" overflow menu.
+- New canvas dock: zoom readout, frame all, **tidy** (new layered auto-layout), minimap, add node.
+- The validation readout is a clickable chip that walks you through the problem nodes.
+- Variable scope tiers are tabs; the embedded variable pane no longer carries its own title.
+- The data window uses the same AppBar (its three-column browsing layout is unchanged).
+
+**For extension authors**: `EditorUi.ToolbarClass` (`.ne-toolbar`) is removed — window headers use `AppBar`.
+`ne-seg-bar/-btn` → `ne-tabs/-tab`; `graphlist-*` → `ne-picker-*`; the `ui.graphs` wording key is retired.
+`GraphListPane`'s public static API is unchanged. The new controls (`AppBar`, `OverlayPanel`, `Popover`,
+`PickerPill`, `PanelToggleBar`, `StatusChip`, `CanvasDock`) are documented in the NodeEditor package's UI-STANDARD.md.
+
 ## [0.0.6] - 2026-08-14
 
 ### 中文

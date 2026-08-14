@@ -1,11 +1,11 @@
 {
   "name": "com.graphtest.dialogue",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "displayName": "NodeGraph Dialogue",
   "description": "NodeGraph 对话图运行时与编辑器模块。 / Dialogue graph runtime and editor module for NodeGraph.",
   "unity": "6000.0",
   "dependencies": {
-    "com.graphtest.nodeeditor": "0.1.4",
+    "com.graphtest.nodeeditor": "0.1.5",
     "com.unity.modules.audio": "1.0.0",
     "com.unity.modules.imgui": "1.0.0"
   },
@@ -19,6 +19,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yibidaiguo/NodeGraph.git",
-    "revision": "v0.0.6"
+    "revision": "v0.1.5"
   }
 }
