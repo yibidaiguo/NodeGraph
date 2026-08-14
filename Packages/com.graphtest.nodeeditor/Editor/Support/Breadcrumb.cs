@@ -20,17 +20,20 @@ namespace NodeEditor.EditorUI
         {
             m_OnClick = onClick;
             AddToClassList("breadcrumb");
+            // 这条显示的是「最近访问过的图」（导航历史栈），不是层级路径。
+            tooltip = Localizer.UI("ui.recentGraphs", "Recently visited graphs");
         }
         public void SetPath(IEnumerable<string> titles)
         {
             Clear();
-            // 扁平路径条：crumb 间插「›」分隔，末位（当前图）挂 --current 提亮成 chip。
+            // 访问历史条：crumb 间插中点分隔（并列关系，不暗示层级），
+            // 末位（当前图）挂 --current 提亮成 chip。
             var list = titles?.ToList() ?? new List<string>();
             for (int i = 0; i < list.Count; i++)
             {
                 if (i > 0)
                 {
-                    var sep = new Label("›");
+                    var sep = new Label("·");
                     sep.AddToClassList("breadcrumb-sep");
                     Add(sep);
                 }

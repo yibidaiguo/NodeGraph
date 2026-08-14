@@ -29,6 +29,11 @@ namespace NodeEditor.EditorUI
         NavigationHistory m_Nav = new();
         ToolbarButton m_BackButton;
         ToolbarButton m_ForwardButton;
+        TwoPaneSplitView m_Outer;      // [ 左栏+画布 ] | 检视面板
+        TwoPaneSplitView m_Inner;      // 左栏 | 画布
+        Label m_StatusLabel;           // 工具栏右侧：本图的校验状态
+        const string LeftPaneHiddenPref = "NodeEditor.LeftPaneHidden";
+        const string InspectorHiddenPref = "NodeEditor.InspectorHidden";
 
         [SerializeField] NodeGraphAsset m_Asset;   // [SerializeField] 使已打开的 graph 能在 domain reload（进入播放模式）后保留
         // 模块模式：从某个领域入口（如 Tools/NodeGraph/Dialogue）打开时非空 —— 左侧图列表只列该模块的图、
@@ -187,15 +192,16 @@ namespace NodeEditor.EditorUI
             m_Nav ??= new NavigationHistory();
             var root = rootVisualElement;
 
-            root.Add(BuildToolbar());
-
+            // 「最近访问过的图」这条要嵌进工具栏同一行、紧挨后退/前进，所以必须先于工具栏创建。
             m_Breadcrumb = new Breadcrumb(OnCrumbClicked);
-            root.Add(m_Breadcrumb);   // 面包屑服务多图导航；自由 / 模块模式都可在多图间切换，故两种模式都挂它
+            root.Add(BuildToolbar());
 
             // outer：[ inner ] | inspector（右）
             var outer = new TwoPaneSplitView(1, 320, TwoPaneSplitViewOrientation.Horizontal);
+            m_Outer = outer;
             // inner：leftColumn（左） | canvas。leftColumn 内再上下竖切：图列表 / 变量。
             var inner = new TwoPaneSplitView(0, 260, TwoPaneSplitViewOrientation.Horizontal);
+            m_Inner = inner;
 
             m_Variables = new LayeredVariablePane();
             m_Canvas = new GraphCanvas();
@@ -204,7 +210,9 @@ namespace NodeEditor.EditorUI
 
             // 左列上下竖切 —— 图/对话组列表（可切换） + 变量面板。模块模式下列表只列该模块的图（传入过滤），
             // 自由模式列出全部模块；两种模式都能在（本模块的）多张图间切换。
-            var leftColumn = new TwoPaneSplitView(0, 240, TwoPaneSplitViewOrientation.Vertical);
+            // 固定的是下面的变量面板，上面的图列表吃掉剩余空间 —— 列表会随对话增多而变长，
+            // 多出来的空间给它才是「能长」；变量面板固定一条就够，不然空面板独占大半屏。
+            var leftColumn = new TwoPaneSplitView(1, VariablePaneHeight(), TwoPaneSplitViewOrientation.Vertical);
             m_GraphList = new GraphListPane(m_ModuleFilter);
             // 在列表里点选一个图/对话组 → 入栈导航历史并加载（与工具栏选择框走同一条路径）。
             m_GraphList.OnSelected = a => { if (a != m_Asset) { m_Nav.Push(a); LoadGraphFromUserSelection(a); } };
@@ -217,7 +225,10 @@ namespace NodeEditor.EditorUI
             inner.Add(leftColumn);
 
             m_Canvas.OnNodeSelected = node => m_Inspector.Show(node, m_Registry, m_Blackboard, m_Asset);
+            m_Canvas.OnNodeDeselected   = node => m_Inspector.ClearIfShowing(node);
+            m_Canvas.OnSelectionCleared = () => m_Inspector.Clear();
             m_Canvas.OnGraphChanged += () => m_Debugger.RevalidateAndPaint();   // 每次编辑都重新校验（RevalidateAndPaint 会处理 asset 为 null 的情况）
+            m_Debugger.OnValidated = RefreshStatus;   // 校验一跑完就刷新工具栏状态条
             // 右键空白画布 → 在光标处打开"添加节点"搜索框（与空格键同一入口）。
             // 画布只知道面板坐标，窗口的屏幕原点（position.position）在窗口手里，故由窗口注入面板→屏幕换算。
             m_Canvas.OnRequestAddNode = screenPos => AddNodeSearchWindow.Open(screenPos, this, m_Canvas);
@@ -248,6 +259,7 @@ namespace NodeEditor.EditorUI
 
             // 在 domain reload 之后 m_Asset 会保留（[SerializeField]），但 m_Registry/m_Blackboard 不会——
             // 走 LoadGraph 重新解析它们，而非 ReloadCanvas（后者会使用为 null 的 locator）。
+            ApplyPaneVisibility();   // 还原上次会话里左栏/检视面板的折叠状态
             if (m_Asset != null) LoadGraph(m_Asset, null);
 
             // 如果窗口是在已处于播放模式时被（重新）构建的——例如在进入播放的 domain reload 期间，
@@ -335,6 +347,8 @@ namespace NodeEditor.EditorUI
             m_ForwardButton = fwd;
             UpdateNavigationButtons();
             bar.Add(back); bar.Add(fwd);
+            // 「最近访问过的图」紧跟后退/前进，同一行读作导航区。
+            if (m_Breadcrumb != null) bar.Add(m_Breadcrumb);
             bar.Add(MakeSep());
 
             m_GraphField = null;   // 模块模式不建对象框；显式清掉上一次自由布局缓存的引用，避免 ReloadCanvas 戳到已脱树的旧控件
@@ -355,7 +369,7 @@ namespace NodeEditor.EditorUI
 
             // Tools 组
             var find = new ToolbarButton(() => FindDialog.Open(m_Canvas));
-            ApplyIconButton(find, "Search Icon", Localizer.UI("ui.find", "Find"), Localizer.UI("ui.find", "Find"));
+            ApplyIconButton(find, "Search Icon", Localizer.UI("ui.find", "Find"), Localizer.UI("ui.find", "Find"), showText: true);
             bar.Add(find);
 
             // 数据按钮：打开通用数据编辑窗口，绑定当前图、过滤到当前模块（+ 项目级数据）。
@@ -363,8 +377,10 @@ namespace NodeEditor.EditorUI
             // 标签（皆为空则传 null = 总数据中心）。框架 shell 不得出现任何领域字符串字面量（B5/§2）。
             var data = new ToolbarButton(() => DataEditorWindow.Open(
                 string.IsNullOrEmpty(m_ModuleFilter) ? m_Asset?.module : m_ModuleFilter, m_Asset));
-            ApplyIconButton(data, "d_SceneViewTools", Localizer.UI("ui.dataWindow", "Data"), Localizer.UI("ui.dataWindow", "Data"));
+            ApplyIconButton(data, "d_SceneViewTools", Localizer.UI("ui.dataWindow", "Data"), Localizer.UI("ui.dataWindow", "Data"), showText: true);
             bar.Add(data);
+            // 命令组（查找/数据）与视图开关组（缩略图/深色）之间分一刀。
+            bar.Add(MakeSep());
 
             // 缩略图开关：默认关（缩略图默认隐藏）。回调在点击时才读 m_Canvas（此时 CreateGUI 已建好它，
             // 工具栏是在 m_Canvas 之前构建的，故不能在构建期引用），勾选即显、取消即隐。
@@ -376,6 +392,35 @@ namespace NodeEditor.EditorUI
 
             // 所有窗口复用同一主题设置与同步控件。
             bar.Add(EditorUi.CreateThemeToggle());
+
+            // 面板显隐：折叠的一侧把空间整个让给画布。状态存 EditorPrefs，跨会话保留。
+            var leftToggle = new ToolbarToggle
+            {
+                text = Localizer.UI("ui.leftPane", "Sidebar"),
+                tooltip = Localizer.UI("ui.leftPaneTip", "Show or hide the left sidebar")
+            };
+            EditorUi.ApplyToolbarToggle(leftToggle);
+            leftToggle.SetValueWithoutNotify(!EditorPrefs.GetBool(LeftPaneHiddenPref, false));
+            leftToggle.RegisterValueChangedCallback(e =>
+            {
+                EditorPrefs.SetBool(LeftPaneHiddenPref, !e.newValue);
+                ApplyPaneVisibility();
+            });
+            bar.Add(leftToggle);
+
+            var inspectorToggle = new ToolbarToggle
+            {
+                text = Localizer.UI("ui.inspector", "Inspector"),
+                tooltip = Localizer.UI("ui.inspectorPaneTip", "Show or hide the inspector")
+            };
+            EditorUi.ApplyToolbarToggle(inspectorToggle);
+            inspectorToggle.SetValueWithoutNotify(!EditorPrefs.GetBool(InspectorHiddenPref, false));
+            inspectorToggle.RegisterValueChangedCallback(e =>
+            {
+                EditorPrefs.SetBool(InspectorHiddenPref, !e.newValue);
+                ApplyPaneVisibility();
+            });
+            bar.Add(inspectorToggle);
 
             bar.Add(MakeSep());
 
@@ -396,10 +441,52 @@ namespace NodeEditor.EditorUI
                 EditorLocalizationLocator.Invalidate();
                 RebuildAndReload();
             }, tooltip: Localizer.UI("ui.language", "Language"));
-            langPopup.AddToClassList("toolbar-graphfield");
+            langPopup.AddToClassList("toolbar-lang");
             bar.Add(langPopup);
 
+            // 弹性占位把状态条推到工具栏最右缘 —— 那片空白原本什么也不承载。
+            var spacer = new VisualElement();
+            spacer.AddToClassList("toolbar-spacer");
+            bar.Add(spacer);
+
+            m_StatusLabel = new Label();
+            m_StatusLabel.AddToClassList("ne-toolbar-status");
+            bar.Add(m_StatusLabel);
+            RefreshStatus();
+
             return bar;
+        }
+
+        // 变量面板的固定高度：抬头 + 档位条 + 几行变量 + 底部按钮，够用即可。
+        static float VariablePaneHeight() => 208f;
+
+        // 左栏 / 检视面板的显隐。折叠的那一侧把空间整个让给画布，状态存 EditorPrefs 跨会话保留。
+        void ApplyPaneVisibility()
+        {
+            if (m_Inner != null)
+            {
+                if (EditorPrefs.GetBool(LeftPaneHiddenPref, false)) m_Inner.CollapseChild(0);
+                else m_Inner.UnCollapse();
+            }
+            if (m_Outer != null)
+            {
+                if (EditorPrefs.GetBool(InspectorHiddenPref, false)) m_Outer.CollapseChild(1);
+                else m_Outer.UnCollapse();
+            }
+        }
+
+        // 工具栏右侧状态条：本图有几个错误/警告。没有问题时说「无问题」，不留空。
+        void RefreshStatus()
+        {
+            if (m_StatusLabel == null) return;
+            if (m_Asset == null) { m_StatusLabel.text = ""; return; }
+            int e = m_Debugger != null ? m_Debugger.ErrorCount : 0;
+            int w = m_Debugger != null ? m_Debugger.WarnCount : 0;
+            m_StatusLabel.EnableInClassList("ne-status-has-error", e > 0);
+            m_StatusLabel.EnableInClassList("ne-status-has-warn", e == 0 && w > 0);
+            if (e == 0 && w == 0) { m_StatusLabel.text = Localizer.UI("ui.noIssues", "No issues"); return; }
+            m_StatusLabel.text = string.Format(
+                Localizer.UI("ui.issueCount", "{0} errors · {1} warnings"), e, w);
         }
 
         void UpdateNavigationButtons()
@@ -415,18 +502,27 @@ namespace NodeEditor.EditorUI
             CreateGUI();
         }
 
-        // 将工具栏按钮样式化为内置图标按钮；若图标无法解析，则回退到原始文本字形
-        // （纯视觉回退，不改变行为）。
-        static void ApplyIconButton(ToolbarButton btn, string iconName, string tooltip, string fallbackText)
+        // showText=false：纯图标（后退/前进这类通用导航符号，加字反而啰嗦）。
+        // showText=true ：图标 + 文字（查找/数据这类命令，光看图标猜不出来）。
+        // 图标解析不出来时一律退回纯文字，保证按钮永远有可读内容。
+        static void ApplyIconButton(ToolbarButton btn, string iconName, string tooltip,
+                                    string fallbackText, bool showText = false)
         {
             btn.tooltip = tooltip;
             var content = EditorGUIUtility.IconContent(iconName);
             if (content != null && content.image != null)
             {
-                EditorUi.ApplyToolbarIconButton(btn);
+                if (showText) EditorUi.ApplyToolbarTextButton(btn);
+                else EditorUi.ApplyToolbarIconButton(btn);
                 var img = new Image { image = content.image, scaleMode = ScaleMode.ScaleToFit };
                 img.AddToClassList(EditorUi.ToolbarIconClass);
                 btn.Add(img);
+                if (showText)
+                {
+                    var caption = new Label(fallbackText);
+                    caption.AddToClassList("toolbar-cmd-text");
+                    btn.Add(caption);
+                }
             }
             else
             {

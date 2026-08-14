@@ -86,6 +86,10 @@ namespace NodeEditor.EditorUI
 
             m_Search = new ToolbarSearchField { tooltip = Localizer.UI("ui.searchHint", "Type to filter…") };
             m_Search.AddToClassList("graphlist-search");
+            // 空搜索框看不出用途，tooltip 要悬停才出来。取不到 textEdition 就算了，不能抛。
+            var searchInput = m_Search.Q<TextField>();
+            if (searchInput?.textEdition != null)
+                searchInput.textEdition.placeholder = Localizer.UI("ui.searchHint", "Type to filter…");
             m_Search.RegisterValueChangedCallback(_ => Rebuild());
             Add(m_Search);
 
@@ -107,6 +111,8 @@ namespace NodeEditor.EditorUI
 
             m_Delete = new Button(DeleteCurrent) { text = Localizer.UI("ui.deleteGraph", "Delete") };
             m_Delete.AddToClassList("add-button");
+            // 删图不可逆，不该和「新建」等宽等权重 —— 降为次级按钮。
+            m_Delete.AddToClassList("graphlist-delete");
             RebuildActions();
             Add(m_Actions);
 
@@ -164,6 +170,8 @@ namespace NodeEditor.EditorUI
         {
             bool expanded = !m_Collapsed.Contains(moduleKey);
             var card = new CollapsibleCard(expanded);
+            // 分组头里只有一个纯标题，没有可编辑控件 —— 点整行开合是树形列表的通行做法。
+            card.HeaderTogglesExpanded = true;
             card.AddToClassList("graphlist-group");
 
             var title = new Label($"{ModuleName(moduleKey)}  ({assets.Count})");

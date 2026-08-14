@@ -22,6 +22,9 @@ namespace NodeEditor.EditorUI
         // 开合状态变化回调（调用方据此持久化"哪些组被收起"，使分组在 Reload 后保持开合）。
         // 构造期的初始 SetExpanded 早于调用方订阅，故不会误触发。
         public Action<bool> OnExpandedChanged;
+        // 头部整行可点开合。默认关：头部可能装着可编辑字段，整行点击会和编辑抢事件。
+        // 头部只有纯标题的调用方（如图列表的模块分组）打开它。
+        public bool HeaderTogglesExpanded { get; set; }
 
         public CollapsibleCard(bool expanded = true)
         {
@@ -41,6 +44,16 @@ namespace NodeEditor.EditorUI
             HeaderRight = new VisualElement();
             HeaderRight.AddToClassList("collapsible-header-right");
             header.Add(HeaderRight);
+
+            header.RegisterCallback<PointerDownEvent>(evt =>
+            {
+                if (!HeaderTogglesExpanded) return;
+                // 箭头按钮自己会 Toggle，这里再 Toggle 一次就抵消了 —— 放行给它。
+                for (var e = evt.target as VisualElement; e != null; e = e.parent)
+                    if (e == m_Arrow) return;
+                Toggle();
+                evt.StopPropagation();
+            });
 
             Add(header);
 
