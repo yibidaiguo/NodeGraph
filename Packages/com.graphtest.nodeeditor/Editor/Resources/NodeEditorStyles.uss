@@ -1228,6 +1228,18 @@ MiniMap Label { color: var(--ne-text-dim); font-size: var(--ne-font-sm); }
     margin-top: 4px;
 }
 
+/* 未填写的槽。有值时是「实心行 + 强调色左边框」，空槽反过来做成空心弱化：
+   去掉底色、左边框降到分隔线色、文字转斜体并压低对比。目的是让一个节点上
+   哪些槽还没填能被一眼扫出来，而不必逐条读文字——「尚未指定」四个字本身
+   和真实值同样醒目，正是它显得刺眼的原因。 */
+.node-cue--unset {
+    color: var(--ne-text-disabled);
+    -unity-font-style: italic;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-color: var(--ne-border);
+    opacity: 0.75;
+}
+
 .ne-form-help {
     font-size: var(--ne-font-sm);
     color: var(--ne-text-muted);

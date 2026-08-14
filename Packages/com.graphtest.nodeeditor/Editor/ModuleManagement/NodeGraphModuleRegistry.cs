@@ -106,12 +106,22 @@ namespace NodeEditor.EditorUI
             string displayName,
             int order,
             IEnumerable<NodeGraphModuleAction> actions,
-            GraphOrientation defaultOrientation = GraphOrientation.Vertical)
+            GraphOrientation defaultOrientation = GraphOrientation.Vertical,
+            string moduleKey = null,
+            string retiredSamplePackage = null,
+            string retiredSamplePath = null)
         {
             Id = id;
             DisplayName = displayName;
             Order = order;
             DefaultOrientation = defaultOrientation;
+            // 未显式声明时从包 id 的最后一段推出短键（com.graphtest.dialogue -> dialogue）。
+            // 这是**兜底**，不是查找机制：注册表按 ModuleKey 建索引，不再靠 EndsWith 扫描去猜。
+            ModuleKey = string.IsNullOrEmpty(moduleKey)
+                ? (id ?? string.Empty).Substring((id ?? string.Empty).LastIndexOf('.') + 1)
+                : moduleKey;
+            RetiredSamplePackage = retiredSamplePackage;
+            RetiredSamplePath = retiredSamplePath;
             m_Actions = (actions ?? Array.Empty<NodeGraphModuleAction>()).ToArray();
         }
 
@@ -121,8 +131,20 @@ namespace NodeEditor.EditorUI
         public GraphOrientation DefaultOrientation { get; }
         public IReadOnlyList<NodeGraphModuleAction> Actions => m_Actions;
 
+        // 图上记录的短模块键（NodeGraphAsset.module，如 "dialogue"）。与 Id（包名）是两个东西：
+        // 图里存的是短键，描述符按包名注册，过去靠 m.Id.EndsWith("." + module) 把两者对起来——
+        // 那是在猜，而且一个叫 com.other.dialogue 的包会误命中。现在由模块自己声明。
+        public string ModuleKey { get; }
+
+        // 已退役的独立样例包（0.0.4 时代每个领域一个 *.samples 包）。由模块自己声明，
+        // 框架不再硬编码这张表——新模块要么不声明（没有历史包袱），要么声明自己的。
+        // 为 null 表示该模块没有退役样例包需要清理。
+        public string RetiredSamplePackage { get; }
+        public string RetiredSamplePath { get; }
+
         internal NodeGraphModuleDescriptor WithActions(IEnumerable<NodeGraphModuleAction> actions) =>
-            new NodeGraphModuleDescriptor(Id, DisplayName, Order, actions, DefaultOrientation);
+            new NodeGraphModuleDescriptor(Id, DisplayName, Order, actions, DefaultOrientation,
+                                          ModuleKey, RetiredSamplePackage, RetiredSamplePath);
     }
 
     public sealed class NodeGraphModuleRegistry
@@ -167,8 +189,24 @@ namespace NodeEditor.EditorUI
             return true;
         }
 
-        public bool TryGet(string moduleId, out NodeGraphModuleDescriptor descriptor) =>
-            m_Modules.TryGetValue(moduleId ?? string.Empty, out descriptor);
+        // 同时接受包 id（com.graphtest.dialogue）和图上记录的短模块键（dialogue）。
+        // 短键走 ModuleKey 索引精确命中——过去调用方拿不到就自己按 Id 后缀扫一遍，
+        // 那既是重复实现又会把 com.other.dialogue 这类同后缀包误判成同一模块。
+        public bool TryGet(string moduleId, out NodeGraphModuleDescriptor descriptor)
+        {
+            var key = moduleId ?? string.Empty;
+            if (m_Modules.TryGetValue(key, out descriptor)) return true;
+            foreach (var m in m_Modules.Values)
+            {
+                if (string.Equals(m.ModuleKey, key, StringComparison.Ordinal))
+                {
+                    descriptor = m;
+                    return true;
+                }
+            }
+            descriptor = null;
+            return false;
+        }
 
         static bool Validate(NodeGraphModuleDescriptor descriptor, out string error)
         {

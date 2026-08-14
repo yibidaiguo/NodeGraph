@@ -269,7 +269,7 @@ namespace NodeEditor.EditorUI
             EnsureUI(table, "ui.addKey", "+ 键");
             EnsureUI(table, "ui.noLocTable", "未找到本地化表。请先运行所在模块的 Setup Assets。");
             // 画布节点线索（cue）共享兜底键（NodeCueControl.UnsetText）。
-            EnsureUI(table, "ui.cue.unset", "(未设置)");
+            EnsureUI(table, "ui.cue.unset", "尚未指定");
             // 新建变量弹窗的表单错误（ui.err*）。
             EnsureUI(table, "ui.errNoBlackboard", "没有黑板资产。");
             EnsureUI(table, "ui.errVarNameRequired", "请输入变量名。");

@@ -100,14 +100,9 @@ namespace NodeEditor.EditorUI
         {
             if (asset == null) return GraphOrientation.Vertical;
             if (asset.orientation != GraphOrientation.Inherit) return asset.orientation;
+            // TryGet 现在同时认包 id 和短模块键（描述符自带 ModuleKey），
+            // 所以这里不再需要按 Id 后缀扫一遍去猜——那是在给两套命名不一致打补丁。
             if (NodeGraphModules.Registry.TryGet(asset.module, out var d)) return d.DefaultOrientation;
-            // 短模块名（如 "dialogue"）可能未被直接注册为 key；
-            // 遍历已注册模块按 Id 后缀匹配（如 "com.graphtest.dialogue"）。
-            foreach (var m in NodeGraphModules.Registry.Modules)
-            {
-                if (m.Id.EndsWith("." + asset.module, System.StringComparison.Ordinal))
-                    return m.DefaultOrientation;
-            }
             return GraphOrientation.Vertical;
         }
 

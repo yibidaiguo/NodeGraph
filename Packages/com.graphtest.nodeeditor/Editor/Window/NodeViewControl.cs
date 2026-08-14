@@ -56,9 +56,15 @@ namespace NodeEditor.EditorUI
             SetText();
         }
 
+        // 未设置态是「还没填」，不是「填了个叫未设置的值」——所以它不该和真实值一个样式。
+        // 这里给标签挂一个修饰类，由 USS 渲染成弱化占位（降透明度 + 斜体 + 虚线下划线），
+        // 让节点一眼能扫出哪些槽还空着，而不用逐个读文字。
         void SetText()
         {
-            m_Label.text = NormalizeText(Describe(m_View.Instance, m_View.Definition));
+            var text = NormalizeText(Describe(m_View.Instance, m_View.Definition));
+            m_Label.text = text;
+            bool unset = !string.IsNullOrEmpty(UnsetText) && text.Contains(UnsetText);
+            m_Label.EnableInClassList(EditorUi.NodeCueUnsetClass, unset);
         }
 
         protected abstract string Describe(NodeInstance inst, NodeDefinition def);

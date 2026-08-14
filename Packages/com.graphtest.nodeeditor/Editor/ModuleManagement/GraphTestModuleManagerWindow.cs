@@ -138,18 +138,14 @@ namespace NodeEditor.EditorUI
     public sealed class GraphTestModuleManagerWindow : EditorWindow
     {
         const string FrameworkId = "com.graphtest.nodeeditor";
-        static readonly Dictionary<string, string> LegacySamplePackages = new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["com.graphtest.dialogue"] = "com.graphtest.dialogue.samples",
-            ["com.graphtest.task"] = "com.graphtest.task.samples",
-            ["com.graphtest.statemachine"] = "com.graphtest.statemachine.samples"
-        };
-        static readonly Dictionary<string, string> LegacySamplePaths = new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["com.graphtest.dialogue"] = "Assets/Samples/NodeGraph Dialogue Samples/0.0.4/Dialogue Basics",
-            ["com.graphtest.task"] = "Assets/Samples/NodeGraph Task Samples/0.0.4/Task Basics",
-            ["com.graphtest.statemachine"] = "Assets/Samples/NodeGraph State Machine Samples/0.0.4/State Machine Basics"
-        };
+        // 退役样例包的清单过去硬编码在这里，点名三个领域包 —— 加一个新模块就得回来改框架。
+        // 现在改由各模块在自己的 NodeGraphModuleDescriptor 里声明
+        // （RetiredSamplePackage / RetiredSamplePath），框架只负责遍历。
+        // 没有历史包袱的新模块不声明即可，框架对它一无所知也不需要知道。
+        static IEnumerable<(string packageId, string samplePackage, string samplePath)> RetiredSamples() =>
+            NodeGraphModules.Registry.Modules
+                .Where(m => !string.IsNullOrEmpty(m.RetiredSamplePackage))
+                .Select(m => (m.Id, m.RetiredSamplePackage, m.RetiredSamplePath));
 
         readonly Dictionary<string, string> m_TransientStates = new Dictionary<string, string>(StringComparer.Ordinal);
         GraphTestModuleCatalog m_Catalog;
@@ -407,9 +403,9 @@ namespace NodeEditor.EditorUI
 
         void AddLegacyPackageNotices(VisualElement parent)
         {
-            foreach (var pair in LegacySamplePackages)
+            foreach (var (_, samplePackage, _) in RetiredSamples())
             {
-                if (!m_Installed.Contains(pair.Value)) continue;
+                if (!m_Installed.Contains(samplePackage)) continue;
                 var notice = new VisualElement();
                 notice.AddToClassList("entry-card");
                 notice.style.flexDirection = FlexDirection.Row;
@@ -417,12 +413,12 @@ namespace NodeEditor.EditorUI
                 notice.style.flexShrink = 0;
 
                 var message = new Label(string.Format(Localizer.UI("ui.moduleManager.legacySamplePackage",
-                    "Legacy sample package '{0}' is still installed. Imported sample assets will be kept."), pair.Value));
+                    "Legacy sample package '{0}' is still installed. Imported sample assets will be kept."), samplePackage));
                 message.style.flexGrow = 1;
                 message.style.whiteSpace = WhiteSpace.Normal;
                 notice.Add(message);
 
-                var button = new Button(() => RemoveLegacyPackage(pair.Value))
+                var button = new Button(() => RemoveLegacyPackage(samplePackage))
                 {
                     text = Localizer.UI("ui.moduleManager.removeLegacy", "Remove legacy package")
                 };
@@ -451,7 +447,10 @@ namespace NodeEditor.EditorUI
 
         static bool IsLegacySampleImported(string domainPackageId)
         {
-            if (!LegacySamplePaths.TryGetValue(domainPackageId, out var relativePath)) return false;
+            // 路径同样由模块自己声明；框架不认识任何领域的目录名。
+            if (!NodeGraphModules.Registry.TryGet(domainPackageId, out var descriptor)) return false;
+            var relativePath = descriptor.RetiredSamplePath;
+            if (string.IsNullOrEmpty(relativePath)) return false;
             string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
             return Directory.Exists(Path.Combine(projectRoot, relativePath));
         }

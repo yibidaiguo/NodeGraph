@@ -56,6 +56,8 @@ namespace NodeEditor.EditorUI
         public const string BannerClass = "graph-banner";
         public const string BannerIssueClass = "graph-banner--issue";
         public const string NodeCueClass = "node-cue";
+        // 未填写的槽：弱化占位样式，与「已填了值」在视觉上区分开。
+        public const string NodeCueUnsetClass = "node-cue--unset";
         public const string BadgeClass = "ne-badge";
         public const string ChipClass = "ne-chip";
         public const string FormRowClass = "ne-form-row";
