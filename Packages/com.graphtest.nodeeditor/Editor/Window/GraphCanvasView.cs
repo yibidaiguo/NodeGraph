@@ -169,7 +169,7 @@ namespace NodeEditor.EditorUI
                     if (!NodeAdmission.Evaluate(asset, def).allowed) continue;
                     var view = new NodeView(inst, def, ResolveOrientation(asset));
                     WireSelection(view);
-                    view.SetPosition(new Rect(inst.position, Vector2.zero));
+                    view.SetPosition(new Rect(inst.position.ToVector2(), Vector2.zero));
                     AddElement(view);
                     m_Views[inst.instanceId] = view;
                 }
@@ -273,7 +273,7 @@ namespace NodeEditor.EditorUI
 
             if (change.movedElements != null)
                 foreach (var moved in change.movedElements.OfType<NodeView>())
-                    moved.Instance.position = moved.GetPosition().position;
+                    moved.Instance.position = moved.GetPosition().position.ToVec2();
 
             if (change.elementsToRemove != null)
                 foreach (var el in change.elementsToRemove)
@@ -399,7 +399,7 @@ namespace NodeEditor.EditorUI
             // RegisterCompleteObjectUndo：向 instances 列表添加是一次数组长度变化，
             // RecordObject 的 diff 无法可靠地撤销（参见 OnGraphViewChanged）。
             Undo.RegisterCompleteObjectUndo(Asset, "Add Node");
-            var inst = new NodeInstance { definitionId = def.Id, position = graphPos };
+            var inst = new NodeInstance { definitionId = def.Id, position = graphPos.ToVec2() };
             Asset.instances.Add(inst);
             var view = new NodeView(inst, def, ResolveOrientation(Asset));
             WireSelection(view);
@@ -441,7 +441,7 @@ namespace NodeEditor.EditorUI
                 Asset.instances.Add(inst);
                 var view = new NodeView(inst, Registry.Find(inst.definitionId), ResolveOrientation(Asset));
                 WireSelection(view);
-                view.SetPosition(new Rect(inst.position, Vector2.zero));
+                view.SetPosition(new Rect(inst.position.ToVector2(), Vector2.zero));
                 AddElement(view);
                 m_Views[inst.instanceId] = view;
                 newViews.Add(view);

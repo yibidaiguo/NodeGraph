@@ -66,7 +66,7 @@ namespace Dialogue.EditorUI
         {
             var def = NodeDefinitionLocator.ForType(defType);
             if (def == null) return null;
-            return new NodeInstance { definitionId = def.Id, position = pos, pinned = true };
+            return new NodeInstance { definitionId = def.Id, position = pos.ToVec2(), pinned = true };
         }
     }
 

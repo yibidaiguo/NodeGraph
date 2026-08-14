@@ -29,26 +29,26 @@ namespace NodeEditor.EditorUI
             for (int i = RuntimeGraphRegistry.Live.Count - 1; i >= 0; i--)
             {
                 if (RuntimeGraphRegistry.Live[i] is IActiveRuntimeGraphSource source &&
-                    source.ActiveGraph == graph && source.OwnsGraph(graph))
+                    source.ActiveGraph == graph.ToData() && source.OwnsGraph(graph.ToData()))
                     return RuntimeGraphRegistry.Live[i];
             }
             for (int i = RuntimeGraphRegistry.Live.Count - 1; i >= 0; i--)
             {
                 if (RuntimeGraphRegistry.Live[i] is IActiveRuntimeGraphSource source &&
-                    source.ActiveGraph != null && source.OwnsGraph(graph))
+                    source.ActiveGraph != null && source.OwnsGraph(graph.ToData()))
                     return RuntimeGraphRegistry.Live[i];
             }
             for (int i = RuntimeGraphRegistry.Live.Count - 1; i >= 0; i--)
             {
                 var runtime = RuntimeGraphRegistry.Live[i];
-                if (runtime is IRuntimeGraphSource source && source.OwnsGraph(graph) &&
+                if (runtime is IRuntimeGraphSource source && source.OwnsGraph(graph.ToData()) &&
                     HasRunningNode(runtime, graph))
                     return runtime;
             }
             for (int i = RuntimeGraphRegistry.Live.Count - 1; i >= 0; i--)
             {
                 var runtime = RuntimeGraphRegistry.Live[i];
-                if (runtime is IRuntimeGraphSource source && source.OwnsGraph(graph))
+                if (runtime is IRuntimeGraphSource source && source.OwnsGraph(graph.ToData()))
                     return runtime;
             }
             return null;
@@ -70,7 +70,7 @@ namespace NodeEditor.EditorUI
 
                 for (int i = RuntimeGraphRegistry.Live.Count - 1; i >= 0; i--)
                     if (TryReportedActiveGraph(RuntimeGraphRegistry.Live[i], module, out var source, out var active) &&
-                        source.OwnsGraph(preferred))
+                        source.OwnsGraph(preferred.ToData()))
                         return active;
             }
 
@@ -100,9 +100,11 @@ namespace NodeEditor.EditorUI
             out NodeGraphAsset active)
         {
             source = runtime as IActiveRuntimeGraphSource;
-            active = source?.ActiveGraph;
-            return active != null && source.OwnsGraph(active) &&
-                string.Equals(active.module, module, StringComparison.Ordinal);
+            // 运行时报告的是纯层 GraphData；编辑器这一侧要的是 asset，按稳定 graphId 换回来。
+            var data = source?.ActiveGraph;
+            active = data == null ? null : GraphRefs.ByGraphId(data.graphId);
+            return data != null && active != null && source.OwnsGraph(data) &&
+                string.Equals(data.module, module, StringComparison.Ordinal);
         }
 
         // 模块入口只提供模块名和兜底图；框架统一从所有同模块资产中定位当前运行图。
@@ -145,8 +147,10 @@ namespace NodeEditor.EditorUI
             for (int i = RuntimeGraphRegistry.Live.Count - 1; i >= 0; i--)
             {
                 if (RuntimeGraphRegistry.Live[i] is not IActiveRuntimeGraphSource source) continue;
-                var active = source.ActiveGraph;
-                if (active != null && graphs.Contains(active) && source.OwnsGraph(active)) return active;
+                var data = source.ActiveGraph;
+                if (data == null) continue;
+                var active = GraphRefs.ByGraphId(data.graphId);
+                if (active != null && graphs.Contains(active) && source.OwnsGraph(data)) return active;
             }
 
             var preferredRuntime = Find(preferred);
@@ -157,7 +161,7 @@ namespace NodeEditor.EditorUI
                 var runtime = RuntimeGraphRegistry.Live[i];
                 if (runtime is not IRuntimeGraphSource source) continue;
                 var running = graphs.FirstOrDefault(graph =>
-                    source.OwnsGraph(graph) && HasRunningNode(runtime, graph));
+                    source.OwnsGraph(graph.ToData()) && HasRunningNode(runtime, graph));
                 if (running != null) return running;
             }
 
@@ -165,7 +169,7 @@ namespace NodeEditor.EditorUI
             for (int i = RuntimeGraphRegistry.Live.Count - 1; i >= 0; i--)
             {
                 if (RuntimeGraphRegistry.Live[i] is not IRuntimeGraphSource source) continue;
-                var owned = graphs.FirstOrDefault(source.OwnsGraph);
+                var owned = graphs.FirstOrDefault(g => source.OwnsGraph(g.ToData()));
                 if (owned != null) return owned;
             }
             return preferred;

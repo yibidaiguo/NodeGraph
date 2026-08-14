@@ -58,7 +58,7 @@ namespace TaskEditor.EditorUI
             var start = new NodeInstance
             {
                 definitionId = startDefinition.Id,
-                position = Vector2.zero,
+                position = Vec2.Zero,
                 pinned = true
             };
             graph.instances.Add(start);

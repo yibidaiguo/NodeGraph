@@ -80,7 +80,7 @@ namespace NodeEditor.EditorUI
                 {
                     instanceId = inst.instanceId,
                     definitionId = inst.definitionId,
-                    position = inst.position,
+                    position = inst.position.ToVector2(),
                     parameterOverrides = inst.parameterOverrides
                         .Select(p => new ParamOverride { paramName = p.paramName, valueJson = p.valueJson }).ToList(),
                     unitOverrides = CloneUnits(inst.unitOverrides)
@@ -131,7 +131,7 @@ namespace NodeEditor.EditorUI
                 {
                     instanceId = idMap[n.instanceId],
                     definitionId = n.definitionId,
-                    position = n.position + offset,
+                    position = (n.position + offset).ToVec2(),
                     parameterOverrides = n.parameterOverrides
                         .Select(p => new ParamOverride { paramName = p.paramName, valueJson = p.valueJson }).ToList(),
                     unitOverrides = CloneUnits(n.unitOverrides)

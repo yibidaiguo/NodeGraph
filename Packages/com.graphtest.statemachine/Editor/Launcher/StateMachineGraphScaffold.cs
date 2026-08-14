@@ -37,7 +37,7 @@ namespace StateMachine.EditorUI
             var def = NodeDefinitionLocator.ForType(typeof(EntryNode));
             if (def == null) return false;   // 定义资产还没生成（未在 NodeGraph Manager 中运行 Setup Assets）→ 不动
 
-            var entry = new NodeInstance { definitionId = def.Id, position = new Vector2(0, 0), pinned = true };
+            var entry = new NodeInstance { definitionId = def.Id, position = new Vec2(0, 0), pinned = true };
             g.graphType = GraphType.ControlFlow;
             g.orientation = GraphOrientation.Vertical;
             g.module = Module;                           // 归入左侧「状态机」分组 / 状态机编辑器的模块过滤

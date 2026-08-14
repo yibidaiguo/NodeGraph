@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using NodeEditor;
+using NodeEditor.EditorUI;   // GraphRefs：编辑期按 graphId 解析子图
 
 namespace StateMachine.EditorUI
 {
