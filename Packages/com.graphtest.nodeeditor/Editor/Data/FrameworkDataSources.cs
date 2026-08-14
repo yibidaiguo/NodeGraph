@@ -149,7 +149,7 @@ namespace NodeEditor.EditorUI
                         var label = new Label(Localizer.ParamName(def, pd.name));
                         label.AddToClassList("field-label");
                         row.Add(label);
-                        var val = new Label(ParamResolver.Resolve(inst, def, pd.name) ?? "");
+                        var val = new Label(ParamResolver.Resolve(inst, def.Schema, pd.name) ?? "");
                         val.AddToClassList("field-note");
                         row.Add(val);
                         card.Add(row);

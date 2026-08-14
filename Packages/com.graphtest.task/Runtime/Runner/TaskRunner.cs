@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using NodeEditor;
-using UnityEngine;
+
 
 namespace TaskEditor
 {
@@ -12,13 +12,14 @@ namespace TaskEditor
         const int MaxSteps = 10000;
         const string InvalidGraphReason = "task.runner.invalidGraph";
 
-        readonly NodeRegistry m_Registry;
-        readonly NodeGraphAsset m_TaskGraph;
+        readonly ISchemaSource m_Registry;
+        readonly GraphData m_TaskGraph;
         readonly BlackboardSet m_BB;
+        readonly IGraphSource m_Graphs;   // 步骤图解析：graphId -> GraphData（null => 任务无步骤图）
         readonly Dictionary<string, NodeInstance> m_DagIndex = new();
         readonly Dictionary<string, NodeInstance> m_TaskById = new(StringComparer.Ordinal);
-        readonly Dictionary<NodeGraphAsset, Dictionary<string, NodeInstance>> m_IndexCache = new();
-        readonly Dictionary<NodeGraphAsset, Dictionary<string, NodeInstance>> m_LabelCache = new();
+        readonly Dictionary<GraphData, Dictionary<string, NodeInstance>> m_IndexCache = new();
+        readonly Dictionary<GraphData, Dictionary<string, NodeInstance>> m_LabelCache = new();
         readonly Dictionary<string, int> m_ObjectiveProgress = new(StringComparer.Ordinal);
         readonly HashSet<string> m_Visited = new();
 
@@ -26,7 +27,7 @@ namespace TaskEditor
 
         Dictionary<string, NodeInstance> m_Index = Empty;
         Dictionary<string, NodeInstance> m_Labels = Empty;
-        NodeGraphAsset m_StepGraph;
+        GraphData m_StepGraph;
         NodeInstance m_ActiveTask;
         NodeInstance m_Current;
         bool m_Disposed;
@@ -44,11 +45,15 @@ namespace TaskEditor
         public TaskJournal Journal { get; } = new();
         public string ActiveTaskId { get; private set; }
 
-        public TaskRunner(NodeRegistry registry, NodeGraphAsset taskGraph, BlackboardSet blackboard)
+        // graphs 可省略：省略时 Task 节点的 stepGraph 解析不到，按既有语义当作"无步骤图"
+        //（任务立即完成）处理——与 0.0.x 未设置 stepGraph 时行为一致。
+        public TaskRunner(ISchemaSource registry, GraphData taskGraph, BlackboardSet blackboard,
+                          IGraphSource graphs = null)
         {
             m_Registry = registry;
             m_TaskGraph = taskGraph;
             m_BB = blackboard;
+            m_Graphs = graphs;
             Blackboard = new TaskBlackboard(blackboard);
             BuildDagIndex(taskGraph);
             OnRunnerCreated?.Invoke(this);
@@ -63,9 +68,9 @@ namespace TaskEditor
 
         public object RuntimeNodeOf(string instanceId) => null;
 
-        public NodeGraphAsset ActiveGraph => !m_Disposed && m_Current != null ? m_StepGraph : null;
+        public GraphData ActiveGraph => !m_Disposed && m_Current != null ? m_StepGraph : null;
 
-        public bool OwnsGraph(NodeGraphAsset graph) =>
+        public bool OwnsGraph(GraphData graph) =>
             graph != null && (graph == m_TaskGraph || graph == m_StepGraph);
 
         public bool IsAvailable(string taskId)
@@ -225,7 +230,7 @@ namespace TaskEditor
             {
                 if (++steps > MaxSteps)
                 {
-                    Debug.LogError($"TaskRunner: exceeded {MaxSteps} instant steps without parking or finishing.");
+                    GraphLog.Error($"TaskRunner: exceeded {MaxSteps} instant steps without parking or finishing.");
                     FailActiveTask("task.runner.stepLimit");
                     return;
                 }
@@ -343,7 +348,7 @@ namespace TaskEditor
 
         NodeContext UnitCtx(NodeInstance node) => new NodeContext { blackboard = Blackboard, instanceId = node?.instanceId };
 
-        void BuildDagIndex(NodeGraphAsset graph)
+        void BuildDagIndex(GraphData graph)
         {
             if (graph == null) return;
             foreach (var inst in graph.instances)
@@ -359,8 +364,8 @@ namespace TaskEditor
         NodeInstance FindTask(string taskId) =>
             !string.IsNullOrEmpty(taskId) && m_TaskById.TryGetValue(taskId, out var task) ? task : null;
 
-        NodeGraphAsset StepGraphOf(NodeInstance task) =>
-            task == null ? null : ParamResolver.ResolveObject(task, "stepGraph") as NodeGraphAsset;
+        GraphData StepGraphOf(NodeInstance task) =>
+            task == null ? null : m_Graphs?.FindGraph(ParamResolver.ResolveGraphRef(task, "stepGraph"));
 
         bool IsRepeatable(NodeInstance task) =>
             bool.TryParse(Param(task, "repeatable"), out var repeatable) && repeatable;
@@ -410,7 +415,7 @@ namespace TaskEditor
             return m_Labels.TryGetValue(target, out var label) ? Next(label, "next") : null;
         }
 
-        void SetGraph(NodeGraphAsset graph)
+        void SetGraph(GraphData graph)
         {
             m_StepGraph = graph;
             if (graph == null)
@@ -440,7 +445,7 @@ namespace TaskEditor
             }
         }
 
-        NodeInstance StartOf(NodeGraphAsset graph)
+        NodeInstance StartOf(GraphData graph)
         {
             if (graph == null) return null;
             var entryId = graph.entryInstanceIds.FirstOrDefault();
@@ -454,16 +459,19 @@ namespace TaskEditor
         NodeInstance Next(NodeInstance node, string port) =>
             node == null ? null : Find(node.connections.FirstOrDefault(c => c.fromPort == port)?.toInstanceId);
 
-        TaskNodeDefinition Def(NodeInstance node) => m_Registry?.Find(node.definitionId) as TaskNodeDefinition;
+        // 0.0.x 是 `registry.Find(id) as TaskNodeDefinition`；现在取纯层 NodeSchema。
+        NodeSchema Def(NodeInstance node) => node == null ? null : m_Registry?.FindSchema(node.definitionId);
         bool TryKindOf(NodeInstance node, out TaskNodeKind kind)
         {
-            var def = Def(node);
-            if (def == null)
+            // 定义缺失、或不是任务领域的定义（schema.kind 解析不出 TaskNodeKind）→ false，
+            // 调用点据此跳过该实例，与 0.0.x 的 `as TaskNodeDefinition` 失败语义一致。
+            var parsed = TaskKinds.Parse(Def(node)?.kind);
+            if (parsed == null)
             {
                 kind = default;
                 return false;
             }
-            kind = def.Kind;
+            kind = parsed.Value;
             return true;
         }
         TaskNodeKind KindOf(NodeInstance node) =>

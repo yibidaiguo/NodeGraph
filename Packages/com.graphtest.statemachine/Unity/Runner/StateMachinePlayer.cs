@@ -27,6 +27,10 @@ namespace StateMachine
         public BlackboardAsset[] blackboards;
         [Tooltip("驱动模式：Update=普通逐帧；FixedUpdate=物理步（2D/3D 刚体驱动选它）；Manual=不自动 tick，调用方自己 ManualTick(dt)。")]
         public StateMachineUpdateMode updateMode = StateMachineUpdateMode.Update;
+        [Tooltip("本机（及其子机）用到的所有子状态机图。0.1.0 起子机按稳定 graphId 引用，" +
+                 "运行时构建无 AssetDatabase、无法按 id 全局搜图，故与 blackboards 同理在此显式挂接；" +
+                 "留空则 SubMachine 节点被当作无可运行子图。")]
+        public NodeGraphAsset[] subGraphs;
         [Tooltip("勾选后场景 Start 时自动 Play()。需要在代码里先订阅 Runner 事件再启动的场合请关掉、自己调 Play()。")]
         public bool playOnStart = true;
 
@@ -57,7 +61,10 @@ namespace StateMachine
         {
             Stop();
             var ctx = new StateMachineRunContext(new StateMachineBlackboard(new BlackboardSet(blackboards)));
-            Runner = new StateMachineRunner(graph, registry, ctx);
+            // graph.ToData() 缓存且引用稳定，重复 Play() 不产生新的图身份。
+            // 子机图与 blackboards 同理需显式挂接：player 构建没有 AssetDatabase，按 id 搜不到图。
+            Runner = new StateMachineRunner(graph != null ? graph.ToData() : null, registry, ctx,
+                                            new NodeGraphSource(subGraphs).Add(graph));
             Runner.OnStateEntered += id => onStateEntered?.Invoke(id);
             Runner.OnStateExited  += id => onStateExited?.Invoke(id);
             Runner.OnMachineEvent += name => onMachineEvent?.Invoke(name);

@@ -148,7 +148,7 @@ namespace StateMachine.EditorUI
         {
             foreach (var (inst, def) in sm.Where(p => p.def.Kind == StateMachineNodeKind.SubMachine))
             {
-                var sub = ParamResolver.ResolveObject(inst, "graph") as NodeGraphAsset;
+                var sub = GraphRefs.Resolve(inst, "graph");
                 if (sub == null)
                 {
                     yield return ValidationIssue.Error(inst.instanceId,
@@ -184,7 +184,7 @@ namespace StateMachine.EditorUI
             foreach (var inst in sub.instances)
             {
                 if ((reg.Find(inst.definitionId) as StateMachineNodeDefinition)?.Kind != StateMachineNodeKind.SubMachine) continue;
-                if (HasCycle(ParamResolver.ResolveObject(inst, "graph") as NodeGraphAsset, reg, path)) return true;
+                if (HasCycle(GraphRefs.Resolve(inst, "graph"), reg, path)) return true;
             }
             path.Remove(sub);
             return false;
@@ -227,7 +227,7 @@ namespace StateMachine.EditorUI
         }
 
         static int PriorityOf(NodeInstance inst, NodeDefinition def) =>
-            int.TryParse(ParamResolver.Resolve(inst, def, "priority"), out var p) ? p : 0;
+            int.TryParse(ParamResolver.Resolve(inst, def.Schema, "priority"), out var p) ? p : 0;
 
         // 消息里点名节点：优先实例改名（displayName），否则按当前编辑器语言取定义显示名；定义缺失回退 definitionId。
         static string NameOf(NodeDefinition def, NodeInstance inst)

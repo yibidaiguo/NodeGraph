@@ -75,7 +75,7 @@ namespace StateMachine.EditorUI
     {
         protected override string Describe(NodeInstance inst, NodeDefinition def)
         {
-            var sub = ParamResolver.ResolveObject(inst, "graph") as NodeGraphAsset;
+            var sub = GraphRefs.Resolve(inst, "graph");
             return "↳ " + (sub != null ? sub.name : Localizer.UI("ui.cue.unset", "(unset)"));
         }
     }

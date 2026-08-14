@@ -1,0 +1,12 @@
+{
+  "name": "StateMachine.Unity",
+  "rootNamespace": "StateMachine",
+  "references": [
+    "NodeEditor.Runtime",
+    "NodeEditor.Unity",
+    "StateMachine.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

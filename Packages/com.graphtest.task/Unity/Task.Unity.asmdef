@@ -1,0 +1,12 @@
+{
+  "name": "Task.Unity",
+  "rootNamespace": "TaskEditor",
+  "references": [
+    "NodeEditor.Runtime",
+    "NodeEditor.Unity",
+    "Task.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

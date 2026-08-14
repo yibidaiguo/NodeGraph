@@ -63,7 +63,7 @@ namespace Dialogue.EditorUI
             {
                 if (ctx.registry.Find(inst.definitionId) is not DialogueNodeDefinition def) continue;
                 if (def.Kind != DialogueNodeKind.Label) continue;
-                var name = ParamResolver.Resolve(inst, def, "labelName");
+                var name = ParamResolver.Resolve(inst, def.Schema, "labelName");
                 if (!string.IsNullOrEmpty(name)) yield return name;
             }
         }

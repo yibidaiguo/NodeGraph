@@ -88,7 +88,7 @@ namespace Dialogue.EditorUI
             var byName = new Dictionary<string, List<NodeInstance>>();
             foreach (var (inst, def) in instances.Where(p => p.def.Kind == DialogueNodeKind.Label))
             {
-                var name = ParamResolver.Resolve(inst, def, "labelName") ?? "";
+                var name = ParamResolver.Resolve(inst, def.Schema, "labelName") ?? "";
                 if (!byName.TryGetValue(name, out var list)) byName[name] = list = new List<NodeInstance>();
                 list.Add(inst);
             }
@@ -100,7 +100,7 @@ namespace Dialogue.EditorUI
 
             foreach (var (inst, def) in instances.Where(p => p.def.Kind == DialogueNodeKind.Jump))
             {
-                var target = ParamResolver.Resolve(inst, def, "targetLabel") ?? "";
+                var target = ParamResolver.Resolve(inst, def.Schema, "targetLabel") ?? "";
                 if (string.IsNullOrEmpty(target))
                     issues.Add(ValidationIssue.Error(inst.instanceId, L("val.jumpNoTarget", "Jump has no targetLabel set")));
                 else if (!byName.ContainsKey(target))
@@ -115,7 +115,7 @@ namespace Dialogue.EditorUI
             foreach (var (inst, def) in instances)
                 foreach (var p in def.Parameters.Where(p => p.type?.kind == TypeKind.BlackboardKeyRef))
                 {
-                    var key = ParamResolver.Resolve(inst, def, p.name);
+                    var key = ParamResolver.Resolve(inst, def.Schema, p.name);
                     if (string.IsNullOrEmpty(key)) continue;   // 空键 = 该可选黑板引用未设置（合法，非拼写错误）
                     if (!bb.Has(key))
                         yield return ValidationIssue.Warn(inst.instanceId, L("val.paramUndefinedKey", "'{0}' references undefined blackboard key '{1}'", p.name, key));

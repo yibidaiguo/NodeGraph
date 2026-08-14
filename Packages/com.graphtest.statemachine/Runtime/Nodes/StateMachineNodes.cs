@@ -14,12 +14,14 @@ namespace StateMachine
     // 分层状态机（HSM）；Exit 是子机返回点（顶层出现 = 状态机结束/停机）。
     public enum StateMachineNodeKind { Entry, State, Transition, AnyState, SubMachine, Exit }
 
-    // 每个状态机节点的公共基类：钉死一个由 Kind 推导出的确定性 StableId，使得一个定义在任何
-    // 机器上/任何重新生成后都解析到相同的 id，从而让已有的图继续可用（照 Dialogue 成例）。
-    public abstract class StateMachineNodeDefinition : NodeDefinition
+    // StateMachineNodeDefinition（ScriptableObject 基类）已移至 Unity/Nodes/StateMachineNodeDefinition.cs
+    //（StateMachine.Unity 程序集）。执行器不再按类型强转定义，改读 NodeSchema.kind——见下。
+
+    // 把 NodeSchema.kind 字符串解析回领域枚举（由 StateMachineNodeDefinition.KindTag 烘出）。
+    // 解析失败返回 null，由调用方按语义兜底。
+    public static class StateMachineKinds
     {
-        public override string Module => "statemachine";
-        public abstract StateMachineNodeKind Kind { get; }
-        protected override string StableId => "statemachine." + Kind;
+        public static StateMachineNodeKind? Parse(string kind) =>
+            System.Enum.TryParse<StateMachineNodeKind>(kind, out var k) ? k : (StateMachineNodeKind?)null;
     }
 }

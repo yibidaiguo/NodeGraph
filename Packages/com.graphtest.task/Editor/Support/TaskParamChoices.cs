@@ -25,7 +25,7 @@ namespace TaskEditor.EditorUI
             {
                 if (ctx.registry.Find(inst.definitionId) is not TaskNodeDefinition def) continue;
                 if (def.Kind != TaskNodeKind.Label) continue;
-                var name = ParamResolver.Resolve(inst, def, "labelName");
+                var name = ParamResolver.Resolve(inst, def.Schema, "labelName");
                 if (!string.IsNullOrEmpty(name)) yield return name;
             }
         }

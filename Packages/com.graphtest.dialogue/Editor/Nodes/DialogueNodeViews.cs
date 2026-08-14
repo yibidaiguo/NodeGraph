@@ -85,7 +85,7 @@ namespace Dialogue.EditorUI
     {
         protected override string Describe(NodeInstance inst, NodeDefinition def)
         {
-            var sub = ParamResolver.ResolveObject(inst, "subGraph") as NodeGraphAsset;
+            var sub = GraphRefs.Resolve(inst, "subGraph");
             return "↳ " + (sub != null ? sub.name : Localizer.UI("ui.cue.unset", "(unset)"));
         }
     }

@@ -88,17 +88,11 @@ namespace NodeEditor.EditorUI
                 foreach (var c in inst.connections)
                     if (idSet.Contains(c.toInstanceId))
                         clip.connections.Add(new Connection { fromPort = c.fromPort, toInstanceId = c.toInstanceId, toPort = c.toPort });
-                foreach (var oo in inst.objectOverrides)
-                {
-                    if (oo.value == null) continue;
-                    // GlobalObjectId（GUID+fileID）能在粘贴操作和编辑器会话之间存续，
-                    // 与原始 instanceID 不同 —— 这是必需的，因为 Object 引用无法通过 JsonUtility 往返序列化。
-                    clip.objectOverrides.Add(new ObjectOverrideClip
-                    {
-                        paramName = oo.paramName,
-                        globalId = GlobalObjectId.GetGlobalObjectIdSlow(oo.value).ToString()
-                    });
-                }
+                // 0.1.0：子图引用本身就是稳定 graphId 字符串，天然可 JSON 往返——
+                // 不再需要 GlobalObjectId 这层转换（那是为了绕开 Object 引用无法序列化才有的）。
+                foreach (var gr in inst.graphRefs)
+                    if (!string.IsNullOrEmpty(gr.graphId))
+                        clip.graphRefs.Add(new GraphRefClip { paramName = gr.paramName, graphId = gr.graphId });
                 payload.nodes.Add(clip);
             }
             return ToJson(payload);
@@ -142,14 +136,9 @@ namespace NodeEditor.EditorUI
                         .Select(p => new ParamOverride { paramName = p.paramName, valueJson = p.valueJson }).ToList(),
                     unitOverrides = CloneUnits(n.unitOverrides)
                 };
-                foreach (var oo in n.objectOverrides)
-                {
-                    if (GlobalObjectId.TryParse(oo.globalId, out var gid))
-                    {
-                        var obj = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(gid);
-                        if (obj != null) inst.objectOverrides.Add(new ObjectOverride { paramName = oo.paramName, value = obj });
-                    }
-                }
+                foreach (var gr in n.graphRefs)
+                    if (!string.IsNullOrEmpty(gr.graphId))
+                        inst.graphRefs.Add(new GraphRef { paramName = gr.paramName, graphId = gr.graphId });
                 result.Add(inst);
                 byNewId[inst.instanceId] = inst;
             }
@@ -199,9 +188,9 @@ namespace NodeEditor.EditorUI
         public Vector2 position;
         public List<Connection> connections = new();
         public List<ParamOverride> parameterOverrides = new();
-        public List<ObjectOverrideClip> objectOverrides = new();
+        public List<GraphRefClip> graphRefs = new();
         public List<UnitOverride> unitOverrides = new();
     }
     [System.Serializable]
-    class ObjectOverrideClip { public string paramName; public string globalId; }
+    class GraphRefClip { public string paramName; public string graphId; }
 }

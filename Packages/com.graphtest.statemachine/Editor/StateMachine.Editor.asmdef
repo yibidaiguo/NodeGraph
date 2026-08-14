@@ -3,8 +3,10 @@
   "rootNamespace": "StateMachine.EditorUI",
   "references": [
     "NodeEditor.Runtime",
+    "NodeEditor.Unity",
     "NodeEditor.Editor",
-    "StateMachine.Runtime"
+    "StateMachine.Runtime",
+    "StateMachine.Unity"
   ],
   "includePlatforms": [
     "Editor"

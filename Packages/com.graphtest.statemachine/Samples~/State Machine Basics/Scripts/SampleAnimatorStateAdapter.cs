@@ -56,7 +56,7 @@ namespace StateMachine.Sample
                 if (inst.instanceId == instanceId)
                     return string.IsNullOrEmpty(inst.displayName) ? null : inst.displayName;
                 // 顺带下钻子机引用（objectOverrides 里的 "graph"），HSM 子图里的状态也能解析出名字。
-                var sub = ParamResolver.ResolveObject(inst, "graph") as NodeGraphAsset;
+                var sub = GraphRefs.Resolve(inst, "graph");
                 if (sub == null) continue;
                 var found = FindName(sub, instanceId, visited);
                 if (found != null) return found;

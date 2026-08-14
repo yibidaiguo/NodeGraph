@@ -64,7 +64,7 @@ namespace NodeEditor.EditorUI
         protected abstract string Describe(NodeInstance inst, NodeDefinition def);
 
         protected static string Param(NodeInstance inst, NodeDefinition def, string name) =>
-            ParamResolver.Resolve(inst, def, name);
+            ParamResolver.Resolve(inst, def.Schema, name);
 
         protected string UnitDesc(NodeInstance inst, string name)
         {

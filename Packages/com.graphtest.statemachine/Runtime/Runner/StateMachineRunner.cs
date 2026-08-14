@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using UnityEngine;
+
 using NodeEditor;
 
 namespace StateMachine
@@ -28,16 +28,17 @@ namespace StateMachine
         // HSM 嵌套深度护栏：子机自引用/环引用是校验 ERROR，但运行时仍须防住未校验图把 EnterNode 递归爆栈。
         const int MaxDepth = 32;
 
-        readonly NodeGraphAsset m_Graph;
-        readonly NodeRegistry m_Registry;
+        readonly GraphData m_Graph;
+        readonly ISchemaSource m_Registry;
         readonly StateMachineRunContext m_Ctx;   // 可组合单元求值上下文（IScopedBlackboard + 领域事件 sink）
+        readonly IGraphSource m_Graphs;          // 子机图解析：graphId -> GraphData（null => SubMachine 视为无可运行子图）
 
         // HSM 栈：一层 = 一张正在运行的图 + 该层当前活动节点。[0] 恒为顶层图；进入 SubMachine 即压入其子图层
         //（子机图共用同一个 registry）。childFinished = 本层 current（SubMachine）的子机已到 Exit 完结：
         // 子层已弹出、不再 tick，但 SubMachine 本身保持活动，其出向转移每 tick 照常求值。
         sealed class Layer
         {
-            public NodeGraphAsset graph;
+            public GraphData graph;
             public Dictionary<string, NodeInstance> index;
             public NodeInstance current;
             public bool childFinished;
@@ -45,7 +46,7 @@ namespace StateMachine
         readonly List<Layer> m_Layers = new();
 
         // 每图 O(1) 实例索引缓存（照 DialogueRunner #6）：重复进出的子机图复用其索引，无需逐跳扫描。
-        readonly Dictionary<NodeGraphAsset, Dictionary<string, NodeInstance>> m_IndexCache = new();
+        readonly Dictionary<GraphData, Dictionary<string, NodeInstance>> m_IndexCache = new();
 
         // 转移候选的复用缓冲：(Transition 实例, priority, 来源序)。priority 主序、来源序 tiebreak 稳定排序
         //（多 AnyState 按 instances 列表序、单节点内按 connections 序）。
@@ -61,9 +62,11 @@ namespace StateMachine
         public event Action<string> OnMachineEvent;   // 领域单元 FireMachineEventAction 发出的自定义事件名
         public event Action OnStopped;                // 整机结束（顶层到 Exit 或调用 Stop）
 
-        public StateMachineRunner(NodeGraphAsset graph, NodeRegistry registry, StateMachineRunContext ctx)
+        // graphs 可省略：省略时 SubMachine 解析不到子图，按既有语义当作"无可运行子图"处理并告警。
+        public StateMachineRunner(GraphData graph, ISchemaSource registry, StateMachineRunContext ctx,
+                                  IGraphSource graphs = null)
         {
-            m_Graph = graph; m_Registry = registry; m_Ctx = ctx;
+            m_Graph = graph; m_Registry = registry; m_Ctx = ctx; m_Graphs = graphs;
             // 领域事件汇流：单元经 ctx.blackboard（即 m_Ctx）FireEvent → 转发为本机 OnMachineEvent。
             if (m_Ctx != null) m_Ctx.OnEvent += name => OnMachineEvent?.Invoke(name);
         }
@@ -93,10 +96,10 @@ namespace StateMachine
         // 状态机没有逐节点运行时对象（进度条之类）——StatusOf 的路径高亮就是全部内容。
         public object RuntimeNodeOf(string instanceId) => null;
 
-        public NodeGraphAsset ActiveGraph =>
+        public GraphData ActiveGraph =>
             m_Running && m_Layers.Count > 0 ? m_Layers[m_Layers.Count - 1].graph : null;
 
-        public bool OwnsGraph(NodeGraphAsset graph) =>
+        public bool OwnsGraph(GraphData graph) =>
             graph != null && (graph == m_Graph || m_Layers.Any(layer => layer.graph == graph));
 
         // ---- 生命周期泵 --------------------------------------------------------------------------------
@@ -111,19 +114,19 @@ namespace StateMachine
             var top = MakeLayer(m_Graph);
             if (top == null)
             {
-                Debug.LogError("StateMachineRunner: graph is null — cannot start.");
+                GraphLog.Error("StateMachineRunner: graph is null — cannot start.");
                 return;
             }
             var entry = FindEntry(top);
             if (entry == null)
             {
-                Debug.LogError($"StateMachineRunner: graph '{m_Graph.name}' has no Entry node — cannot start.");
+                GraphLog.Error($"StateMachineRunner: graph '{m_Graph.graphId}' has no Entry node — cannot start.");
                 return;
             }
             var initial = Target(top, entry, "out");
             if (initial == null)
             {
-                Debug.LogError($"StateMachineRunner: graph '{m_Graph.name}' Entry has no initial state wired to its 'out' port — cannot start.");
+                GraphLog.Error($"StateMachineRunner: graph '{m_Graph.graphId}' Entry has no initial state wired to its 'out' port — cannot start.");
                 return;
             }
 
@@ -145,7 +148,7 @@ namespace StateMachine
                 if (hit == null) break;
                 if (fired >= MaxChainedTransitions)
                 {
-                    Debug.LogWarning($"StateMachineRunner: more than {MaxChainedTransitions} chained transitions in one tick — chaining stopped for this tick (check for an unconditional transition cycle).");
+                    GraphLog.Warning($"StateMachineRunner: more than {MaxChainedTransitions} chained transitions in one tick — chaining stopped for this tick (check for an unconditional transition cycle).");
                     break;
                 }
                 Fire(hit, dt);
@@ -280,16 +283,16 @@ namespace StateMachine
 
             if (m_Layers.Count >= MaxDepth)
             {
-                Debug.LogWarning($"StateMachineRunner: sub-machine nesting exceeded {MaxDepth} layers — treating sub machine '{node.instanceId}' as finished (check for circular sub-graph references).");
+                GraphLog.Warning($"StateMachineRunner: sub-machine nesting exceeded {MaxDepth} layers — treating sub machine '{node.instanceId}' as finished (check for circular sub-graph references).");
                 layer.childFinished = true;
                 return;
             }
-            var sub = MakeLayer(ParamResolver.ResolveObject(node, "graph") as NodeGraphAsset);
+            var sub = MakeLayer(m_Graphs?.FindGraph(ParamResolver.ResolveGraphRef(node, "graph")));
             var subEntry = sub != null ? FindEntry(sub) : null;
             var subInitial = subEntry != null ? Target(sub, subEntry, "out") : null;
             if (subInitial == null)
             {
-                Debug.LogWarning($"StateMachineRunner: sub machine '{node.instanceId}' has no runnable sub graph (missing graph reference, Entry node, or initial state) — treating it as finished.");
+                GraphLog.Warning($"StateMachineRunner: sub machine '{node.instanceId}' has no runnable sub graph (missing graph reference, Entry node, or initial state) — treating it as finished.");
                 layer.childFinished = true;
                 return;
             }
@@ -339,7 +342,7 @@ namespace StateMachine
 
             if (s == null)
             {
-                Debug.LogWarning("StateMachineRunner.Restore: snapshot is null — machine left stopped.");
+                GraphLog.Warning("StateMachineRunner.Restore: snapshot is null — machine left stopped.");
                 return;
             }
 
@@ -370,7 +373,7 @@ namespace StateMachine
                 if (kind == StateMachineNodeKind.SubMachine)
                 {
                     if (last) { layer.childFinished = true; break; }   // 路径止于 SubMachine = 其子机已完结
-                    var sub = MakeLayer(ParamResolver.ResolveObject(node, "graph") as NodeGraphAsset);
+                    var sub = MakeLayer(m_Graphs?.FindGraph(ParamResolver.ResolveGraphRef(node, "graph")));
                     if (sub == null) { WarnBadPath(s.statePath, segs[i + 1]); return; }
                     m_Layers.Add(sub);
                     layer = sub;
@@ -386,7 +389,7 @@ namespace StateMachine
 
         void WarnBadPath(string path, string segment)
         {
-            Debug.LogWarning($"StateMachineRunner.Restore: state path '{path}' no longer resolves (segment '{segment}') — machine left stopped.");
+            GraphLog.Warning($"StateMachineRunner.Restore: state path '{path}' no longer resolves (segment '{segment}') — machine left stopped.");
             m_Layers.Clear();
         }
 
@@ -405,14 +408,16 @@ namespace StateMachine
 
         // ---- 图辅助方法 ----------------------------------------------------------------------------------
 
-        StateMachineNodeDefinition DefOf(NodeInstance n) => m_Registry?.Find(n.definitionId) as StateMachineNodeDefinition;
+        // 0.0.x 是 `registry.Find(id) as StateMachineNodeDefinition`；现在取纯层 NodeSchema。
+        NodeSchema DefOf(NodeInstance n) => n == null ? null : m_Registry?.FindSchema(n.definitionId);
 
         // definitionId 经 StableId="statemachine."+Kind 解析；解析不到（定义缺失/非本领域）→ null，
         // 各调用点据此把该实例排除在求值之外（绝不误当 Exit 之类的具体种类处置）。
-        StateMachineNodeKind? KindOf(NodeInstance n) => DefOf(n)?.Kind;
+        // 语义不变，只是 Kind 现在来自 schema.kind 字符串而非定义类型。
+        StateMachineNodeKind? KindOf(NodeInstance n) => StateMachineKinds.Parse(DefOf(n)?.kind);
 
         string DisplayNameOf(NodeInstance n) =>
-            n == null ? "" : (!string.IsNullOrEmpty(n.displayName) ? n.displayName : DefOf(n)?.DisplayName ?? n.definitionId);
+            n == null ? "" : (!string.IsNullOrEmpty(n.displayName) ? n.displayName : DefOf(n)?.displayName ?? n.definitionId);
 
         int Priority(NodeInstance transition)
         {
@@ -430,8 +435,8 @@ namespace StateMachine
         NodeInstance FindEntry(Layer layer) =>
             layer.graph.instances.FirstOrDefault(i => KindOf(i) == StateMachineNodeKind.Entry);
 
-        // 构造一层：图的 O(1) 实例索引按 NodeGraphAsset 缓存、构建一次并复用。
-        Layer MakeLayer(NodeGraphAsset g)
+        // 构造一层：图的 O(1) 实例索引按 GraphData 缓存、构建一次并复用。
+        Layer MakeLayer(GraphData g)
         {
             if (g == null) return null;
             if (!m_IndexCache.TryGetValue(g, out var index))

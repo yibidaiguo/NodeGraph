@@ -95,7 +95,7 @@ namespace TaskEditor.EditorUI
             var taskIds = new List<(NodeInstance inst, string id)>();
             foreach (var (inst, def) in instances.Where(p => p.def.Kind == TaskNodeKind.Task))
             {
-                var id = ParamResolver.Resolve(inst, def, "taskId") ?? "";
+                var id = ParamResolver.Resolve(inst, def.Schema, "taskId") ?? "";
                 if (string.IsNullOrWhiteSpace(id))
                     yield return ValidationIssue.Error(inst.instanceId, L("val.task.taskIdMissing", "Task node has no taskId set"));
                 else
@@ -111,11 +111,15 @@ namespace TaskEditor.EditorUI
         {
             foreach (var (inst, def) in instances.Where(p => p.def.Kind == TaskNodeKind.Task))
             {
-                var value = ParamResolver.ResolveObject(inst, "stepGraph");
-                if (value == null) continue;
-                if (value is not NodeGraphAsset stepGraph)
+                // 0.1.0：stepGraph 存的是稳定 graphId。空引用照旧跳过；有 id 但解析不到图
+                // （图被删除/未导入）现在是明确的错误——0.0.x 那种"类型不对"的情况不可能再发生，
+                // 因为 graphRefs 只指向图。
+                var graphId = ParamResolver.ResolveGraphRef(inst, "stepGraph");
+                if (string.IsNullOrEmpty(graphId)) continue;
+                var stepGraph = GraphRefs.ByGraphId(graphId);
+                if (stepGraph == null)
                 {
-                    yield return ValidationIssue.Error(inst.instanceId, L("val.task.stepGraphWrongType", "stepGraph must reference a NodeGraphAsset"));
+                    yield return ValidationIssue.Error(inst.instanceId, L("val.task.stepGraphMissing", "stepGraph references a graph that no longer exists"));
                     continue;
                 }
                 if (stepGraph.module != TaskGraphScaffold.Module)
@@ -168,7 +172,7 @@ namespace TaskEditor.EditorUI
 
             foreach (var (inst, def) in instances.Where(p => p.def.Kind == TaskNodeKind.Label))
             {
-                var name = ParamResolver.Resolve(inst, def, "labelName") ?? "";
+                var name = ParamResolver.Resolve(inst, def.Schema, "labelName") ?? "";
                 if (string.IsNullOrWhiteSpace(name))
                     yield return ValidationIssue.Error(inst.instanceId, L("val.task.labelMissing", "Label node has no labelName set"));
             }
@@ -179,7 +183,7 @@ namespace TaskEditor.EditorUI
 
             foreach (var (inst, def) in instances.Where(p => p.def.Kind == TaskNodeKind.Jump))
             {
-                var target = ParamResolver.Resolve(inst, def, "targetLabel") ?? "";
+                var target = ParamResolver.Resolve(inst, def.Schema, "targetLabel") ?? "";
                 if (string.IsNullOrWhiteSpace(target))
                     yield return ValidationIssue.Error(inst.instanceId, L("val.task.jumpNoTarget", "Jump has no targetLabel set"));
                 else if (!labels.ContainsKey(target))
@@ -222,7 +226,7 @@ namespace TaskEditor.EditorUI
             foreach (var (inst, def) in instances)
                 foreach (var p in def.Parameters.Where(p => p.type?.kind == TypeKind.BlackboardKeyRef))
                 {
-                    var key = ParamResolver.Resolve(inst, def, p.name);
+                    var key = ParamResolver.Resolve(inst, def.Schema, p.name);
                     if (string.IsNullOrEmpty(key)) continue;
                     if (!bb.Has(key))
                         yield return ValidationIssue.Warn(inst.instanceId, L("val.task.paramUndefinedKey", "'{0}' references undefined blackboard key '{1}'", p.name, key));
@@ -244,7 +248,7 @@ namespace TaskEditor.EditorUI
             var labels = new Dictionary<string, List<NodeInstance>>(System.StringComparer.Ordinal);
             foreach (var (inst, def) in instances.Where(p => p.def.Kind == TaskNodeKind.Label))
             {
-                var name = ParamResolver.Resolve(inst, def, "labelName") ?? "";
+                var name = ParamResolver.Resolve(inst, def.Schema, "labelName") ?? "";
                 if (string.IsNullOrWhiteSpace(name)) continue;
                 if (!labels.TryGetValue(name, out var list))
                     labels[name] = list = new List<NodeInstance>();
@@ -260,7 +264,7 @@ namespace TaskEditor.EditorUI
                     yield return c.toInstanceId;
 
             if (def.Kind != TaskNodeKind.Jump) yield break;
-            var target = ParamResolver.Resolve(inst, def, "targetLabel") ?? "";
+            var target = ParamResolver.Resolve(inst, def.Schema, "targetLabel") ?? "";
             if (!labels.TryGetValue(target, out var targets)) yield break;
             foreach (var label in targets)
                 yield return label.instanceId;

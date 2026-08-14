@@ -46,7 +46,7 @@ namespace NodeEditor.EditorUI
             foreach (var pd in def.Parameters)
             {
                 string pn = Localizer.ParamName(def, pd.name);
-                string val = ParamResolver.Resolve(inst, def, pd.name);
+                string val = ParamResolver.Resolve(inst, def.Schema, pd.name);
                 string pdesc = Localizer.ParamDesc(def, pd.name);
                 string text = "• " + pn + (string.IsNullOrEmpty(val) ? "" : " = " + val);
                 if (!string.IsNullOrEmpty(pdesc)) text += "  — " + pdesc;

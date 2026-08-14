@@ -3,8 +3,10 @@
   "rootNamespace": "TaskEditor.EditorUI",
   "references": [
     "NodeEditor.Runtime",
+    "NodeEditor.Unity",
     "NodeEditor.Editor",
-    "Task.Runtime"
+    "Task.Runtime",
+    "Task.Unity"
   ],
   "includePlatforms": [
     "Editor"

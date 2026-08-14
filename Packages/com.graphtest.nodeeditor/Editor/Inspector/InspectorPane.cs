@@ -180,7 +180,7 @@ namespace NodeEditor.EditorUI
                                 choices.Insert(0, "");
                                 return choices;
                             },
-                            AssetDatabase.GetAssetPath(ParamResolver.ResolveObject(node.Instance, pd.name)),
+                            AssetDatabase.GetAssetPath(GraphRefs.Resolve(node.Instance, pd.name)),
                             path =>
                             {
                                 if (string.IsNullOrEmpty(path))
@@ -201,7 +201,7 @@ namespace NodeEditor.EditorUI
                     var of = new ObjectField(label)
                     {
                         objectType = objectType,
-                        value = ParamResolver.ResolveObject(node.Instance, pd.name),   // 真实引用，构建安全
+                        value = GraphRefs.Resolve(node.Instance, pd.name),   // 按稳定 graphId 解析
                         tooltip = tip
                     };
                     of.RegisterValueChangedCallback(e => WriteObjectOverride(node, pd.name, e.newValue));
@@ -254,12 +254,14 @@ namespace NodeEditor.EditorUI
         // 一个纯 inspector 改动（针对已保存的图）会在保存/关闭时被悄悄丢失。
         void WriteOverride(NodeView node, string param, string valueJson) =>
             NodeInspectorEdits.WriteParam(m_Asset, node.Instance, param, valueJson);
+        // Object 类型参数在 0.1.0 只表达"指向另一张图"（运行期四处读取全部强转 NodeGraphAsset），
+        // 因此写回的是稳定 graphId 而不是资产引用；非图资产不再受支持。
         void WriteObjectOverride(NodeView node, string param, UnityEngine.Object value) =>
-            NodeInspectorEdits.WriteObject(m_Asset, node.Instance, param, value);
+            NodeInspectorEdits.WriteGraphRef(m_Asset, node.Instance, param, value as NodeGraphAsset);
         string CurrentString(NodeView n, string param, string fallback)
         {
             // override 优先；否则通过 ParamResolver（4a）从定义的当前默认值回填。
-            var resolved = ParamResolver.Resolve(n.Instance, n.Definition, param);
+            var resolved = ParamResolver.Resolve(n.Instance, n.Definition.Schema, param);
             return resolved ?? fallback;
         }
         float CurrentFloat(NodeView n, string p) => float.TryParse(CurrentString(n, p, "0"), out var f) ? f : 0f;
@@ -343,12 +345,12 @@ namespace NodeEditor.EditorUI
             Dirty(asset);
         }
 
-        public static void WriteObject(NodeGraphAsset asset, NodeInstance inst, string param, UnityEngine.Object value)
+        // 0.1.0：Object 类型参数只表达"指向另一张图"，写回稳定 graphId 而非资产引用。
+        // GraphRefs.Set 会在目标图还没有 graphId 时按其 asset GUID 播种一个。
+        public static void WriteGraphRef(NodeGraphAsset asset, NodeInstance inst, string param, NodeGraphAsset value)
         {
             Mark(asset);
-            var ov = inst.objectOverrides.FirstOrDefault(o => o.paramName == param);
-            if (ov == null) { ov = new ObjectOverride { paramName = param }; inst.objectOverrides.Add(ov); }
-            ov.value = value;
+            GraphRefs.Set(inst, param, value);
             Dirty(asset);
         }
 
