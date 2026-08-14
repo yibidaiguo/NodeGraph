@@ -127,8 +127,7 @@
     --ne-font-sm:          11px;
     --ne-font-md:          12px;
 
-    --ne-node-title-height:  26px;
-    --ne-node-corner-radius: 6px;
+    --ne-node-title-height-px:  26px;
     --ne-node-title-text:    var(--ne-text-on-accent);
     --ne-wire:               var(--ne-accent-cyan);
     --ne-wire-selected:      var(--ne-accent);
@@ -212,8 +211,7 @@
     --ne-grid-thick:       rgba(63, 55, 43, 0.145);
     --ne-transparent:      rgba(0, 0, 0, 0);
 
-    --ne-node-title-height:  26px;
-    --ne-node-corner-radius: 6px;
+    --ne-node-title-height-px:  26px;
     --ne-node-title-text:    var(--ne-text-on-accent);
     --ne-wire:               var(--ne-accent-cyan);
     --ne-wire-selected:      var(--ne-accent);
@@ -309,8 +307,7 @@
     --ne-grid-thick:       rgba(255, 240, 220, 0.075);
     --ne-transparent:      rgba(0, 0, 0, 0);
 
-    --ne-node-title-height:  26px;
-    --ne-node-corner-radius: 6px;
+    --ne-node-title-height-px:  26px;
     --ne-node-title-text:    var(--ne-text-on-accent);
     --ne-wire:               var(--ne-accent-cyan);
     --ne-wire-selected:      var(--ne-accent);
@@ -333,6 +330,13 @@
     --ne-node-shape-glow: var(--ne-transparent);
     --ne-node-validation-outline: var(--ne-transparent);
     --ne-node-title-fill: var(--ne-role-control);
+    /* Painter2D 几何：C# 经 CustomStyleProperty<float> 读这两个值，而它只认**无单位**数字——
+       写成 26px 会被当成长度、TryGetValue 返回 false 并把 out 写成 0，
+       结果是整条标题色带不画、圆角变方角。对照 --ne-node-shape-outline-width 也是无单位。
+       几何三套主题一致，所以直接写字面量、不进主题块；#title 的布局另用 -px 版本，
+       两者必须同步（NodeSurfaceStyleTests 有断言盯着）。 */
+    --ne-node-title-height: 26;
+    --ne-node-corner-radius: 6;
 }
 .node-base > #node-border {
     background-color: var(--ne-transparent);
@@ -360,8 +364,8 @@
     -unity-font-style: bold;
     -unity-text-align: middle-left;
     padding: 0 8px;
-    min-height: var(--ne-node-title-height);
-    height: var(--ne-node-title-height);
+    min-height: var(--ne-node-title-height-px);
+    height: var(--ne-node-title-height-px);
     color: var(--ne-node-title-text);
     background-color: var(--ne-transparent);
 }
@@ -1630,7 +1634,7 @@ Label { color: var(--ne-text); }
     border-color: rgba(0, 0, 0, 0);
 }
 .node-base #title-label {
-    color: var(--ne-text-strong);
+    color: var(--ne-node-title-text);
 }
 .node-base .port #type {
     color: var(--ne-text);
