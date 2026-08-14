@@ -2,7 +2,8 @@
   "name": "NodeEditor.Editor",
   "rootNamespace": "NodeEditor.EditorUI",
   "references": [
-    "NodeEditor.Runtime"
+    "NodeEditor.Runtime",
+    "NodeEditor.Unity"
   ],
   "includePlatforms": [
     "Editor"

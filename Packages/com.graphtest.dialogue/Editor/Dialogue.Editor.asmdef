@@ -3,8 +3,10 @@
   "rootNamespace": "Dialogue.EditorUI",
   "references": [
     "NodeEditor.Runtime",
+    "NodeEditor.Unity",
     "NodeEditor.Editor",
-    "Dialogue.Runtime"
+    "Dialogue.Runtime",
+    "Dialogue.Unity"
   ],
   "includePlatforms": [
     "Editor"

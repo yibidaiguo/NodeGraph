@@ -16,12 +16,16 @@ namespace Dialogue
 
     // CompareOp 等比较语义已上提到框架 NodeEditor（全局通用，供可组合单元复用）；此处不再定义。
 
-    // 每个对话节点的公共基类：钉死一个由 Kind 推导出的确定性 StableId，使得一个定义在任何机器上/
-    // 任何重新生成后都解析到相同的 id，从而让已有的图继续可用。
-    public abstract class DialogueNodeDefinition : NodeDefinition
+    // DialogueNodeDefinition（ScriptableObject 基类）已移至 Unity/Nodes/DialogueNodeDefinition.cs
+    //（Dialogue.Unity 程序集）：它继承 NodeDefinition，是 asset 支撑的创作物。
+    // 执行器不再按类型强转定义，改为读 NodeSchema.kind 并解析回下面这个枚举——见 DialogueKinds。
+
+    // 把 NodeSchema.kind 字符串解析回领域枚举。schema.kind 由 DialogueNodeDefinition.KindTag
+    // 烘出（即 Kind.ToString()），所以这是一次纯字符串往返，纯 C# 侧无需认识任何 ScriptableObject。
+    // 解析失败（null / 非对话定义 / 未知种类）返回 null，由调用方按语义兜底。
+    public static class DialogueKinds
     {
-        public override string Module => "dialogue";
-        public abstract DialogueNodeKind Kind { get; }
-        protected override string StableId => "dialogue." + Kind;
+        public static DialogueNodeKind? Parse(string kind) =>
+            System.Enum.TryParse<DialogueNodeKind>(kind, out var k) ? k : (DialogueNodeKind?)null;
     }
 }

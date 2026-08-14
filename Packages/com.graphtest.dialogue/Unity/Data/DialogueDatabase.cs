@@ -35,8 +35,12 @@ namespace Dialogue
         public List<LocalizedText> texts = new();
     }
 
+    // 实现纯层的 IDialogueTextSource：runner 由此只依赖"按 key 取文本/说话人"这一契约，
+    // 不再认识 ScriptableObject，也不再搬运 Sprite/AudioClip。
+    // 立绘/配音仍住在本类的条目上，由表现层用 DialogueLineView.lineKey 回查（见 DialogueRunner 的迁移说明）。
+    // 既有调用点 `new DialogueRunner(registry, bb, database, lang)` 因此一字不改仍然编译通过。
     [CreateAssetMenu(menuName = "Dialogue/Database")]
-    public class DialogueDatabase : ScriptableObject
+    public class DialogueDatabase : ScriptableObject, IDialogueTextSource
     {
         [SerializeField] private List<DialogueLineEntry> entries = new();
 
@@ -58,6 +62,10 @@ namespace Dialogue
         // 第一个匹配此 key 的条目，或 null。设计上是线性的：数据库存放创作好的行，并非热路径
         //（runner 每个节拍解析一行，而非每帧）。预期 key 唯一；重复时解析为第一条。
         public DialogueLineEntry Find(string key) => entries.FirstOrDefault(e => e.key == key);
+
+        // IDialogueTextSource：说话人名字。runner 过去是 Find(key)?.speaker，
+        // 现在经接口取，从而不必让纯层认识 DialogueLineEntry（它带 Sprite/AudioClip）。
+        public string SpeakerOf(string key) => Find(key)?.speaker;
 
         // 出现在不止一个条目上的非空 key —— Find() 对这些会静默地"先到先得"，
         // 故由编辑器工具把它们暴露出来，而不是让一个拼错的重复 key 永远藏掉某一行。

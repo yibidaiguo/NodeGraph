@@ -22,6 +22,10 @@ namespace Dialogue
         public BlackboardAsset[] blackboards;
         [Tooltip("按 lineKey/optionKey 寻址的本地化台词/选项内容。可选——没有它则 key 原样显示。")]
         public DialogueDatabase database;
+        [Tooltip("本图（及其子图）用到的所有子对话图。0.1.0 起子图按稳定 graphId 引用，" +
+                 "运行时构建无 AssetDatabase、无法按 id 全局搜图，故与 blackboards 同理在此显式挂接；" +
+                 "留空则 SubDialogue 节点被跳过。编辑期可由 Dialogue/Collect Sub Graphs 一键收集。")]
+        public NodeGraphAsset[] subGraphs;
         [Tooltip("运行时本地化配置（枚举语言下拉）。设置后按它选定的语言取文本；留空则用下面的 language 枚举。")]
         public RuntimeLocalizationConfig localizationConfig;
         [Tooltip("台词/选项解析用的语言（仅当未设置上面的本地化配置时生效）。枚举字段——检视面板渲染为原生下拉框，" +
@@ -42,7 +46,10 @@ namespace Dialogue
         {
             // 优先用运行时本地化配置选定的语言；未设置则回退到 language 字符串字段。
             var lang = localizationConfig != null ? localizationConfig.language.Code() : language.Code();
-            Runner = new DialogueRunner(registry, new BlackboardSet(blackboards), database, lang);
+            // 图源里带上主图本身：子对话 Exit 回到调用方、以及 Restore 按 graphId 复原栈帧时都要解析它。
+            var graphs = new NodeGraphSource(subGraphs).Add(graph);
+            Runner = new DialogueRunner(registry, new BlackboardSet(blackboards), database, lang,
+                                        graphs, UnityGraphLog.Instance);
             OnRunnerCreated?.Invoke(Runner);
         }
 
@@ -50,7 +57,9 @@ namespace Dialogue
 
         // 启动（或重启）已接入的图。请先订阅 Runner.OnLine/OnChoices/OnEvent/OnEnd —— Begin()
         // 会同步走到第一个 Line/Choice 并在返回前抛出其事件。
-        public void Begin() => Runner.Run(graph);
+        // graph.ToData() 缓存且返回同一实例，因此重复 Begin() 不会产生新的图身份
+        //（OwnsGraph / 子图栈帧的引用相等语义与 0.0.x 一致）。
+        public void Begin() => Runner.Run(graph != null ? graph.ToData() : null);
 
         // 确认当前行并前进；除非正停在某个 Line 上，否则忽略（见 DialogueRunner.Advance）。
         public void Advance() => Runner.Advance();

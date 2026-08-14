@@ -1,0 +1,12 @@
+{
+  "name": "Dialogue.Unity",
+  "rootNamespace": "Dialogue",
+  "references": [
+    "NodeEditor.Runtime",
+    "NodeEditor.Unity",
+    "Dialogue.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "autoReferenced": true
+}

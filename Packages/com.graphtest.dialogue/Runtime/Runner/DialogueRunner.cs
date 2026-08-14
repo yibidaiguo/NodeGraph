@@ -17,14 +17,35 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using NodeEditor;
 
 namespace Dialogue
 {
-    // 一个被呈现的 Line 交给 UI 的内容。镜像 DialogueLineEntry 的表现字段，但 text 已针对
-    // 当前语言解析完毕，因此调用方渲染时无需触碰 database。
-    public struct DialogueLineView { public string speaker; public string text; public Sprite portrait; public AudioClip voice; }
+    // 对话文本来源的纯 C# 契约。0.0.x 里 runner 直接持有 DialogueDatabase（ScriptableObject，
+    // 且带 Sprite/AudioClip 字段），把执行器钉死在 Unity 上。这里抽出接口：
+    // Unity 侧的 DialogueDatabase 实现它，因此既有调用点 `new DialogueRunner(reg, bb, db, lang)`
+    // 一字不改仍然编译通过；纯 C# 侧可传任意实现（JSON 表、测试桩）。
+    public interface IDialogueTextSource
+    {
+        // 按 key + 语言取已解析的台词/选项文本。取不到时返回 null，由 runner 回退到显示 key
+        //（"可见的缺失"优于静默空串）。
+        string Resolve(string key, string lang);
+        // 该条目的说话人名字；无条目返回 null。
+        string SpeakerOf(string key);
+    }
+
+    // 一个被呈现的 Line 交给 UI 的内容。text 已针对当前语言解析完毕，调用方渲染时无需触碰 database。
+    //
+    // ⚠ 0.1.0 破坏性变更：移除了 portrait(Sprite) / voice(AudioClip) 两个字段，新增 lineKey。
+    // 原因：执行器不该搬运引擎资产引用——那正是它无法进逻辑层的原因之一。
+    // 迁移：表现层用 lineKey 回查数据库取立绘/配音——
+    //     var entry = database.Find(view.lineKey);  entry?.portrait / entry?.voice
+    public struct DialogueLineView
+    {
+        public string speaker;
+        public string text;
+        public string lineKey;   // 供表现层回查立绘/配音等资产
+    }
 
     // 一个 Choice 中可被选择的一行。index 是调用方回传给 Choose() 的参数；它只对可见（VISIBLE）
     // 选项进行索引（被门控掉的选项不在其中），因此 Choose(i) 与 OnChoices[i] 始终对齐。
@@ -47,26 +68,31 @@ namespace Dialogue
         // 该计数器在每次挂起时重置，因此对话的总长度是无界的。
         const int MaxSteps = 10000;
 
-        readonly NodeRegistry m_Registry;
+        readonly ISchemaSource m_Schemas;     // 定义解析：definitionId -> NodeSchema（NodeRegistry 实现它）
         readonly BlackboardSet m_BB;          // 这张图的有效黑板（全局⊕模块⊕组合并视图），供播种 / Capture / VarType
-        readonly DialogueDatabase m_Db;
+        readonly IDialogueTextSource m_Db;
         readonly string m_Lang;
         readonly DialogueRunContext m_Ctx;   // 可组合单元求值上下文（IScopedBlackboard + 事件出口）
+        readonly IGraphSource m_Graphs;      // 子图解析：graphId -> GraphData（可为 null => 子对话被跳过）
+        readonly IGraphLog m_Log;
 
-        // #6 每个图的 O(1) 查找表，按 NodeGraphAsset 构建一次并复用（重新进入的子对话会保留其索引）。
-        // m_Index/m_Labels 指向当前活动（ACTIVE）图的映射表；每当 m_Graph 改变时它们随之切换。
-        readonly Dictionary<NodeGraphAsset, Dictionary<string, NodeInstance>> m_IndexCache = new();
-        readonly Dictionary<NodeGraphAsset, Dictionary<string, NodeInstance>> m_LabelCache = new();
-        Dictionary<string, NodeInstance> m_Index = Empty;
+        // #6 实例查找已下沉到 GraphData.Find（按图惰性建索引、随图走），三个执行器共用同一套语义，
+        // 这里不再各自维护 Dictionary<NodeGraphAsset, ...> 缓存。
+        // label 映射（labelName -> Label 实例）是对话专有的，仍按图缓存以支撑 #1 的跳转解析。
+        readonly Dictionary<GraphData, Dictionary<string, NodeInstance>> m_LabelCache = new();
         Dictionary<string, NodeInstance> m_Labels = Empty;
         static readonly Dictionary<string, NodeInstance> Empty = new();
 
+        // schema 查找的每实例缓存：Continue 循环里每个节点每步都要取 kind/参数，
+        // 避免反复走 ISchemaSource 的字典 + 枚举解析。
+        readonly Dictionary<string, DialogueNodeKind> m_KindCache = new();
+
         // 子对话调用栈：进入一个 SubDialogue 时，我们压入调用方图 + 待恢复的节点，
         // 切换到子图并运行它；弹栈时恢复调用方并从其 'next' 继续。
-        struct Frame { public NodeGraphAsset graph; public string returnNodeId; }
+        struct Frame { public GraphData graph; public string returnNodeId; }
         readonly Stack<Frame> m_Stack = new();
 
-        NodeGraphAsset m_Graph;             // 当前活动的图（概念上调用栈的栈顶）
+        GraphData m_Graph;                  // 当前活动的图（概念上调用栈的栈顶）
         NodeInstance m_Current;             // 执行指针：当前被呈现的节点（Line/Choice）
         List<NodeInstance> m_PendingOptions;// 被呈现的 Choice 背后的可见 Options，按 view.index 索引
 
@@ -74,9 +100,14 @@ namespace Dialogue
         // 以便编辑器调试器把"走过的路径"与"从未到达"区分着上色。
         readonly HashSet<string> m_Visited = new();
 
-        public DialogueRunner(NodeRegistry registry, BlackboardSet blackboard, DialogueDatabase db, string lang)
+        // graphs / log 可省略：省略时子对话解析不到（按语义跳过该节点）、日志走全局 GraphLog.Current。
+        // Unity 侧传 NodeRegistry 作 schemas、DialogueDatabase 作 db——两者都实现了对应接口，
+        // 所以 0.0.x 的调用点 `new DialogueRunner(registry, bb, database, lang)` 一字不改。
+        public DialogueRunner(ISchemaSource schemas, BlackboardSet blackboard, IDialogueTextSource db, string lang,
+                              IGraphSource graphs = null, IGraphLog log = null)
         {
-            m_Registry = registry; m_BB = blackboard; m_Db = db; m_Lang = lang;
+            m_Schemas = schemas; m_BB = blackboard; m_Db = db; m_Lang = lang;
+            m_Graphs = graphs; m_Log = log;
             Blackboard = new DialogueBlackboard(blackboard);
             // 单元上下文：黑板读写 + 把 FireEventAction 触发的事件接到表现层 OnEvent。
             m_Ctx = new DialogueRunContext(Blackboard);
@@ -97,15 +128,17 @@ namespace Dialogue
         // 上面 StatusOf 的路径/指针高亮在这里就是全部内容。
         public object RuntimeNodeOf(string instanceId) => null;
 
-        public NodeGraphAsset ActiveGraph => m_Current != null ? m_Graph : null;
+        public GraphData ActiveGraph => m_Current != null ? m_Graph : null;
 
-        public bool OwnsGraph(NodeGraphAsset graph) =>
+        // 引用相等——与 0.0.x 一致：NodeGraphAsset.ToData() 缓存且返回同一实例，
+        // 因此编辑器传 asset.ToData() 进来比较，结果与过去直接比 asset 相同。
+        public bool OwnsGraph(GraphData graph) =>
             graph != null && (graph == m_Graph || m_Stack.Any(frame => frame.graph == graph));
 
         // ---- 公开的泵 ------------------------------------------------------------------------------------
 
         // 从图的 Start 节点开始一次全新的播放。对 null/空图安全（立即结束）。
-        public void Run(NodeGraphAsset graph)
+        public void Run(GraphData graph)
         {
             m_Stack.Clear();
             m_PendingOptions = null;
@@ -151,8 +184,9 @@ namespace Dialogue
             {
                 if (++steps > MaxSteps)   // #3 即时节点环防护
                 {
-                    Debug.LogError($"DialogueRunner: exceeded {MaxSteps} steps without reaching a Line/Choice/End " +
-                                   "— aborting (likely an instant-node cycle, e.g. Jump<->Label). Ending dialogue.");
+                    (m_Log ?? GraphLog.Current).Error(
+                        $"DialogueRunner: exceeded {MaxSteps} steps without reaching a Line/Choice/End " +
+                        "— aborting (likely an instant-node cycle, e.g. Jump<->Label). Ending dialogue.");
                     End();
                     return;
                 }
@@ -197,7 +231,9 @@ namespace Dialogue
 
         NodeInstance EnterSub(NodeInstance node)
         {
-            var sub = ParamResolver.ResolveObject(node, "subGraph") as NodeGraphAsset;
+            // 0.0.x 直接取 UnityEngine.Object 引用；现在取稳定 graphId 再经 IGraphSource 解析。
+            // 未设置子图、或没有图源（纯 C# 侧未提供）时一律跳过该节点——与原语义一致。
+            var sub = m_Graphs?.FindGraph(ParamResolver.ResolveGraphRef(node, "subGraph"));
             if (sub == null) return Next(node, "next");                       // 未设置子图 -> 跳过它
             m_Stack.Push(new Frame { graph = m_Graph, returnNodeId = node.instanceId });
             SetGraph(sub);
@@ -219,13 +255,11 @@ namespace Dialogue
         void PresentLine(NodeInstance node)
         {
             var key = Param(node, "lineKey");
-            var entry = m_Db != null ? m_Db.Find(key) : null;
             OnLine?.Invoke(new DialogueLineView
             {
-                speaker  = entry?.speaker,
-                text     = m_Db != null ? m_Db.Resolve(key, m_Lang) : key,   // 无 DB -> 显示 key（可见的缺失）
-                portrait = entry?.portrait,
-                voice    = entry?.voice
+                speaker = m_Db?.SpeakerOf(key),
+                text    = m_Db?.Resolve(key, m_Lang) ?? key,   // 无 DB -> 显示 key（可见的缺失）
+                lineKey = key                                   // 表现层据此回查立绘/配音
             });
         }
 
@@ -279,29 +313,39 @@ namespace Dialogue
 
         // ---- 图辅助方法 ----------------------------------------------------------------------------------
 
-        DialogueNodeDefinition Def(NodeInstance n) => m_Registry?.Find(n.definitionId) as DialogueNodeDefinition;
-        DialogueNodeKind KindOf(NodeInstance n) => Def(n)?.Kind ?? DialogueNodeKind.End;
-        string Param(NodeInstance n, string name) { var d = Def(n); return d == null ? null : ParamResolver.Resolve(n, d, name); }
+        // 定义解析：0.0.x 是 `registry.Find(id) as DialogueNodeDefinition` 再读 .Kind；
+        // 现在改为取 NodeSchema 并把 schema.kind 字符串解析回枚举。语义不变——
+        // 解析不出来（未注册 / 非对话定义）一律当 End，让流程干净收束而不是抛异常。
+        NodeSchema Schema(NodeInstance n) => n == null ? null : m_Schemas?.FindSchema(n.definitionId);
+
+        DialogueNodeKind KindOf(NodeInstance n)
+        {
+            if (n?.definitionId == null) return DialogueNodeKind.End;
+            if (m_KindCache.TryGetValue(n.definitionId, out var cached)) return cached;
+            var kind = DialogueKinds.Parse(Schema(n)?.kind) ?? DialogueNodeKind.End;
+            m_KindCache[n.definitionId] = kind;
+            return kind;
+        }
+
+        string Param(NodeInstance n, string name)
+        {
+            var s = Schema(n);
+            return s == null ? null : ParamResolver.Resolve(n, s, name);
+        }
+
         TypeRef VarType(string key) => m_BB?.Find(key)?.type;
 
-        // #6 针对活动（ACTIVE）图的缓存索引进行 O(1) 实例查找（惰性构建，按图复用）。
-        NodeInstance Find(string id) => id != null && m_Index.TryGetValue(id, out var n) ? n : null;
-        NodeInstance Next(NodeInstance n, string port) =>
-            n == null ? null : Find(n.connections.FirstOrDefault(c => c.fromPort == port)?.toInstanceId);
+        // #6 O(1) 实例查找——索引现在住在 GraphData 里（惰性建、随图走、三个执行器共用）。
+        NodeInstance Find(string id) => m_Graph?.Find(id);
+        NodeInstance Next(NodeInstance n, string port) => m_Graph?.Next(n, port);
 
-        // 切换活动图并将 m_Index/m_Labels 指向它的映射表，在首次访问时构建并缓存它们。
+        // 切换活动图并把 m_Labels 指向它的 label 映射，首次访问时构建并缓存。
         // label 映射（labelName -> Label 实例）支撑 #1 的跳转解析，无需逐跳扫描。
-        void SetGraph(NodeGraphAsset g)
+        void SetGraph(GraphData g)
         {
             m_Graph = g;
-            if (g == null) { m_Index = Empty; m_Labels = Empty; return; }
+            if (g == null) { m_Labels = Empty; return; }
 
-            if (!m_IndexCache.TryGetValue(g, out m_Index))
-            {
-                m_Index = new Dictionary<string, NodeInstance>(g.instances.Count);
-                foreach (var inst in g.instances) m_Index[inst.instanceId] = inst;
-                m_IndexCache[g] = m_Index;
-            }
             if (!m_LabelCache.TryGetValue(g, out m_Labels))
             {
                 m_Labels = new Dictionary<string, NodeInstance>();
@@ -316,12 +360,10 @@ namespace Dialogue
         }
 
         // 图的入口节点：若存在则取第一个声明的 entryInstanceId，否则取第一个 Start 节点。
-        NodeInstance StartOf(NodeGraphAsset g)
+        NodeInstance StartOf(GraphData g)
         {
             if (g == null) return null;
-            var id = g.entryInstanceIds.FirstOrDefault();
-            var entry = id != null ? Find(id) : null;
-            return entry ?? g.instances.FirstOrDefault(i => KindOf(i) == DialogueNodeKind.Start);
+            return g.Entry() ?? g.instances.FirstOrDefault(i => KindOf(i) == DialogueNodeKind.Start);
         }
 
         // ---- #8 存档 / 读档 ---------------------------------------------------------------------------------
@@ -346,7 +388,7 @@ namespace Dialogue
         {
             var s = new DialogueState
             {
-                graph = m_Graph,
+                graphId = m_Graph?.graphId,
                 currentInstanceId = m_Current?.instanceId
             };
             if (m_BB != null)
@@ -354,7 +396,7 @@ namespace Dialogue
                     s.blackboard.Add(new BBEntry { key = v.key, value = UnitValues.ToInvariantString(Blackboard.Get(v.key)) });
             // m_Stack 是栈顶在先；反转一下，使保存的列表以最外层在先，且 Restore 可按序压栈。
             foreach (var f in m_Stack.Reverse())
-                s.stack.Add(new Frame2 { graph = f.graph, returnNodeId = f.returnNodeId });
+                s.stack.Add(new Frame2 { graphId = f.graph?.graphId, returnNodeId = f.returnNodeId });
             return s;
         }
 
@@ -373,9 +415,9 @@ namespace Dialogue
             // stack：保存时以最外层在先；压栈使 m_Stack 的栈顶重新成为最内层的调用方。
             m_Stack.Clear();
             foreach (var f in state.stack)
-                m_Stack.Push(new Frame { graph = f.graph, returnNodeId = f.returnNodeId });
+                m_Stack.Push(new Frame { graph = m_Graphs?.FindGraph(f.graphId), returnNodeId = f.returnNodeId });
 
-            SetGraph(state.graph);
+            SetGraph(m_Graphs?.FindGraph(state.graphId));
             m_PendingOptions = null;
             m_Current = string.IsNullOrEmpty(state.currentInstanceId) ? null : Find(state.currentInstanceId);
 
@@ -398,7 +440,11 @@ namespace Dialogue
     [Serializable]
     public class DialogueState
     {
-        public NodeGraphAsset graph;            // 捕获时的活动图
+        // 0.1.0：由 NodeGraphAsset 引用改为稳定 graphId 字符串。
+        // 这其实修好了 0.0.x 注释里自陈的那个缺陷——"DialogueState 的原始 JSON 不会往返复原图指针，
+        // 跨会话必须由调用方把图引用映射成稳定 id"。现在存的本来就是稳定 id，
+        // 读档时经 IGraphSource 解析回来，跨会话直接可用，无需调用方额外映射。
+        public string graphId;                  // 捕获时的活动图
         public string currentInstanceId;        // 停泊的指针（Line/Choice），结束时为 null
         public List<BBEntry> blackboard = new();// 每一个声明的变量，扁平化为字符串
         public List<Frame2> stack = new();       // 子对话调用栈，最外层在先
@@ -410,5 +456,5 @@ namespace Dialogue
 
     // 一个保存的子对话栈帧：调用方图 + 待恢复的 SubDialogue 节点。
     [Serializable]
-    public class Frame2 { public NodeGraphAsset graph; public string returnNodeId; }
+    public class Frame2 { public string graphId; public string returnNodeId; }
 }
