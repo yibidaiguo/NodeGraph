@@ -57,6 +57,29 @@
   真要让核心层也零引擎依赖，正确做法是把这两个文件的序列化载体下沉到 `NodeEditor.Unity`
   程序集——那是一次数据模型改造，不是一个 asmdef 开关。
 
+- **编辑器调试器的节点着色开始读这条轨迹。** 新增状态 class `status-visited`：
+  快照说「现在不在这个节点」、但轨迹说「本次运行走到过」的节点，不再和从未到达的节点同色。
+  **对状态机尤其明显**——`StateMachineRunner.StatusOf` 只把当前活动路径报成 `Running`，
+  已退出的状态一律 `None`，在此之前一次运行的历史在画布上整段不可见。
+  刻意与 `status-success` 分开：走过不等于成功，状态机的历史状态既非成功也非失败，
+  所以 `status-visited` 只染描边、不换填充。
+  另外 `GraphDebugger` 公开了 `VisitCountOf(instanceId)`——轨迹能回答「这个节点被绕了几圈」，
+  `StatusOf` 回答不了；检视/提示要用这个数字时有现成接缝。
+
+- **状态机模块补齐了自己的外壳配置。** 过去它走的是图列表的 legacy 兜底注册，
+  「新建」按钮只能显示框架通用文案，空态还会显示别的领域的措辞。现在它像对话/任务一样
+  在 `GraphCreationRegistry` 登记显式创建配方（`statemachine.graph`，自带图目录与黑板目录），
+  并种齐 `ui.noGraphs.statemachine` / `ui.newGraphPrompt.statemachine` / `ui.newStateMachineGraph`。
+  **给扩展作者**：新模块照 `StateMachineGraphScaffold` / `DialogueGraphScaffold` 的形状登记配方即可；
+  漏配会被 `ModuleChromeContractTests` 那组契约测试抓住，而不是等用户截图。
+
+- **框架通用文案自愈。** `ui.noGraphs` / `ui.newGraphPrompt` 这两个框架通用键，在只有对话模块的
+  年代被写成了对话措辞（「项目中暂无对话组」）。`EnsureUI` 是 add-if-missing，永远不会把它改回来，
+  于是任何一个老工程里，没有自己覆盖文案的模块都会显示其他领域的词。
+  现在 Setup 会检查：**通用键的值恰好等于某个 `<key>.<module>` 覆盖值**时（这是领域措辞漏进通用键的
+  确证），把它重置为框架措辞并打一条警告。条件收得这么窄是为了不碰作者自己改过的通用文案。
+  **升级到本版后跑一次任一模块的 Setup Assets 即可自愈**，无需手改本地化表。
+
 ### English
 
 **The runtime contract gains an ordered execution trace; three pure-logic assemblies now declare no engine references.** No existing API changed.
@@ -108,6 +131,33 @@
   A flag that costs you your graph data is worse than no flag. Making the core assembly
   engine-free properly means moving the serialization carriers in those two files down into
   `NodeEditor.Unity`, which is a data-model change rather than an asmdef switch.
+
+- **The editor debugger now colours nodes from that trace.** A new `status-visited` class
+  separates "walked earlier in this run" from "never reached" — previously both rendered as
+  `status-inactive`. This matters most for state machines: `StateMachineRunner.StatusOf` reports
+  `Running` only for the active path and `None` for every exited state, so a run's history was
+  entirely invisible on the canvas. It is deliberately distinct from `status-success` — walked is
+  not succeeded, and a state machine's past states are neither — so `status-visited` tints the
+  outline without changing the fill. `GraphDebugger.VisitCountOf(instanceId)` is public for
+  inspectors that want the loop count, which `StatusOf` cannot answer.
+
+- **The state machine module now owns its own shell configuration.** It previously fell back to
+  the graph list's legacy registration, so its create button could only show the framework's
+  generic label and its empty state borrowed another domain's wording. It now registers an
+  explicit recipe in `GraphCreationRegistry` (`statemachine.graph`, with its own graph and
+  blackboard folders) and seeds `ui.noGraphs.statemachine`, `ui.newGraphPrompt.statemachine`
+  and `ui.newStateMachineGraph`. **For extension authors**: register a recipe the way
+  `StateMachineGraphScaffold` and `DialogueGraphScaffold` do; a module that skips it is caught by
+  the `ModuleChromeContractTests` contract tests rather than by a user's screenshot.
+
+- **Framework wording heals itself.** `ui.noGraphs` and `ui.newGraphPrompt` had been written with
+  dialogue wording back when dialogue was the only module. `EnsureUI` is add-if-missing, so it
+  never corrected them, and in any existing project every module without its own override
+  inherited that vocabulary. Setup now resets a generic key when its value is *exactly equal* to
+  one of its `<key>.<module>` overrides — the signature of domain wording leaking into the generic
+  slot — and logs a warning. The condition is deliberately narrow so wording an author edited on
+  purpose is left alone. **Run any module's Setup Assets once after upgrading** and the table
+  repairs itself; no manual editing required.
 
 ## [0.1.5] - 2026-08-15
 
