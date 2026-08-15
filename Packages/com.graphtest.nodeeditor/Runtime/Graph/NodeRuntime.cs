@@ -4,6 +4,7 @@
 // Namespace NodeEditor。Runtime/ 程序集。实现 layer-3 runtime-interfaces.md。
 
 using System;
+using System.Collections.Generic;
 
 namespace NodeEditor
 {
@@ -103,6 +104,52 @@ namespace NodeEditor
     public interface IActiveRuntimeGraphSource : IRuntimeGraphSource
     {
         GraphData ActiveGraph { get; }
+    }
+
+    // 一次访问记录：走到了哪张图的哪个节点。graphId 必带——三个执行器都会下钻子图
+    //（SubDialogue / SubMachine / Task 的 stepGraph），而 instanceId 只在单张图内唯一，
+    // 少了 graphId 的轨迹在跨子图处会退化成猜。
+    public readonly struct GraphVisit : IEquatable<GraphVisit>
+    {
+        public readonly string GraphId;
+        public readonly string InstanceId;
+
+        public GraphVisit(string graphId, string instanceId)
+        {
+            GraphId = graphId;
+            InstanceId = instanceId;
+        }
+
+        public bool Equals(GraphVisit other) =>
+            string.Equals(GraphId, other.GraphId, StringComparison.Ordinal) &&
+            string.Equals(InstanceId, other.InstanceId, StringComparison.Ordinal);
+
+        public override bool Equals(object obj) => obj is GraphVisit other && Equals(other);
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((GraphId != null ? GraphId.GetHashCode() : 0) * 397)
+                     ^ (InstanceId != null ? InstanceId.GetHashCode() : 0);
+            }
+        }
+
+        public override string ToString() => GraphId + "/" + InstanceId;
+    }
+
+    // 可选的有序执行轨迹契约。与 IRuntimeGraph 分开定义，既有第三方执行器只实现 IRuntimeGraph
+    // 也照样编得过（同 IRuntimeGraphSource 的演进方式）。
+    //
+    // 语义（三条，实现方必须全部满足）：
+    //   · Trace 按真实执行顺序追加。同一个节点被重复走到时，它在 Trace 里重复出现——
+    //     轨迹是 List 语义，去重会把「循环走了三圈」压成「走了一次」，那正是这个契约要避免的。
+    //   · 执行器每次重新开跑（Run / Start / StartTask / Restore）时自行清空轨迹。
+    //   · 调用方也可以随时 ClearTrace() 手动清空（例如调试器只想看某一段）。
+    public interface IRuntimeGraphTrace
+    {
+        IReadOnlyList<GraphVisit> Trace { get; }
+        void ClearTrace();
     }
 
     // ====================================================================================

@@ -20,7 +20,7 @@ using NodeEditor;
 
 namespace StateMachine
 {
-    public sealed class StateMachineRunner : IRuntimeGraph, IActiveRuntimeGraphSource
+    public sealed class StateMachineRunner : IRuntimeGraph, IActiveRuntimeGraphSource, IRuntimeGraphTrace
     {
         // 单 tick 连锁转移预算：命中转移后在新态上立即继续求值，合计超过此值 → LogWarning 并停止连锁
         //（本 tick 不再转移，机器不停机）。防无条件转移环把一帧拖死。
@@ -44,6 +44,10 @@ namespace StateMachine
             public bool childFinished;
         }
         readonly List<Layer> m_Layers = new();
+
+        // IRuntimeGraphTrace 的后备数据：本机进入过的每一个状态，按真实进入顺序、含重复。
+        // 状态机没有 m_Visited（它只报当前活动路径），所以轨迹是这里唯一的历史来源。
+        readonly List<GraphVisit> m_Trace = new();
 
         // 每图 O(1) 实例索引缓存（照 DialogueRunner #6）：重复进出的子机图复用其索引，无需逐跳扫描。
         readonly Dictionary<GraphData, Dictionary<string, NodeInstance>> m_IndexCache = new();
@@ -96,6 +100,12 @@ namespace StateMachine
         // 状态机没有逐节点运行时对象（进度条之类）——StatusOf 的路径高亮就是全部内容。
         public object RuntimeNodeOf(string instanceId) => null;
 
+        // ---- IRuntimeGraphTrace ----
+
+        public IReadOnlyList<GraphVisit> Trace => m_Trace;
+
+        public void ClearTrace() => m_Trace.Clear();
+
         public GraphData ActiveGraph =>
             m_Running && m_Layers.Count > 0 ? m_Layers[m_Layers.Count - 1].graph : null;
 
@@ -110,6 +120,7 @@ namespace StateMachine
         {
             if (m_Running) Stop();   // 重启：先干净退出上一轮（Stop 幂等）
             m_Layers.Clear();
+            m_Trace.Clear();
 
             var top = MakeLayer(m_Graph);
             if (top == null)
@@ -275,6 +286,7 @@ namespace StateMachine
         {
             var layer = m_Layers[layerIndex];
             layer.current = node;
+            m_Trace.Add(new GraphVisit(layer.graph?.graphId, node.instanceId));   // IRuntimeGraphTrace：进入序、含重复
             layer.childFinished = false;
             RunAction(node, "onEnter", dt);
             OnStateEntered?.Invoke(node.instanceId);
@@ -338,6 +350,7 @@ namespace StateMachine
         public void Restore(StateMachineSnapshot s)
         {
             m_Layers.Clear();
+            m_Trace.Clear();
             m_Running = false;
 
             if (s == null)
@@ -368,6 +381,7 @@ namespace StateMachine
                     return;
                 }
                 layer.current = node;
+                m_Trace.Add(new GraphVisit(layer.graph?.graphId, node.instanceId));
 
                 bool last = i == segs.Length - 1;
                 if (kind == StateMachineNodeKind.SubMachine)

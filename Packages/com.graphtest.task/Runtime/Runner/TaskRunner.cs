@@ -7,7 +7,7 @@ using NodeEditor;
 
 namespace TaskEditor
 {
-    public class TaskRunner : IRuntimeGraph, IActiveRuntimeGraphSource, IDisposable
+    public class TaskRunner : IRuntimeGraph, IActiveRuntimeGraphSource, IRuntimeGraphTrace, IDisposable
     {
         const int MaxSteps = 10000;
         const string InvalidGraphReason = "task.runner.invalidGraph";
@@ -22,6 +22,9 @@ namespace TaskEditor
         readonly Dictionary<GraphData, Dictionary<string, NodeInstance>> m_LabelCache = new();
         readonly Dictionary<string, int> m_ObjectiveProgress = new(StringComparer.Ordinal);
         readonly HashSet<string> m_Visited = new();
+
+        // IRuntimeGraphTrace 的后备数据，与 m_Visited 并行维护（同 DialogueRunner 的做法）。
+        readonly List<GraphVisit> m_Trace = new();
 
         static readonly Dictionary<string, NodeInstance> Empty = new();
 
@@ -68,6 +71,12 @@ namespace TaskEditor
 
         public object RuntimeNodeOf(string instanceId) => null;
 
+        // ---- IRuntimeGraphTrace ----
+
+        public IReadOnlyList<GraphVisit> Trace => m_Trace;
+
+        public void ClearTrace() => m_Trace.Clear();
+
         public GraphData ActiveGraph => !m_Disposed && m_Current != null ? m_StepGraph : null;
 
         public bool OwnsGraph(GraphData graph) =>
@@ -91,6 +100,7 @@ namespace TaskEditor
             ActiveTaskId = taskId;
             m_ObjectiveProgress.Clear();
             m_Visited.Clear();
+            m_Trace.Clear();
             m_Current = null;
             OnTaskStarted?.Invoke(taskId);
 
@@ -170,6 +180,7 @@ namespace TaskEditor
             Journal.Load(snapshot?.completedTaskIds, snapshot?.failedTaskIds);
             m_ObjectiveProgress.Clear();
             m_Visited.Clear();
+            m_Trace.Clear();
             m_Current = null;
             m_ActiveTask = null;
             ActiveTaskId = null;
@@ -209,6 +220,7 @@ namespace TaskEditor
                 if (!string.IsNullOrEmpty(id) && Find(id) != null)
                     m_Visited.Add(id);
             m_Visited.Add(m_Current.instanceId);
+            m_Trace.Add(new GraphVisit(m_StepGraph?.graphId, m_Current.instanceId));
         }
 
         public void Dispose()
@@ -248,6 +260,7 @@ namespace TaskEditor
                 }
 
                 m_Visited.Add(node.instanceId);
+                m_Trace.Add(new GraphVisit(m_StepGraph?.graphId, node.instanceId));   // IRuntimeGraphTrace：有序、含重复
                 switch (kind)
                 {
                     case TaskNodeKind.Start:
@@ -305,6 +318,7 @@ namespace TaskEditor
             m_ActiveTask = null;
             m_Current = null;
             m_Visited.Clear();
+            m_Trace.Clear();
             SetGraph(null);
         }
 

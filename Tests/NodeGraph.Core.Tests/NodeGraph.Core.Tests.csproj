@@ -10,5 +10,10 @@
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
-  <ItemGroup><ProjectReference Include="..\..\Packages\NodeEditor.Runtime.csproj" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Packages\NodeEditor.Runtime.csproj" />
+    <ProjectReference Include="..\..\Packages\Dialogue.Runtime.csproj" />
+    <ProjectReference Include="..\..\Packages\StateMachine.Runtime.csproj" />
+    <ProjectReference Include="..\..\Packages\Task.Runtime.csproj" />
+  </ItemGroup>
 </Project>

@@ -51,7 +51,7 @@ namespace Dialogue
     // 选项进行索引（被门控掉的选项不在其中），因此 Choose(i) 与 OnChoices[i] 始终对齐。
     public struct DialogueOptionView { public int index; public string text; }
 
-    public class DialogueRunner : IRuntimeGraph, IActiveRuntimeGraphSource
+    public class DialogueRunner : IRuntimeGraph, IActiveRuntimeGraphSource, IRuntimeGraphTrace
     {
         // 表现层接缝 —— runner 从不渲染；它触发这些事件并挂起（Line/Choice）或结束。
         public event Action<DialogueLineView> OnLine;
@@ -100,6 +100,10 @@ namespace Dialogue
         // 以便编辑器调试器把"走过的路径"与"从未到达"区分着上色。
         readonly HashSet<string> m_Visited = new();
 
+        // IRuntimeGraphTrace 的后备数据，与 m_Visited 并行维护：m_Visited 负责 StatusOf 的 O(1)
+        // 命中判断，m_Trace 负责有序轨迹（含重复访问）。两者在同样的地方写入、同样的地方清空。
+        readonly List<GraphVisit> m_Trace = new();
+
         // graphs / log 可省略：省略时子对话解析不到（按语义跳过该节点）、日志走全局 GraphLog.Current。
         // Unity 侧传 NodeRegistry 作 schemas、DialogueDatabase 作 db——两者都实现了对应接口，
         // 所以 0.0.x 的调用点 `new DialogueRunner(registry, bb, database, lang)` 一字不改。
@@ -128,6 +132,12 @@ namespace Dialogue
         // 上面 StatusOf 的路径/指针高亮在这里就是全部内容。
         public object RuntimeNodeOf(string instanceId) => null;
 
+        // ---- IRuntimeGraphTrace ----
+
+        public IReadOnlyList<GraphVisit> Trace => m_Trace;
+
+        public void ClearTrace() => m_Trace.Clear();
+
         public GraphData ActiveGraph => m_Current != null ? m_Graph : null;
 
         // 引用相等——与 0.0.x 一致：NodeGraphAsset.ToData() 缓存且返回同一实例，
@@ -144,6 +154,7 @@ namespace Dialogue
             m_PendingOptions = null;
             m_Current = null;
             m_Visited.Clear();
+            m_Trace.Clear();
             SetGraph(graph);
             Continue(StartOf(graph));
         }
@@ -194,6 +205,7 @@ namespace Dialogue
                 if (node == null) { node = PopOrEnd(); if (node == null) return; continue; }
 
                 m_Visited.Add(node.instanceId);   // IRuntimeGraph：此节点位于走过的路径上
+                m_Trace.Add(new GraphVisit(m_Graph?.graphId, node.instanceId));   // IRuntimeGraphTrace：有序、含重复
                 switch (KindOf(node))
                 {
                     case DialogueNodeKind.Start:       node = Next(node, "next"); break;
@@ -407,6 +419,7 @@ namespace Dialogue
             if (state == null) { Run(null); return; }
 
             m_Visited.Clear();   // 恢复后的运行为调试器开启它自己全新的"走过的路径"
+            m_Trace.Clear();
 
             // blackboard：把每个保存的字符串按其声明的 TypeRef 重新定型（往返复原 int/bool/float）。
             foreach (var e in state.blackboard)
@@ -423,6 +436,7 @@ namespace Dialogue
 
             if (m_Current == null) { End(); return; }                        // 指针已失 -> 干净地结束
             m_Visited.Add(m_Current.instanceId);                              // 恢复后的指针同样位于路径上
+            m_Trace.Add(new GraphVisit(m_Graph?.graphId, m_Current.instanceId));
             switch (KindOf(m_Current))
             {
                 case DialogueNodeKind.Line:   PresentLine(m_Current); break; // 重新触发 OnLine
