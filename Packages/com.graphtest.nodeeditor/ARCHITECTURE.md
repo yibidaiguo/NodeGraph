@@ -76,6 +76,16 @@
 
 **铁律：依赖单向。** Runtime **不引用** Editor（否则破坏玩家构建）。命名空间：Runtime 用 `NodeEditor`，Editor 用 `NodeEditor.EditorUI`。
 
+> **`noEngineReferences`：领域三包已开，`NodeEditor.Runtime` 开不了（0.1.6 实测结论）。**
+> `Dialogue.Runtime` / `StateMachine.Runtime` / `Task.Runtime` 的 asmdef 已带
+> `"noEngineReferences": true`，Unity 6000.3.11f1 实测编译 0 错误、产出 DLL 里无 `UnityEngine` 引用。
+> `NodeEditor.Runtime` 开不了：`Runtime/Graph/NodeDataTypes.cs` 与 `Runtime/Units/Units.cs`
+> 共 66 处 `[SerializeReference]`（`UnityEngine` 的特性），开标志后实测 138 个 `CS0246`。
+> 而 `[SerializeReference]` 正是 `TypeRef` 与 `Unit` 两棵多态树能存进 `.asset` 的唯一原因——
+> 去掉它，图数据里的参数类型与单元树会被 Unity 判为不可序列化而整段丢弃。
+> 要让核心层也零引擎依赖，得先把这两个文件的序列化载体下沉到 `NodeEditor.Unity`，
+> 那是一次数据模型改造，不是一个 asmdef 开关。
+
 > 校验器 `GraphValidator` 放在 `Editor/`（创作期关注点），当前还直接通过 Editor 侧 `Localizer` 生成本地化诊断，因此是 **Editor-only**。若将来确有加载期/runtime 校验需求，应先把“规则结果 token”与“Editor 本地化呈现”拆开，不能直接把现文件移进 Runtime。
 
 > **模块文件夹（开发规范 C16）**：每个 asmdef 根下按模块开子文件夹，不平铺——`Runtime/` 分 `Graph`·`Units`·`Blackboard`·`Localization`；`Editor/` 分 `Window`·`Inspector`·`Data`·`Validation`·`Controls`·`Support`。asmdef 递归编译，子文件夹不影响编译/命名空间/GUID。下表「文件」列即按此布局给路径。
