@@ -1,5 +1,114 @@
 # 更新日志 / Changelog
 
+## [0.1.6] - 2026-08-16
+
+### 中文
+
+**运行时契约新增有序执行轨迹；三个纯逻辑层程序集声明零引擎依赖。** 既有 API 一个字节未改。
+
+- **新增可选契约 `IRuntimeGraphTrace`**（`NodeEditor` 命名空间，`NodeEditor.Runtime` 程序集）：
+
+  ```csharp
+  public readonly struct GraphVisit { public readonly string GraphId, InstanceId; }
+
+  public interface IRuntimeGraphTrace
+  {
+      IReadOnlyList<GraphVisit> Trace { get; }   // 真实执行顺序；重复访问重复出现
+      void ClearTrace();
+  }
+  ```
+
+  `IRuntimeGraph` 仍然只有 `StatusOf` / `RuntimeNodeOf` 两个方法——新契约单独开接口，
+  **只实现 `IRuntimeGraph` 的第三方执行器一个字都不用改**。
+
+  **下游可以怎么用**：拿本套件的执行器与自己的执行器做对拍时，过去只能比「走过哪些节点」
+  这个集合，顺序错了照样绿；现在 `((IRuntimeGraphTrace)runner).Trace` 给的是**有序列表**，
+  循环走了几圈、哪个节点被重复进入，逐条可比。`GraphVisit` 带 `GraphId`，所以下钻子图
+  （`SubDialogue` / `SubMachine` / Task 的 `stepGraph`）时也分得清是哪张图的节点。
+  编辑器侧的调试着色同理——路径与顺序直接读得到，无需从快照倒推。
+
+  三个自带执行器都实现了它。轨迹的清空时机：
+
+  | 执行器 | 清空点 |
+  | --- | --- |
+  | `DialogueRunner` | `Run()` / `Restore()` |
+  | `StateMachineRunner` | `Start()` / `Restore()` |
+  | `TaskRunner` | `StartTask()` / `Restore()` / 任务结束 |
+
+  调用方也可以随时 `ClearTrace()` 只观察某一段。
+
+  一处刻意的语义：`Restore()` 之后轨迹只含恢复出来的那个当前指针，**不会**把存档里的
+  visited 集合灌回轨迹——那个集合本身是无序的，灌回去等于凭空捏造一个执行顺序。
+
+- **`Dialogue.Runtime` / `StateMachine.Runtime` / `Task.Runtime` 三个程序集加上
+  `"noEngineReferences": true`。** 下游若有「纯逻辑层零 `UnityEngine` 依赖」的规矩，
+  这三个程序集现在能被带同样标志的程序集直接引用。
+  （Unity 6000.3.11f1 实测编译 0 错误；产出的 DLL 里已无 `UnityEngine` 引用。
+  它们仍然引用 `NodeEditor.Runtime`——被引用方带引擎引用并不妨碍引用方声明零引擎依赖，
+  因为 `NodeEditor.Runtime` 的公开 API 里没有任何 `UnityEngine` 类型。）
+
+- **`NodeEditor.Runtime` 没有加这个标志，这是结论而非遗漏。** 该程序集的
+  `Runtime/Graph/NodeDataTypes.cs` 与 `Runtime/Units/Units.cs` 共 66 处 `[SerializeReference]`，
+  那是 `UnityEngine` 的特性。加上标志后 Unity 实测报 138 个 `CS0246`
+  （66 处特性 × 两种报法，外加 2 行 `using UnityEngine;`）。
+  而 `[SerializeReference]` 正是 `TypeRef` 与 `Unit` 这两棵多态树能存进 `.asset` 的唯一原因：
+  去掉它，图数据里的参数类型与单元树会被 Unity 判为不可序列化而整段丢弃。
+  「加了标志但数据存不住」比「没加标志」糟得多，所以这一条到此为止。
+  真要让核心层也零引擎依赖，正确做法是把这两个文件的序列化载体下沉到 `NodeEditor.Unity`
+  程序集——那是一次数据模型改造，不是一个 asmdef 开关。
+
+### English
+
+**The runtime contract gains an ordered execution trace; three pure-logic assemblies now declare no engine references.** No existing API changed.
+
+- **New optional contract `IRuntimeGraphTrace`** (namespace `NodeEditor`, assembly `NodeEditor.Runtime`):
+
+  ```csharp
+  public readonly struct GraphVisit { public readonly string GraphId, InstanceId; }
+
+  public interface IRuntimeGraphTrace
+  {
+      IReadOnlyList<GraphVisit> Trace { get; }   // real execution order; revisits repeat
+      void ClearTrace();
+  }
+  ```
+
+  `IRuntimeGraph` still has exactly `StatusOf` / `RuntimeNodeOf` — the new contract is a separate
+  interface, so **third-party runtimes that implement only `IRuntimeGraph` need no change**.
+
+  **How to use it**: when differential-testing your own runtime against these runners, a set of
+  visited nodes cannot catch an ordering bug. `((IRuntimeGraphTrace)runner).Trace` is an ordered
+  list, so loop counts and repeated entries compare element by element. `GraphVisit` carries
+  `GraphId`, so nodes remain distinguishable when a run descends into a sub-graph
+  (`SubDialogue`, `SubMachine`, a Task `stepGraph`). Editor-side debug highlighting reads the same
+  data instead of inferring a path from snapshots.
+
+  All three bundled runners implement it. The trace is cleared by
+  `DialogueRunner.Run()`/`Restore()`, `StateMachineRunner.Start()`/`Restore()`, and
+  `TaskRunner.StartTask()`/`Restore()`/task completion. Callers may also call `ClearTrace()`
+  at any point to scope the observation.
+
+  One deliberate semantic: after `Restore()` the trace holds only the restored pointer. The
+  visited set in a snapshot is unordered, so replaying it into the trace would fabricate an
+  execution order that never happened.
+
+- **`Dialogue.Runtime`, `StateMachine.Runtime` and `Task.Runtime` now set
+  `"noEngineReferences": true`.** If your project requires pure-logic assemblies to carry no
+  `UnityEngine` dependency, these three can now be referenced directly from assemblies with the
+  same flag. (Verified by a real compile on Unity 6000.3.11f1: 0 errors, and the produced DLLs
+  contain no `UnityEngine` reference. They still reference `NodeEditor.Runtime`; a referenced
+  assembly having engine references does not prevent the referencing assembly from declaring
+  none, because no `UnityEngine` type appears in `NodeEditor.Runtime`'s public API.)
+
+- **`NodeEditor.Runtime` deliberately does not set the flag.** `Runtime/Graph/NodeDataTypes.cs`
+  and `Runtime/Units/Units.cs` carry 66 `[SerializeReference]` attributes, which come from
+  `UnityEngine`. Setting the flag produces 138 `CS0246` errors in Unity. `[SerializeReference]`
+  is the only reason the polymorphic `TypeRef` and `Unit` trees can be persisted into an
+  `.asset` at all — without it Unity treats those fields as non-serializable and drops them.
+  A flag that costs you your graph data is worse than no flag. Making the core assembly
+  engine-free properly means moving the serialization carriers in those two files down into
+  `NodeEditor.Unity`, which is a data-model change rather than an asmdef switch.
+
 ## [0.1.5] - 2026-08-15
 
 ### 中文
