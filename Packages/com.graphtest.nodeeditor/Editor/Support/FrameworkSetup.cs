@@ -7,6 +7,7 @@
 // 路径全部读 NodeEditorAssetPaths（SO，准则 C16 零硬编码），失败关闭（ValidateWritablePaths）。
 // 仅 Editor/ 程序集。
 
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -117,7 +118,7 @@ namespace NodeEditor.EditorUI
             EditorUtility.SetDirty(blackboard);
         }
 
-        static void EnsureMainObjectName(Object asset, string assetPath)
+        static void EnsureMainObjectName(UnityEngine.Object asset, string assetPath)
         {
             if (asset == null || string.IsNullOrEmpty(assetPath)) return;
             var expected = Path.GetFileNameWithoutExtension(assetPath);
@@ -125,6 +126,36 @@ namespace NodeEditor.EditorUI
             Undo.RegisterCompleteObjectUndo(asset, "Normalize Blackboard Name");
             asset.name = expected;
             EditorUtility.SetDirty(asset);
+        }
+
+        // 通用键自愈：ui.noGraphs / ui.newGraphPrompt 这类框架通用文案，在只有对话模块的年代
+        // 被写成了对话措辞（「项目中暂无对话组」）。EnsureUI 是 add-if-missing，永远不会把它改回来，
+        // 于是任何一个老工程里，没有自己覆盖文案的模块都会显示其他领域的词。
+        //
+        // 触发条件收得极窄：只有当通用键的值**恰好等于**某个 <key>.<module> 覆盖键的值时才重写——
+        // 那是「领域措辞漏进了通用键」的确证。作者自己改过的通用文案不会等于任何一个领域覆盖值，
+        // 所以不会被动到；这一点是本方法能安全覆盖（而不是 add-if-missing）的全部依据。
+        static void HealGenericWording(LocalizationTable table, string key, string generic)
+        {
+            var current = table.Get(key, Language.Chinese);
+            if (string.IsNullOrEmpty(current) || current == generic) return;
+
+            var prefix = key + ".";
+            string leakedFrom = null;
+            foreach (var entry in table.Entries)
+            {
+                if (entry == null || entry.language != Language.Chinese) continue;
+                if (string.IsNullOrEmpty(entry.key)) continue;
+                if (!entry.key.StartsWith(prefix, StringComparison.Ordinal)) continue;
+                if (entry.text != current) continue;
+                leakedFrom = entry.key;
+                break;
+            }
+            if (leakedFrom == null) return;
+
+            table.Set(key, Language.Chinese, generic);
+            Debug.LogWarning($"NodeEditorSetup: framework wording '{key}' still held module wording from " +
+                             $"'{leakedFrom}'; reset to \"{generic}\".");
         }
 
         // ---- 共享种子助手（领域 Setup 复用，替代各自的私有副本）----
@@ -164,6 +195,9 @@ namespace NodeEditor.EditorUI
             EnsureUI(table, "ui.noGraphs", "项目中暂无图");
             EnsureUI(table, "ui.newGraph", "新建");
             EnsureUI(table, "ui.newGraphPrompt", "创建一张新图");
+            // 通用键自愈：见下方 HealGenericWording。
+            HealGenericWording(table, "ui.noGraphs", "项目中暂无图");
+            HealGenericWording(table, "ui.newGraphPrompt", "创建一张新图");
             EnsureUI(table, "ui.graphSetupFailed", "图初始化失败。请先运行当前模块的 Setup Assets，然后重试。");
             EnsureUI(table, "ui.deleteGraph", "删除");
             EnsureUI(table, "ui.deleteGraphConfirm", "确定删除图「{0}」？可通过撤销恢复。");

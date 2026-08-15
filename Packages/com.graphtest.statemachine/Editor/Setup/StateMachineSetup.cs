@@ -71,6 +71,11 @@ namespace StateMachine.EditorUI
             EnsureUI(table, "ui.statemachineEditor", "状态机编辑器");
             EnsureUI(table, "module.statemachine", "状态机");
 
+            // 图切换器的模块覆盖键（框架通用键只说「图」，不替某个领域说话）+ 本模块的建图按钮文案。
+            EnsureUI(table, "ui.noGraphs.statemachine", "项目中暂无状态机");
+            EnsureUI(table, "ui.newGraphPrompt.statemachine", "创建一个新的状态机");
+            EnsureUI(table, "ui.newStateMachineGraph", "新建状态机");
+
             // 画布节点线索 cue（StateMachineNodeViews）：符号前缀 →/?/↳/[p..] 语言中立不入表。
             EnsureUI(table, "ui.sm.cue.entry", "初始状态");
             EnsureUI(table, "ui.sm.cue.anystate", "任意状态转移源");

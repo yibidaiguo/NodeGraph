@@ -9,7 +9,7 @@
 using UnityEditor;
 using UnityEngine;
 using NodeEditor;
-using NodeEditor.EditorUI;   // GraphListPane（按模块注册）+ NodeDefinitionLocator
+using NodeEditor.EditorUI;   // GraphCreationRegistry + NodeDefinitionLocator
 
 namespace StateMachine.EditorUI
 {
@@ -20,11 +20,19 @@ namespace StateMachine.EditorUI
 
         static StateMachineGraphScaffold()
         {
-            GraphListPane.RegisterModuleInitializer(Module, g => Seed(g));
-            GraphListPane.RegisterModuleAssetFolders(
-                Module,
-                () => StateMachineAssetPathsLocator.FindOrCreate()?.machineGroupsDir,
-                () => StateMachineAssetPathsLocator.FindOrCreate()?.blackboardLayersDir);
+            // 显式创建配方（照 DialogueGraphScaffold 成例）。过去这里走 GraphListPane 的 legacy
+            // 兜底注册，兜底配方只能显示框架通用的「新建」，模块拿不到自己的文案位。
+            GraphCreationRegistry.Register(new GraphCreateRecipe
+            {
+                id = "statemachine.graph",
+                module = Module,
+                labelKey = "ui.newStateMachineGraph",
+                labelFallback = "New State Machine",
+                defaultFileName = "NewStateMachine",
+                graphRoot = () => StateMachineAssetPathsLocator.FindOrCreate()?.machineGroupsDir,
+                blackboardFolder = () => StateMachineAssetPathsLocator.FindOrCreate()?.blackboardLayersDir,
+                initialize = Seed
+            });
         }
 
         // 给一张新的（裸）状态机图播种：控制流类型 + 钉住的 Entry(唯一入口)。不预置状态——
