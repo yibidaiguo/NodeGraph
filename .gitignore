@@ -2,3 +2,7 @@
 Thumbs.db
 *.tmp
 *.bak
+
+# .NET build output for the pure-C# projects (Packages/*.csproj, Tests/**)
+bin/
+obj/
