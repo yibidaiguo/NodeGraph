@@ -716,6 +716,7 @@ namespace NodeEditor.EditorUI
         {
             RemoveFromClassList("status-success"); RemoveFromClassList("status-failure");
             RemoveFromClassList("status-running");  RemoveFromClassList("status-inactive");
+            RemoveFromClassList("status-visited");
             if (!string.IsNullOrEmpty(statusClass)) AddToClassList(statusClass);
             SetRunningFlowEnabled(statusClass == "status-running");
             MarkDirtyRepaint();
