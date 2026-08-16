@@ -29,7 +29,7 @@ namespace NodeEditor.EditorUI
             @"instanceId:\s*(?<id>[^\r\n]+?)\s*[\r\n](?<body>[\s\S]*?)(?=\n\s*-\s*instanceId:|\z)",
             RegexOptions.Compiled);
 
-        [MenuItem("NodeEditor/Migrate/Upgrade Graph References (0.1.0)")]
+        [MenuItem("Tools/NodeGraph/Maintenance/Upgrade Graph References (0.1.0)", priority = 400)]
         public static void Run()
         {
             // 第一步：给每张图播种稳定 graphId（缺失时取 asset GUID），并建 guid -> graphId 表，
@@ -93,7 +93,7 @@ namespace NodeEditor.EditorUI
 
         // 把某个 Player 用到的子图收集到它的 subGraphs 数组里（运行时构建需要显式引用）。
         // 这里只做框架能做的部分：解析选中对象上所有 NodeGraphAsset 字段所引出的子图闭包。
-        [MenuItem("NodeEditor/Collect Sub Graphs")]
+        [MenuItem("Tools/NodeGraph/Maintenance/Collect Sub Graphs", priority = 401)]
         public static void CollectSubGraphs()
         {
             var go = Selection.activeGameObject;
