@@ -20,13 +20,13 @@ Package consumers automatically receive Task path setup on first install. Node d
 创建 `DependencyDag`；`新建步骤图`（`task.steps`）在 `TaskAssetPaths.stepGraphsDir`
 创建 `ControlFlow`，并自动加入一个钉住、不可删除且登记为入口的 Start。两种图都在
 `blackboardLayersDir` 配齐模块/图黑板。首次运行会在项目自己的
-`Assets/NodeEditorSettings/TaskAssetPaths.asset` 播种可编辑默认值（例如
-`Assets/TaskContent/Tasks`）；这些只是示例，用户可以在 `Tools/NodeGraph/Manager` 的 Task **Open Asset Paths**
+`Assets/NodeGraph/Settings/TaskAssetPaths.asset` 播种可编辑默认值（例如
+`Assets/NodeGraph/Task/Tasks`）；这些只是示例，用户可以在 `Tools/NodeGraph/Manager` 的 Task **Open Asset Paths**
 把每个生成目录改到任意规范化的 `Assets/` 子目录，现有资产不会被自动搬动。
 
 ## 安装
 
-独立可安装、编译、卸载的 Task Runtime/Editor 模块，只依赖 `com.graphtest.nodeeditor`，不依赖 Dialogue 或 State Machine。通过 `Tools/NodeGraph/Manager` 安装本模块，再运行 Setup 生成资产（见上）。生成的任务图、步骤图、黑板、本地化与 `TaskAssetPaths` 属于项目，默认写入 `Assets/TaskContent`。需要演示时，直接从本包的 Package Manager **Samples** 页签或 Manager 的 Task 卡片导入 **Task Basics**。
+独立可安装、编译、卸载的 Task Runtime/Editor 模块，只依赖 `com.graphtest.nodeeditor`，不依赖 Dialogue 或 State Machine。通过 `Tools/NodeGraph/Manager` 安装本模块，再运行 Setup 生成资产（见上）。生成的任务图、步骤图、黑板、本地化与 `TaskAssetPaths` 属于项目，默认写入 `Assets/NodeGraph/Task`。需要演示时，直接从本包的 Package Manager **Samples** 页签或 Manager 的 Task 卡片导入 **Task Basics**。
 
 ## 创建第一条任务线
 

@@ -8,8 +8,8 @@ namespace StateMachine
     public class StateMachineAssetPaths : ScriptableObject
     {
         // 状态机领域持有的生成资产落点。Locator 只播种默认值；用户可在检视面板里改这些路径。
-        public string nodeDefinitionsDir = "Assets/StateMachineContent/Nodes/Definitions";
-        public string machineGroupsDir = "Assets/StateMachineContent/Machines";
-        public string blackboardLayersDir = "Assets/StateMachineContent/Blackboards";
+        public string nodeDefinitionsDir = "Assets/NodeGraph/StateMachine/Nodes/Definitions";
+        public string machineGroupsDir = "Assets/NodeGraph/StateMachine/Machines";
+        public string blackboardLayersDir = "Assets/NodeGraph/StateMachine/Blackboards";
     }
 }

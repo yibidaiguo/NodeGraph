@@ -42,7 +42,7 @@ Task 同时拥有外层 `DependencyDag` 和内层 `ControlFlow`。`TaskGraphScaf
 继承 `TaskNodeDefinition`，并声明 `Kind`、端口、参数和本地化属性。运行
 在 `Tools/NodeGraph/Manager` 里点 Task 卡片的 **Setup Assets** 按钮后，节点定义资产会生成到
 `TaskAssetPaths.nodeDefinitionsDir`，并写入 `NodeEditorAssetPaths.registryPath` 指向的共享
-`NodeRegistry`。首次默认值（如 `Assets/TaskContent/Nodes/Definitions`）只是可编辑示例；
+`NodeRegistry`。首次默认值（如 `Assets/NodeGraph/Task/Nodes/Definitions`）只是可编辑示例；
 安装到 Packages 或移动代码目录都不会改变项目资源落点。
 
 有限候选值优先用枚举、搜索下拉或 `ParamChoiceProviders`，不要让作者手填易错 key。
@@ -62,7 +62,7 @@ Task 同时拥有外层 `DependencyDag` 和内层 `ControlFlow`。`TaskGraphScaf
 ## 数据和编辑器接缝
 
 `TaskAssetPaths` 保存任务模块拥有的全部生成资产目录，项目级唯一配置默认位于
-`Assets/NodeEditorSettings/TaskAssetPaths.asset`。通过 `Tools/NodeGraph/Manager` 的 Task **Open Asset Paths** 定位它；
+`Assets/NodeGraph/Settings/TaskAssetPaths.asset`。通过 `Tools/NodeGraph/Manager` 的 Task **Open Asset Paths** 定位它；
 移动任务数据时先改配置，再运行 setup。重复配置会明确失败并列出候选，任何调用方都不得
 硬编码默认目录或静默选择第一个配置。
 

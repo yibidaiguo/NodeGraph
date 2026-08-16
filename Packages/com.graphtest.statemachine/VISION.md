@@ -71,7 +71,7 @@
 | 节点定义 | [Runtime/Nodes/](Runtime/Nodes/StateMachineNodes.cs) | 六种节点的 `NodeDefinition` 子类（一类一文件）+ Kind 枚举/基类 |
 | 单元 | [Runtime/Units/](Runtime/Units/FireMachineEventAction.cs) | 状态机领域 `Unit`（领域级注册） |
 | 运行器 | [Runtime/Runner/](Runtime/Runner/StateMachineRunner.cs) | `IRuntimeGraph` 解释器 + `StateMachinePlayer` 宿主 + 黑板/上下文/快照 |
-| 数据 | [Runtime/Data/StateMachineAssetPaths.cs](Runtime/Data/StateMachineAssetPaths.cs) | 项目级路径 SO；所有生成目录由用户配置，`Assets/StateMachineContent/` 仅是首次默认示例 |
+| 数据 | [Runtime/Data/StateMachineAssetPaths.cs](Runtime/Data/StateMachineAssetPaths.cs) | 项目级路径 SO；所有生成目录由用户配置，`Assets/NodeGraph/StateMachine/` 仅是首次默认示例 |
 | 装配 | [Editor/Setup/StateMachineSetup.cs](Editor/Setup/StateMachineSetup.cs) | 产品生成器（节点定义/注册表/黑板/本地化，幂等，不生成样例） |
 | 校验 | [Editor/Validation/](Editor/Validation/StateMachineValidation.cs) | `StateMachineValidation` + `StateMachineConnectionRules`（注册到框架缝） |
 | 入口 | [Editor/Launcher/](Editor/Launcher/StateMachineEditorLauncher.cs) | `OpenModule` 菜单 + 新图播种（钉住 Entry） |

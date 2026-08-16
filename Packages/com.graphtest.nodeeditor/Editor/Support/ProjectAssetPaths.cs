@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -9,7 +10,9 @@ namespace NodeEditor.EditorUI
     /// <summary>Editor-only singleton locator for project-owned path configuration assets.</summary>
     public static class ProjectAssetPaths
     {
-        public const string SettingsRoot = "Assets/NodeEditorSettings";
+        // 设置资产的目录。曾经是写死的 "Assets/NodeEditorSettings"——工程连改都改不了。
+        // 现在由安装根推出，见 NodeGraphInstallRoot。
+        public static string SettingsRoot => NodeGraphInstallRoot.SettingsRoot;
 
         public static T FindOrCreate<T>(string owner, Action<T> applyDefaults) where T : ScriptableObject
         {
@@ -74,7 +77,59 @@ namespace NodeEditor.EditorUI
                 },
                 ValidateConfigurationPaths,
                 draft => SaveInstallConfiguration(owner, draft as T),
-                generate);
+                generate,
+                () => CollectOwnedPaths(applyDefaults));
+        }
+
+        /// <summary>
+        /// 这个模块在工程里占了哪些落点：设置资产本身，加上它里面每一个字符串路径字段。
+        /// 「模块生成什么」这件事本来就只写在这张配置表里，卸载清理照着它扫，就不会另开一份会漂移的清单。
+        /// 返回的是声明，不是现存物——哪些真在磁盘上由调用方去筛。
+        /// </summary>
+        public static string[] CollectOwnedPaths<T>(Action<T> applyDefaults) where T : ScriptableObject
+        {
+            var paths = new List<string>();
+            var candidates = ConfigurationCandidates<T>();
+            paths.AddRange(candidates);
+            paths.Add(BootstrapPath<T>());
+
+            foreach (var assetPath in candidates)
+            {
+                var configuration = AssetDatabase.LoadAssetAtPath<T>(assetPath);
+                if (configuration != null) AddStringPaths(configuration, paths);
+            }
+
+            // 配置资产被人手工删掉、内容却还在的工程也要能清干净：默认落点一并纳入候选。
+            var draft = ScriptableObject.CreateInstance<T>();
+            try
+            {
+                applyDefaults?.Invoke(draft);
+                AddStringPaths(draft, paths);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(draft);
+            }
+
+            return paths
+                .Select(NormalizeAssetPath)
+                .Where(IsProjectAssetPath)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        static void AddStringPaths(ScriptableObject configuration, List<string> into)
+        {
+            var serialized = new SerializedObject(configuration);
+            var property = serialized.GetIterator();
+            bool enterChildren = true;
+            while (property.NextVisible(enterChildren))
+            {
+                enterChildren = false;
+                if (property.propertyType != SerializedPropertyType.String || property.name == "m_Script") continue;
+                into.Add(property.stringValue);
+            }
         }
 
         public static string ValidateConfigurationPaths(ScriptableObject configuration)
@@ -131,7 +186,7 @@ namespace NodeEditor.EditorUI
                 .ToArray();
 
         public static string ContentRoot(string moduleName) =>
-            $"Assets/{moduleName}Content";
+            NodeGraphInstallRoot.ContentRoot(moduleName);
 
         public static bool IsProjectAssetPath(string path) =>
             IsNormalizedProjectAssetPath(path);

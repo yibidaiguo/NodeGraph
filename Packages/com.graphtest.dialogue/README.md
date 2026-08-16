@@ -6,7 +6,7 @@
 
 ## 0. 安装
 
-独立可安装、编译、卸载的 Dialogue Runtime/Editor 模块，只依赖 `com.graphtest.nodeeditor`，不依赖 Task 或 State Machine。通过 `Tools/NodeGraph/Manager` 安装本模块（Manager 复用框架包的仓库与 revision，无需再输 Git URL），再按 §2 生成资产。生成的对话图、黑板、数据库与 `DialogueAssetPaths` 属于项目，默认写入 `Assets/DialogueContent`。需要演示时，直接从本包的 Package Manager **Samples** 页签或 Manager 的 Dialogue 卡片导入 **Dialogue Basics**。
+独立可安装、编译、卸载的 Dialogue Runtime/Editor 模块，只依赖 `com.graphtest.nodeeditor`，不依赖 Task 或 State Machine。通过 `Tools/NodeGraph/Manager` 安装本模块（Manager 复用框架包的仓库与 revision，无需再输 Git URL），再按 §2 生成资产。生成的对话图、黑板、数据库与 `DialogueAssetPaths` 属于项目，默认写入 `Assets/NodeGraph/Dialogue`。需要演示时，直接从本包的 Package Manager **Samples** 页签或 Manager 的 Dialogue 卡片导入 **Dialogue Basics**。
 
 其他用户首次安装 Dialogue 时会自动看到 **Dialogue 路径设置 / Path Setup**。可先修改节点定义、对话组和黑板目录；只有点击 **保存并生成 / Save & Generate** 后，才会保存 `DialogueAssetPaths` 并创建这些目录、节点定义和注册表条目。选择 **稍后 / Later** 或关闭不会创建任何 Dialogue 资产，下次重启 Unity 会再次提示。
 
@@ -20,13 +20,13 @@ Package consumers automatically receive **Dialogue Path Setup** on first install
 
 `Tools/NodeGraph/Manager` 的 **Node Editor Data** 使用三栏布局：左侧选数据源，中间选具体条目，右侧编辑该条目的字段。
 
-**新建一张对话图**：点对话组列表底部的「新建对话」。这一个 `ControlFlow` 创建配方会在当前 `DialogueAssetPaths.dialogueGroupsDir` 下按图名创建独立文件夹，播种钉住的 Start/End，并立即打开。首次默认值（例如 `Assets/DialogueContent/Dialogues`）只是示例；可在 `Tools/NodeGraph/Manager` 的 Dialogue **Open Asset Paths** 自由修改。Project 里的 `Create ▸ NodeEditor/Graph` 只创建未归属模块的裸图，不会套用对话配方。
+**新建一张对话图**：点对话组列表底部的「新建对话」。这一个 `ControlFlow` 创建配方会在当前 `DialogueAssetPaths.dialogueGroupsDir` 下按图名创建独立文件夹，播种钉住的 Start/End，并立即打开。首次默认值（例如 `Assets/NodeGraph/Dialogue/Dialogues`）只是示例；可在 `Tools/NodeGraph/Manager` 的 Dialogue **Open Asset Paths** 自由修改。Project 里的 `Create ▸ NodeEditor/Graph` 只创建未归属模块的裸图，不会套用对话配方。
 
 ## 2. 初始化/重新生成资产
 
 在 `Tools/NodeGraph/Manager` 里点 Dialogue 卡片的 **Setup Assets** 按钮。
 
-- 第一次跑：在 `Assets/NodeEditorSettings/` 创建或读取项目级 `NodeEditorAssetPaths` / `DialogueAssetPaths`，再按其中的当前值创建共享注册表、全局黑板、本地化、语言配置和对话节点定义。`Assets/NodeEditorContent/` / `Assets/DialogueContent/` 只是可编辑默认示例，不是强制路径。
+- 第一次跑：在 `Assets/NodeGraph/Settings/` 创建或读取项目级 `NodeEditorAssetPaths` / `DialogueAssetPaths`，再按其中的当前值创建共享注册表、全局黑板、本地化、语言配置和对话节点定义。`Assets/NodeGraph/NodeEditor/` / `Assets/NodeGraph/Dialogue/` 只是可编辑默认示例，不是强制路径。
 - 之后重复跑：是幂等的，只会重建节点定义并补齐共享配置/本地化种子，**不会**替你创建或覆盖业务数据库、演示图和手写内容。重复路径配置会失败并列出所有候选，不会静默取第一个。产品发布只包含创作能力，不附带业务数据库或演示内容。
 
 ## 3. 10 种节点

@@ -1,6 +1,6 @@
 # 任务接入指南
 
-> **UPM 边界（1.0）**：Task 产品源码位于 `Packages/com.graphtest.task/`，通过 GraphTest Module Manager 安装；项目可变数据仍位于可配置的 `Assets/TaskContent`。下文 `Runtime/`、`Editor/` 路径均相对于 Task package。
+> **UPM 边界（1.0）**：Task 产品源码位于 `Packages/com.graphtest.task/`，通过 GraphTest Module Manager 安装；项目可变数据仍位于可配置的 `Assets/NodeGraph/Task`。下文 `Runtime/`、`Editor/` 路径均相对于 Task package。
 
 本文面向在游戏系统中消费任务运行时的集成者。扩展编辑器请看
 `EXTENDING.md`，框架规则请看 `Packages/com.graphtest.nodeeditor/ARCHITECTURE.md`。

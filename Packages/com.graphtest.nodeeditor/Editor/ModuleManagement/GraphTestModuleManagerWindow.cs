@@ -385,7 +385,24 @@ namespace NodeEditor.EditorUI
             if (remove)
             {
                 var plan = GraphTestModuleManager.PlanRemove(m_Catalog, m_Installed, packageId);
-                GraphTestPackageOperations.Remove(plan, stateChanged, completed);
+                if (!plan.Succeeded)
+                {
+                    GraphTestPackageOperations.Remove(plan, stateChanged, completed);
+                    return;
+                }
+
+                // 清理必须赶在移包之前：包一走，认识这批生成资产的代码就没了，残留从此没人能清。
+                // 取消清理窗 = 整个卸载都不做，而不是「跳过清理照样移包」。
+                var descriptor = NodeGraphUninstall.FindDescriptor(packageId);
+                if (descriptor == null)
+                {
+                    GraphTestPackageOperations.Remove(plan, stateChanged, completed);
+                    return;
+                }
+
+                var residue = NodeGraphResidueScanner.Scan(descriptor, packageId == FrameworkId);
+                NodeGraphUninstallWindow.Open(residue,
+                    () => GraphTestPackageOperations.Remove(plan, stateChanged, completed));
             }
             else
             {

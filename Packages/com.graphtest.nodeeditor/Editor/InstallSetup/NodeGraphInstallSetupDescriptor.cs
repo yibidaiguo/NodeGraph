@@ -11,6 +11,7 @@ namespace NodeEditor.EditorUI
         readonly Func<ScriptableObject, string> m_Validate;
         readonly Func<ScriptableObject, string> m_Save;
         readonly Action m_Generate;
+        readonly Func<string[]> m_CollectOwnedPaths;
 
         public NodeGraphInstallSetupDescriptor(
             string moduleId,
@@ -20,7 +21,8 @@ namespace NodeEditor.EditorUI
             Func<ScriptableObject> createDraft,
             Func<ScriptableObject, string> validate,
             Func<ScriptableObject, string> save,
-            Action generate)
+            Action generate,
+            Func<string[]> collectOwnedPaths = null)
         {
             ModuleId = moduleId;
             DisplayName = displayName;
@@ -30,6 +32,18 @@ namespace NodeEditor.EditorUI
             m_Validate = validate;
             m_Save = save;
             m_Generate = generate;
+            m_CollectOwnedPaths = collectOwnedPaths;
+        }
+
+        /// <summary>这个模块在工程里声明占用的落点；卸载清理照它扫残留。异常一律吞成空集，清理面只会变窄不会误删。</summary>
+        public string[] OwnedPaths()
+        {
+            try { return m_CollectOwnedPaths?.Invoke() ?? Array.Empty<string>(); }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                return Array.Empty<string>();
+            }
         }
 
         public string ModuleId { get; }

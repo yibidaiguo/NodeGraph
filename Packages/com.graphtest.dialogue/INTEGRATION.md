@@ -1,6 +1,6 @@
 # 对话编辑器 · 集成/接入指南（面向外部模块开发者）
 
-> **UPM 边界（1.0）**：Dialogue 产品源码位于 `Packages/com.graphtest.dialogue/`，通过 GraphTest Module Manager 安装；项目可变数据仍位于可配置的 `Assets/DialogueContent`。下文 `Runtime/`、`Editor/` 路径均相对于 Dialogue package。
+> **UPM 边界（1.0）**：Dialogue 产品源码位于 `Packages/com.graphtest.dialogue/`，通过 GraphTest Module Manager 安装；项目可变数据仍位于可配置的 `Assets/NodeGraph/Dialogue`。下文 `Runtime/`、`Editor/` 路径均相对于 Dialogue package。
 >
 > 给**别的游戏模块**（任务系统 / 存档 / HUD / 对话 UI / 音频…）的程序员：怎么在运行时**驱动**这套对话、怎么**和你的模块合作**、以及怎么从别的工具**调用编辑器 UI**。你只是**用**这个编辑器的产物，不改它、也不写对话内容。
 >

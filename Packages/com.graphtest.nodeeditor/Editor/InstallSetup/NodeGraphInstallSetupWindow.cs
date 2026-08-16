@@ -13,6 +13,8 @@ namespace NodeEditor.EditorUI
         Action<NodeGraphInstallSetupWindow> m_Deferred;
         Vector2 m_Scroll;
         string m_Error;
+        string m_RootDraft;
+        string m_RootError;
         bool m_Resolved;
 
         public static NodeGraphInstallSetupWindow Open(
@@ -36,8 +38,19 @@ namespace NodeEditor.EditorUI
             m_Descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
             m_Completed = completed;
             m_Deferred = deferred;
+            m_RootDraft = NodeGraphInstallRoot.Root;
             m_Draft = descriptor.CreateDraft();
             m_SerializedDraft = new SerializedObject(m_Draft);
+        }
+
+        // 安装根变了，下面那批模块路径就全是旧根拼出来的——重建草稿让它们跟着走。
+        // 已经手改过的路径一并丢掉：留着才是「一半新根一半旧根」的坏结果。
+        void RebuildDraft()
+        {
+            if (m_Draft != null && !AssetDatabase.Contains(m_Draft)) DestroyImmediate(m_Draft);
+            m_Draft = m_Descriptor.CreateDraft();
+            m_SerializedDraft = new SerializedObject(m_Draft);
+            m_Error = null;
         }
 
         void OnGUI()
@@ -54,6 +67,8 @@ namespace NodeEditor.EditorUI
                 "请先确认此模块生成资产的位置。只有点击“保存并生成”后才会写入工程。\n" +
                 "Review where this module will generate project assets. Nothing is written until you choose Save & Generate.",
                 MessageType.Info);
+
+            DrawInstallRoot();
 
             m_Scroll = EditorGUILayout.BeginScrollView(m_Scroll);
             m_SerializedDraft.Update();
@@ -83,9 +98,57 @@ namespace NodeEditor.EditorUI
             EditorGUILayout.Space(8f);
         }
 
+        // 安装根：节点图在这个工程里唯一的顶级目录，下面那批模块路径全从它拼出来。
+        // 放在最前面是刻意的——先定根，再看落点，而不是装完才发现 Assets 根目录多了五个文件夹。
+        void DrawInstallRoot()
+        {
+            EditorGUILayout.Space(4f);
+            if (NodeGraphInstallRoot.IsLegacyLayout)
+            {
+                EditorGUILayout.HelpBox(
+                    "这个工程沿用升级前的分散布局（Assets/NodeEditorSettings、Assets/<模块>Content），路径保持原样不动。" +
+                    "要收进单一安装根，先把已有资产搬到新根下，再在这里填写新根。\n" +
+                    "This project still uses the pre-upgrade flat layout; paths are left untouched. " +
+                    "Move the existing assets under a single root first, then set that root here.",
+                    MessageType.Warning);
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.PrefixLabel("安装根 / Install Root");
+                m_RootDraft = EditorGUILayout.TextField(m_RootDraft);
+                using (new EditorGUI.DisabledScope(
+                    NodeGraphInstallRoot.NormalizedEquals(m_RootDraft, NodeGraphInstallRoot.Root)))
+                {
+                    if (GUILayout.Button("应用 / Apply", GUILayout.Width(110f)))
+                        ApplyInstallRoot();
+                }
+            }
+
+            if (!string.IsNullOrEmpty(m_RootError))
+                EditorGUILayout.HelpBox(m_RootError, MessageType.Error);
+        }
+
+        void ApplyInstallRoot()
+        {
+            m_RootError = NodeGraphInstallRoot.TrySet(m_RootDraft);
+            if (!string.IsNullOrEmpty(m_RootError)) return;
+            m_RootDraft = NodeGraphInstallRoot.Root;
+            RebuildDraft();
+        }
+
         void SaveAndGenerate()
         {
             m_SerializedDraft.ApplyModifiedProperties();
+
+            // 生成之前把安装根落盘：接受默认根的工程也要留下痕迹，否则卸载清理无从知道该扫哪。
+            m_RootError = NodeGraphInstallRoot.PinCurrent();
+            if (!string.IsNullOrEmpty(m_RootError))
+            {
+                Repaint();
+                return;
+            }
+
             if (!m_Descriptor.TrySaveAndGenerate(m_Draft, out m_Error))
             {
                 Repaint();
