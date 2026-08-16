@@ -1,6 +1,6 @@
 # 更新日志 / Changelog
 
-## [未发布 / Unreleased]
+## [0.1.7] - 2026-08-16
 
 ### 中文
 
@@ -13,6 +13,7 @@
 - **框架自己的账本不算「外部引用」。** 共享 `NodeRegistry` 当然引用着各模块的节点定义；把它算成外部引用，卸对话时那 10 个定义会一个都删不掉——清理等于没做。引用检查现在排除安装根（legacy 时排除各模块声明落点）下的资产，只有真正的业务引用才拦得住。
 - **清理后摘掉注册表空槽。** 节点定义被删后共享注册表会留下 Missing 槽位；清理末尾一并摘除，注册表才真回到没装这个模块之前的样子。
 - **框架的清理入口。** 框架不能在 Manager 里移除自己，其卡片新增 **Clean Up Generated Files**：清完生成物再去 Package Manager 移包。
+- **菜单栏不再多出一栏。** 「升级子图引用」「收集子图」两条维护命令原先挂在顶层 `NodeEditor/` 下——菜单路径没有现成的父级就会自己开一个，于是为两条命令在 Tools 旁边单立了一栏。现在它们在 **Tools/NodeGraph/Maintenance/** 下，和 Manager、各模块编辑器同处一棵树。Assets ▸ Create 里的 `NodeEditor/` 分组不变。
 
 ### English
 
@@ -23,6 +24,7 @@
 - **Remove now runs Uninstall Cleanup first**, listing generated assets, emptied folders, editor preferences, and project settings before deleting them and then removing the package. The residue set is read from each module's own `*AssetPaths` configuration.
 - **Assets still referenced elsewhere are kept by default** and listed separately; a cancelled reference scan invalidates the "unreferenced" grouping.
 - **`Clean Up Generated Files`** on the framework card, since the framework cannot remove itself from the Manager.
+- **No more top-level `NodeEditor` menu.** The two maintenance commands now live under **Tools/NodeGraph/Maintenance/** with the rest of the entry points, instead of opening a menu-bar heading of their own for the sake of two items. The `NodeEditor/` grouping under Assets ▸ Create is unchanged.
 
 ## [0.1.6] - 2026-08-16
 
