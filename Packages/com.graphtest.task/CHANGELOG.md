@@ -1,5 +1,35 @@
 # 更新日志 / Changelog
 
+## [0.1.8] - 2026-08-17
+
+### 中文
+
+**AI 和人写的是同一张图。** 新增创作访问层；既有 API 一个字节未改。
+
+- **一个创作入口。** 想用脚本或提示词生成一张图，过去只能自己把 `NodeGraphAsset` 镜像成一份手写 JSON，而每份镜像都在同样三处丢东西：完整 Unit、分层黑板、编辑器布局。现在 `NodeEditor.EditorUI.GraphAuthoringAssetAccess` 提供 `List / Describe / Read / CreateDraft / Write / Validate`：资产仍是唯一真源，文档只是一次读改写事务途中的样子，不是需要同步的第二份资产。
+- **只读的真的只读。** `Read`、`List`、`Describe`、`CreateDraft` 不会创建路径配置、目录、图或黑板，也不会因为「看了一眼」把已有资产标脏。新图不必再拿 seed 图克隆出来假装：`CreateDraft` 直接给出空 `graphId`、`MustNotExist` 修订，以及全局 → 模块 → 组的完整有效黑板闭包。
+- **改名不动身份。** `authoringKey` 持久化在 `NodeInstance` 上，是图内的作者地址；`instanceId` 仍是连线与存档依赖的运行时身份，重命名只移动 key。老图缺 key 时只在返回文档里按 `instanceId` 确定性回填，不改资产；第一次成功 `Write` 才落盘。
+- **图和黑板一起成功，或者一起不动。** 一次提交横跨图资产和至多三层黑板，前置条件因此是修订向量而不是单个修订：每个 owner 带 `ownerId`、规范 `ownerPath`、`contentHash` 和 `expectedState`。任一 owner 过期，整批按 owner 报冲突且零写入；过了 preflight 之后，图与所有黑板在同一个 Undo 组里，失败整体回滚，连新建的资产和目录都清掉。
+- **先查目录，再写内容。** Unit 用稳定的 `[UnitAuthoringId]` 而不是 CLR 类型名，`Describe` 会把每个 Unit 的必填字段、标量类型、枚举候选和嵌套约束一并给出。目录和导入器共用同一个字段发现器——「目录说能写」和「导入器肯收」不会各说各话。
+- **JSON 严进。** 注释、重复属性、未知属性、大小写不精确的属性名、单引号、尾随逗号、`NaN`/Infinity、整数形式的枚举、一个根值之后的多余内容，全部拒绝。数字在 Newtonsoft 解析之前先按 RFC 8259 做词法校验：`0x10`、`010`、`.5`、`1.` 会被 Newtonsoft 归一化成普通数值，事后按 token 检查已经分辨不出来。
+- **领域模块自己登记。** 每个模块注册一份 `GraphAuthoringModuleDescriptor`，图根只调自己那份 `*AssetPathsLocator`，领域 Unit 留在领域运行时包里。NodeGraph 不反向引用任何领域程序集。
+- **命令行是同一套调用。** `GraphAuthoringCommandLine` 把这六个调用搬到 Unity batchmode，输出统一 envelope（`command` / `data` / `diagnostics` / `succeeded`）。未知的、或不适用于当前命令的 `-graphAuthoring*` 参数会失败，不会被静默忽略。
+- **新增 `AI-AUTHORING.md`**：工作流、身份规则、修订向量、JSON 约定与领域扩展步骤；三份模块 `EXTENDING.md` 都指向它。
+
+### English
+
+**AI and people edit the same graph.** A new authoring access layer; no existing API changed.
+
+- **One authoring entry point.** Writing a graph from a script or a prompt used to mean mirroring `NodeGraphAsset` into a hand-rolled JSON shape, and every mirror lost the same three things: full Unit payloads, layered blackboards, and editor layout. `NodeEditor.EditorUI.GraphAuthoringAssetAccess` now offers `List / Describe / Read / CreateDraft / Write / Validate`. The assets stay the only source; the document is what one read-modify-write transaction looks like on the way through, not a second asset to keep in sync.
+- **Read-only really is read-only.** `Read`, `List`, `Describe` and `CreateDraft` never create a path configuration, folder, graph or blackboard, and never dirty an existing asset just because something looked at it. A new graph no longer has to be faked by cloning a seed: `CreateDraft` returns an empty `graphId`, a `MustNotExist` revision, and the full global → module → group blackboard closure.
+- **Renaming does not move identity.** `authoringKey` persists on `NodeInstance` as the in-graph author address; `instanceId` stays the runtime identity that connections and saves depend on, and renaming moves the key only. Graphs written before this get a deterministic backfill by `instanceId` in the returned document, not in the asset; the key reaches disk on the first successful `Write`.
+- **The graph and its blackboards commit together or not at all.** One commit spans the graph asset and up to three blackboard layers, so the precondition is a revision vector rather than a single revision: each owner carries `ownerId`, canonical `ownerPath`, `contentHash` and `expectedState`. One stale owner fails the batch with a per-owner conflict and writes nothing; past preflight, the graph and every blackboard share one Undo group and roll back together, created assets and folders included.
+- **Query the catalog, then author.** Units carry stable `[UnitAuthoringId]` values instead of CLR type names, and `Describe` returns the required fields, scalar types, enum values and nesting constraints for each one. The catalog and the importer share a single field discoverer, so "the catalog says you can write it" and "the importer accepts it" cannot drift apart.
+- **Strict JSON on the way in.** Comments, duplicate properties, unknown properties, case-inexact names, single quotes, trailing commas, `NaN`/Infinity, integer-valued enums and any content after the root value are rejected. Numbers are lexed against RFC 8259 before Newtonsoft parses them: it normalises `0x10`, `010`, `.5` and `1.` into ordinary values, and a token-level check afterwards can no longer tell.
+- **Domain modules register themselves.** One `GraphAuthoringModuleDescriptor` per module, graph roots read from that domain's own `*AssetPathsLocator`, domain Units declared in the domain's runtime package. NodeGraph references no domain assembly.
+- **The same calls from batchmode.** `GraphAuthoringCommandLine` exposes all six through one envelope (`command` / `data` / `diagnostics` / `succeeded`). Unknown or inapplicable `-graphAuthoring*` arguments fail instead of being silently ignored.
+- **New `AI-AUTHORING.md`** covering the workflow, identity rules, revision vector, JSON contract and domain extension steps; all three module `EXTENDING.md` files link to it.
+
 ## [0.1.7] - 2026-08-16
 
 ### 中文
