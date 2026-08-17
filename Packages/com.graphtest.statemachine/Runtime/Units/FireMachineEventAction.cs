@@ -12,7 +12,7 @@ namespace StateMachine
     // 发一个具名的状态机自定义事件：把求值上下文的 blackboard（即 StateMachineRunContext）强转回
     // 领域接口 IMachineEventSink 调用 FireEvent，事件经 Runner.OnMachineEvent → Player.onMachineEvent
     // 流向场景订阅方（音效/任务/表现层）。可被 Sequence/Conditional 等编排单元装饰组合。
-    [Serializable] [Unit("触发状态机事件", "动作")]
+    [Serializable] [UnitAuthoringId("statemachine.fire-event")] [Unit("触发状态机事件", "动作")]
     public class FireMachineEventAction : ActionUnit
     {
         public string eventName;

@@ -39,5 +39,34 @@ namespace NodeEditor
         public IEnumerable<VariableDef> All() => variables;
         public void AddVariable(string key, TypeRef type) =>
             variables.Add(new VariableDef { key = key, type = type });
+
+        // 用纯 C# 声明回填本 asset。这里只替换内存数据；保存、Undo、dirty 标记由 Editor
+        // 事务统一负责。变量与递归 TypeRef 均深拷贝，调用方后续修改不会旁路资产。
+        public void FromData(IBlackboardDecl data)
+        {
+            if (data == null) return;
+            module = data.Module ?? "";
+            group = data.Group ?? "";
+            variables = data.Variables?.Select(CopyVariable).ToList() ?? new List<VariableDef>();
+        }
+
+        static VariableDef CopyVariable(VariableDef source) => source == null
+            ? null
+            : new VariableDef
+            {
+                key = source.key,
+                type = CopyType(source.type),
+                defaultJson = source.defaultJson
+            };
+
+        static TypeRef CopyType(TypeRef source) => source == null
+            ? null
+            : new TypeRef
+            {
+                kind = source.kind,
+                primitive = source.primitive,
+                enumOrObjectName = source.enumOrObjectName,
+                element = CopyType(source.element)
+            };
     }
 }

@@ -10,7 +10,7 @@ using NodeEditor;
 namespace Dialogue
 {
     // 触发一个具名游戏事件（可带参数）。等价于旧的 Event 节点，现为可组合动作单元，可被 Sequence/Conditional 装饰。
-    [Serializable] [Unit("unit.dialogue.fireEvent.name", "Fire Event", "unit.group.action", "Action")]
+    [Serializable] [UnitAuthoringId("dialogue.fire-event")] [Unit("unit.dialogue.fireEvent.name", "Fire Event", "unit.group.action", "Action")]
     public class FireEventAction : ActionUnit
     {
         public string eventId;

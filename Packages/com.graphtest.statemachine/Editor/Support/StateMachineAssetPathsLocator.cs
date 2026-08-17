@@ -11,6 +11,10 @@ namespace StateMachine.EditorUI
     {
         const string ModuleName = "StateMachine";
 
+        // 只读发现供工具链使用；缺失或歧义时失败关闭，绝不在读取期间创建配置。
+        public static StateMachineAssetPaths Find()
+            => ProjectAssetPaths.FindExisting<StateMachineAssetPaths>("StateMachine");
+
         public static StateMachineAssetPaths FindOrCreate()
             => ProjectAssetPaths.FindOrCreate<StateMachineAssetPaths>("StateMachine", ApplyDefaults);
 

@@ -61,6 +61,7 @@ When several production modules arrive together, their windows are queued in Fra
 
 - [`VISION.md`](VISION.md) —— **先读层**·全项目全景：模块地图 / 依赖方向 / 跨模块接口契约（缝）/ 读图导航。
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) —— 框架架构 + **全工程唯一权威开发规范**（A 数据安全 / B 架构不变式 / C 工程规范 / D 完成定义）。
+- [`AI-AUTHORING.md`](AI-AUTHORING.md) —— AI / 脚本创作入口：同源读写、JSON、revision、catalog、CLI 与领域扩展。
 - [`UI-STANDARD.md`](UI-STANDARD.md) —— 编辑器 UI 唯一权威规范：组件目录 / 铁律 / 扩展流程（契约测试强制）。
 
 每个领域模块各自随包带一套角色文档 **README**（设计师）/ **EXTENDING**（领域开发）/ **INTEGRATION**（集成）/ **VISION**：Dialogue 见 `com.graphtest.dialogue/`，Task 见 `com.graphtest.task/`，State Machine 见 `com.graphtest.statemachine/`。

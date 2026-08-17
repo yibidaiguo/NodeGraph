@@ -60,6 +60,14 @@
 
 ---
 
+## 1c. 注册 AI 创作入口（领域扩展）
+
+框架 AI 接口的读写格式、命令与同源往返约定由 NodeGraph 统一提供，详见 [`AI-AUTHORING.md`](../com.graphtest.nodeeditor/AI-AUTHORING.md)。状态机模块通过 `Editor/Authoring/StateMachineGraphAuthoringExtension.cs` 注册自己的图目录读取器和领域 Unit 类型；图目录只从 `StateMachineAssetPathsLocator.Find()` 读取，未配置时返回空目录，不猜路径，也不创建配置资产。
+
+新增状态机专属 Unit 时，为类型声明稳定的 `[UnitAuthoringId("statemachine.<name>")]`，并把该类型加入模块描述符。通用 Unit 仍由 NodeGraph 持有。
+
+---
+
 ## 2. 加一条校验规则（红框/黄框 + 画布横幅）
 
 经 `GraphValidator.RegisterExtension(id, fn)` 钩子接入，**不改框架**——看 [Editor/Validation/StateMachineValidation.cs](Editor/Validation/StateMachineValidation.cs)：`[InitializeOnLoad]` 静态构造里按稳定 id `"statemachine"` 注册 `CheckAll`；加规则 = 在 `CheckAll` 里多 `yield` 几条 `ValidationIssue`（节点级 target 填 `inst.instanceId`，图级填 `GraphValidator.GraphIssueTarget` 走横幅）。域判定：只在图里含本域节点时插手。

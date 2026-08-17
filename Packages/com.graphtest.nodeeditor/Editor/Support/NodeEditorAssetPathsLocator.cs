@@ -26,6 +26,10 @@ namespace NodeEditor.EditorUI
             return s_Cached;
         }
 
+        // AI/批处理读取必须绝对只读：配置不存在时返回 null，不触发安装或目录创建。
+        public static NodeEditorAssetPaths Find() =>
+            ProjectAssetPaths.FindExisting<NodeEditorAssetPaths>(ModuleName);
+
         static void Invalidate()
         {
             s_Cached = null;

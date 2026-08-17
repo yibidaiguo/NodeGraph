@@ -66,13 +66,21 @@ namespace NodeEditor.EditorUI
         {
             if (s_ById != null) return;
             s_ById = new Dictionary<string, NodeGraphAsset>();
+            var ambiguous = new HashSet<string>();
             foreach (var guid in AssetDatabase.FindAssets("t:NodeGraphAsset"))
             {
                 var g = AssetDatabase.LoadAssetAtPath<NodeGraphAsset>(AssetDatabase.GUIDToAssetPath(guid));
                 if (g == null) continue;
-                // 顺带补种缺失的 graphId：0.0.x 存量图没有这个字段。
-                if (string.IsNullOrEmpty(g.graphId)) { g.graphId = guid; EditorUtility.SetDirty(g); }
-                s_ById[g.graphId] = g;
+                // 查找必须只读。旧图以 asset GUID 作为有效 fallback；真正持久化只由
+                // EnsureGraphId 或创作事务显式执行，Validate/目录查询绝不顺带 SetDirty。
+                string effectiveId = string.IsNullOrEmpty(g.graphId) ? guid : g.graphId;
+                if (ambiguous.Contains(effectiveId)) continue;
+                if (s_ById.ContainsKey(effectiveId))
+                {
+                    s_ById.Remove(effectiveId);
+                    ambiguous.Add(effectiveId);
+                }
+                else s_ById.Add(effectiveId, g);
             }
         }
 

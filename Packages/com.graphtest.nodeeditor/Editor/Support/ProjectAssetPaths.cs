@@ -14,6 +14,18 @@ namespace NodeEditor.EditorUI
         // 现在由安装根推出，见 NodeGraphInstallRoot。
         public static string SettingsRoot => NodeGraphInstallRoot.SettingsRoot;
 
+        // 纯查找入口：不会创建资产、目录，也不会记录 Undo 或标脏。
+        public static T FindExisting<T>(string owner) where T : ScriptableObject
+        {
+            var candidates = ConfigurationCandidates<T>();
+            if (candidates.Length == 0) return null;
+            if (candidates.Length == 1) return AssetDatabase.LoadAssetAtPath<T>(candidates[0]);
+
+            Debug.LogError($"{owner}: multiple project-owned {typeof(T).Name} assets found. " +
+                           "Keep exactly one before continuing:\n- " + string.Join("\n- ", candidates));
+            return null;
+        }
+
         public static T FindOrCreate<T>(string owner, Action<T> applyDefaults) where T : ScriptableObject
         {
             var candidates = ConfigurationCandidates<T>();

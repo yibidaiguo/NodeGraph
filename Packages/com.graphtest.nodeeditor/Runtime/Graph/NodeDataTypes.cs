@@ -161,6 +161,9 @@ namespace NodeEditor
     public class NodeInstance
     {
         public string instanceId = System.Guid.NewGuid().ToString();
+        // 面向作者/AI 的图内稳定地址。它与运行时身份 instanceId 正交：重命名此字段
+        // 不得改写 instanceId，也不得影响连接和运行时存档。
+        public string authoringKey;
         public string definitionId;
         // 画布位置。Vec2 是纯 C# 结构，字段名/顺序与 UnityEngine.Vector2 一致，
         // 序列化出的 YAML 逐字节相同（position: {x: .., y: ..}）——已有 .asset 无需迁移。

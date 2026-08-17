@@ -90,6 +90,15 @@
 ---
 
 
+## 1d. 注册 AI 创作入口（领域扩展）
+
+框架 AI 接口的读写格式、命令与同源往返约定由 NodeGraph 统一提供，详见 [`AI-AUTHORING.md`](../com.graphtest.nodeeditor/AI-AUTHORING.md)。对话模块只通过 `Editor/Authoring/DialogueGraphAuthoringExtension.cs` 注册自己的模块 id、图目录读取器与领域 Unit 类型；通用能力仍由 NodeGraph 持有。
+
+新增对话专属 Unit 时，为类型声明稳定的 `[UnitAuthoringId("dialogue.<name>")]`，并把该类型加入上述模块描述符。图目录始终从 `DialogueAssetPathsLocator.Find()` 只读取得；项目尚未配置时注册入口返回空目录，不猜路径，也不创建配置资产。
+
+---
+
+
 ## 2. 加一条校验规则（红框/黄框 + 画布横幅）
 
 校验通过 `GraphValidator.RegisterExtension(id, fn)` 钩子接入，**不用改框架**。看 `Packages/com.graphtest.dialogue/Editor/Validation/DialogueValidation.cs`：

@@ -45,13 +45,21 @@ namespace NodeEditor
             : this(displayName, displayName, group, group) { }
     }
 
+    // Unit 的稳定创作类型 id：AI/文本创作只依赖此值，不依赖可重命名的 CLR 类型名。
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class UnitAuthoringIdAttribute : Attribute
+    {
+        public string Id { get; }
+        public UnitAuthoringIdAttribute(string id) { Id = id; }
+    }
+
     // 标记某 string 字段为「黑板键」：检视面板据此把它渲染成已声明 key 的下拉（而非裸文本框）。纯编辑器提示。
     [AttributeUsage(AttributeTargets.Field)]
     public class BlackboardKeyAttribute : Attribute { }
 
     // ===================== 全局通用：Provider（取值）=====================
 
-    [Serializable] [Unit("unit.const.name", "Constant", "unit.group.provider", "Provider")]
+    [Serializable] [UnitAuthoringId("core.const")] [Unit("unit.const.name", "Constant", "unit.group.provider", "Provider")]
     public class ConstProvider : ProviderUnit
     {
         public PrimitiveType type = PrimitiveType.Float;
@@ -59,7 +67,7 @@ namespace NodeEditor
         public override object Get(NodeContext ctx) => UnitValues.ToPrimitive(type, value);
     }
 
-    [Serializable] [Unit("unit.blackboardProvider.name", "Read Blackboard", "unit.group.provider", "Provider")]
+    [Serializable] [UnitAuthoringId("core.blackboard-read")] [Unit("unit.blackboardProvider.name", "Read Blackboard", "unit.group.provider", "Provider")]
     public class BlackboardProvider : ProviderUnit
     {
         [BlackboardKey] public string key;
@@ -67,7 +75,7 @@ namespace NodeEditor
     }
 
     // 装饰：把两个取值单元用算术运算组合成一个（数值语义）。
-    [Serializable] [Unit("unit.arithmeticProvider.name", "Arithmetic", "unit.group.providerDecorator", "Provider/Decorator")]
+    [Serializable] [UnitAuthoringId("core.arithmetic")] [Unit("unit.arithmeticProvider.name", "Arithmetic", "unit.group.providerDecorator", "Provider/Decorator")]
     public class ArithmeticProvider : ProviderUnit
     {
         [SerializeReference] public ProviderUnit a;
@@ -90,7 +98,7 @@ namespace NodeEditor
     // ===================== 全局通用：Condition（判定）=====================
 
     // 完全可组合的比较：左右各是一个取值单元，按 op 比较（数值或序数，见 UnitValues.Compare）。
-    [Serializable] [Unit("unit.compareCondition.name", "Compare", "unit.group.condition", "Condition")]
+    [Serializable] [UnitAuthoringId("core.compare")] [Unit("unit.compareCondition.name", "Compare", "unit.group.condition", "Condition")]
     public class CompareCondition : ConditionUnit
     {
         [SerializeReference] public ProviderUnit left;
@@ -100,7 +108,7 @@ namespace NodeEditor
     }
 
     // 便捷比较（常见快路径）：直接「黑板键 op 字面量」，字面量按该键当前值的类型解析。等价于旧的门控/条件参数。
-    [Serializable] [Unit("unit.blackboardCompareCondition.name", "Compare Blackboard", "unit.group.condition", "Condition")]
+    [Serializable] [UnitAuthoringId("core.blackboard-compare")] [Unit("unit.blackboardCompareCondition.name", "Compare Blackboard", "unit.group.condition", "Condition")]
     public class BlackboardCompareCondition : ConditionUnit
     {
         [BlackboardKey] public string key;
@@ -114,7 +122,7 @@ namespace NodeEditor
         }
     }
 
-    [Serializable] [Unit("unit.alwaysCondition.name", "Constant", "unit.group.condition", "Condition")]
+    [Serializable] [UnitAuthoringId("core.always")] [Unit("unit.alwaysCondition.name", "Constant", "unit.group.condition", "Condition")]
     public class AlwaysCondition : ConditionUnit
     {
         public bool value = true;
@@ -122,7 +130,7 @@ namespace NodeEditor
     }
 
     // 装饰：非
-    [Serializable] [Unit("unit.notCondition.name", "Not", "unit.group.conditionDecorator", "Condition/Decorator")]
+    [Serializable] [UnitAuthoringId("core.not")] [Unit("unit.notCondition.name", "Not", "unit.group.conditionDecorator", "Condition/Decorator")]
     public class NotCondition : ConditionUnit
     {
         [SerializeReference] public ConditionUnit inner;
@@ -130,7 +138,7 @@ namespace NodeEditor
     }
 
     // 装饰：与（空集为真）
-    [Serializable] [Unit("unit.andCondition.name", "And", "unit.group.conditionDecorator", "Condition/Decorator")]
+    [Serializable] [UnitAuthoringId("core.and")] [Unit("unit.andCondition.name", "And", "unit.group.conditionDecorator", "Condition/Decorator")]
     public class AndCondition : ConditionUnit
     {
         [SerializeReference] public List<ConditionUnit> items = new();
@@ -142,7 +150,7 @@ namespace NodeEditor
     }
 
     // 装饰：或（空集为假）
-    [Serializable] [Unit("unit.orCondition.name", "Or", "unit.group.conditionDecorator", "Condition/Decorator")]
+    [Serializable] [UnitAuthoringId("core.or")] [Unit("unit.orCondition.name", "Or", "unit.group.conditionDecorator", "Condition/Decorator")]
     public class OrCondition : ConditionUnit
     {
         [SerializeReference] public List<ConditionUnit> items = new();
@@ -156,7 +164,7 @@ namespace NodeEditor
     // ===================== 全局通用：Action（副作用）=====================
 
     // 设变量：值来自一个取值单元（可组合，如算术/读黑板）。写回前按该键当前值的类型强转。
-    [Serializable] [Unit("unit.setVariableAction.name", "Set Variable", "unit.group.action", "Action")]
+    [Serializable] [UnitAuthoringId("core.set-variable")] [Unit("unit.setVariableAction.name", "Set Variable", "unit.group.action", "Action")]
     public class SetVariableAction : ActionUnit
     {
         [BlackboardKey] public string key;
@@ -169,7 +177,7 @@ namespace NodeEditor
     }
 
     // 设变量（字面量快路径）：直接写一个字面量，按该键当前值的类型解析。等价于旧的 SetVariable 节点。
-    [Serializable] [Unit("unit.setVariableLiteralAction.name", "Set Variable (Literal)", "unit.group.action", "Action")]
+    [Serializable] [UnitAuthoringId("core.set-variable-literal")] [Unit("unit.setVariableLiteralAction.name", "Set Variable (Literal)", "unit.group.action", "Action")]
     public class SetVariableLiteralAction : ActionUnit
     {
         [BlackboardKey] public string key;
@@ -182,7 +190,7 @@ namespace NodeEditor
     }
 
     // 装饰：顺序执行多个动作。
-    [Serializable] [Unit("unit.sequenceAction.name", "Sequence", "unit.group.actionDecorator", "Action/Decorator")]
+    [Serializable] [UnitAuthoringId("core.sequence-action")] [Unit("unit.sequenceAction.name", "Sequence", "unit.group.actionDecorator", "Action/Decorator")]
     public class SequenceAction : ActionUnit
     {
         [SerializeReference] public List<ActionUnit> items = new();
@@ -190,7 +198,7 @@ namespace NodeEditor
     }
 
     // 装饰：条件执行——条件成立（或无条件）时才执行内层动作。组合了 Condition + Action 两族。
-    [Serializable] [Unit("unit.conditionalAction.name", "Conditional", "unit.group.actionDecorator", "Action/Decorator")]
+    [Serializable] [UnitAuthoringId("core.conditional-action")] [Unit("unit.conditionalAction.name", "Conditional", "unit.group.actionDecorator", "Action/Decorator")]
     public class ConditionalAction : ActionUnit
     {
         [SerializeReference] public ConditionUnit condition;
@@ -204,7 +212,7 @@ namespace NodeEditor
     // ===================== 全局通用：Control（编排）=====================
 
     // 叶子：把一个条件桥接为控制结果（成立=Success，否则=Failure）。让 Control 子树能引用条件族。
-    [Serializable] [Unit("unit.conditionControl.name", "Condition", "unit.group.control", "Control")]
+    [Serializable] [UnitAuthoringId("core.condition-control")] [Unit("unit.conditionControl.name", "Condition", "unit.group.control", "Control")]
     public class ConditionControl : ControlUnit
     {
         [SerializeReference] public ConditionUnit condition;
@@ -213,7 +221,7 @@ namespace NodeEditor
     }
 
     // 选择器：依次 Tick 子节点，遇到第一个「非 Failure」即返回；全失败则 Failure。
-    [Serializable] [Unit("unit.selectorControl.name", "Selector", "unit.group.control", "Control")]
+    [Serializable] [UnitAuthoringId("core.selector")] [Unit("unit.selectorControl.name", "Selector", "unit.group.control", "Control")]
     public class SelectorControl : ControlUnit
     {
         [SerializeReference] public List<ControlUnit> children = new();
@@ -229,7 +237,7 @@ namespace NodeEditor
     }
 
     // 序列：依次 Tick 子节点，遇到第一个「非 Success」即返回；全成功则 Success。
-    [Serializable] [Unit("unit.sequenceControl.name", "Sequence", "unit.group.control", "Control")]
+    [Serializable] [UnitAuthoringId("core.sequence-control")] [Unit("unit.sequenceControl.name", "Sequence", "unit.group.control", "Control")]
     public class SequenceControl : ControlUnit
     {
         [SerializeReference] public List<ControlUnit> children = new();
@@ -246,7 +254,7 @@ namespace NodeEditor
 
     // 并行：每次 Tick **所有**子节点（不短路）。requireAll=true → 全成功才 Success、任一失败即 Failure；
     // false → 任一成功即 Success、全失败才 Failure；以上未定且有 Running 则 Running。空子集：requireAll→Success、否则→Failure。
-    [Serializable] [Unit("unit.parallelControl.name", "Parallel", "unit.group.control", "Control")]
+    [Serializable] [UnitAuthoringId("core.parallel")] [Unit("unit.parallelControl.name", "Parallel", "unit.group.control", "Control")]
     public class ParallelControl : ControlUnit
     {
         [SerializeReference] public List<ControlUnit> children = new();
@@ -267,7 +275,7 @@ namespace NodeEditor
     }
 
     // 反转（装饰）：翻转内层控制结果——Success↔Failure；Running/None 原样透传。空内层视为 Failure（无可反转）。
-    [Serializable] [Unit("unit.inverterControl.name", "Inverter", "unit.group.control", "Control")]
+    [Serializable] [UnitAuthoringId("core.inverter")] [Unit("unit.inverterControl.name", "Inverter", "unit.group.control", "Control")]
     public class InverterControl : ControlUnit
     {
         [SerializeReference] public ControlUnit inner;

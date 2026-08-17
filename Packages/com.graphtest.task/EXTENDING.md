@@ -73,6 +73,12 @@ Task 同时拥有外层 `DependencyDag` 和内层 `ControlFlow`。`TaskGraphScaf
 `TaskNodeViews` 和 `TaskParamChoices` 负责任务节点提示、候选项和检查器体验。
 新增可见文案时同一改动里补本地化种子。
 
+## AI 创作入口
+
+框架 AI 接口的读写格式、命令与同源往返约定由 NodeGraph 统一提供，详见 [`AI-AUTHORING.md`](../com.graphtest.nodeeditor/AI-AUTHORING.md)。Task 通过 `Editor/Authoring/TaskGraphAuthoringExtension.cs` 注册 `taskGraphsDir` 与 `stepGraphsDir` 两类图目录，目录只从 `TaskAssetPathsLocator.Find()` 读取；未配置时返回空目录，不猜路径，也不创建配置资产。
+
+Task 当前没有领域专属 Unit，因此模块描述符刻意不注册 Unit 类型；将来出现真实的 Task 领域 Unit 时，再为其声明稳定 `UnitAuthoringId` 并随模块注册，不添加占位类型。
+
 ## 运行时扩展
 
 `TaskRunner` 只消费 `NodeRegistry`、任务图和 `BlackboardSet`。外部系统通过

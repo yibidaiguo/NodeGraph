@@ -3,7 +3,8 @@
   "rootNamespace": "NodeEditor.EditorUI",
   "references": [
     "NodeEditor.Runtime",
-    "NodeEditor.Unity"
+    "NodeEditor.Unity",
+    "Unity.Newtonsoft.Json"
   ],
   "includePlatforms": [
     "Editor"
